@@ -1,0 +1,18 @@
+import { startOfWeek, addDays, format } from 'date-fns';
+
+/** Returns the Monday of the week containing `date`, as YYYY-MM-DD. */
+export function weekStartIso(date: Date = new Date()): string {
+  return format(startOfWeek(date, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+}
+
+/** Day-of-week (0 = Mon ... 6 = Sun) used in meal_plan_entries. */
+export function dayOfWeekMondayFirst(date: Date): 0 | 1 | 2 | 3 | 4 | 5 | 6 {
+  const js = date.getDay(); // 0 = Sun ... 6 = Sat
+  return ((js + 6) % 7) as 0 | 1 | 2 | 3 | 4 | 5 | 6;
+}
+
+/** Build the 7 dates of the plan week, starting Monday. */
+export function planWeekDates(weekStart: string): Date[] {
+  const start = new Date(`${weekStart}T00:00:00.000Z`);
+  return Array.from({ length: 7 }, (_, i) => addDays(start, i));
+}

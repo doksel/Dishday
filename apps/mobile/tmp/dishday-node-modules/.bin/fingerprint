@@ -1,0 +1,17 @@
+#!/bin/sh
+basedir=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")
+
+case `uname` in
+    *CYGWIN*) basedir=`cygpath -w "$basedir"`;;
+esac
+
+if [ -z "$NODE_PATH" ]; then
+  export NODE_PATH="/tmp/dishday-vstore/expo@52.0.49_@babel+core@7.29.0_@_uy2ufvoy3y2g7boxdvs54xofci/node_modules/expo/bin/node_modules:/tmp/dishday-vstore/expo@52.0.49_@babel+core@7.29.0_@_uy2ufvoy3y2g7boxdvs54xofci/node_modules/expo/node_modules:/tmp/dishday-vstore/expo@52.0.49_@babel+core@7.29.0_@_uy2ufvoy3y2g7boxdvs54xofci/node_modules:/tmp/dishday-vstore/node_modules"
+else
+  export NODE_PATH="/tmp/dishday-vstore/expo@52.0.49_@babel+core@7.29.0_@_uy2ufvoy3y2g7boxdvs54xofci/node_modules/expo/bin/node_modules:/tmp/dishday-vstore/expo@52.0.49_@babel+core@7.29.0_@_uy2ufvoy3y2g7boxdvs54xofci/node_modules/expo/node_modules:/tmp/dishday-vstore/expo@52.0.49_@babel+core@7.29.0_@_uy2ufvoy3y2g7boxdvs54xofci/node_modules:/tmp/dishday-vstore/node_modules:$NODE_PATH"
+fi
+if [ -x "$basedir/node" ]; then
+  exec "$basedir/node"  "$basedir/../expo/bin/fingerprint" "$@"
+else
+  exec node  "$basedir/../expo/bin/fingerprint" "$@"
+fi

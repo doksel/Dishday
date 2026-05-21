@@ -1,0 +1,287 @@
+// Dishday — Prisma schema (single source of DB truth)
+// Database: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────────────────
+
+enum UserPlan {
+  free
+  pro
+  admin
+}
+
+enum CookingSkill {
+  beginner
+  intermediate
+  advanced
+}
+
+enum RecipeSource {
+  user
+  ai
+  official
+}
+
+enum MealType {
+  breakfast
+  lunch
+  dinner
+  snack
+}
+
+enum GeneratedBy {
+  manual
+  ai
+}
+
+enum SubscriptionProvider {
+  stripe
+  apple
+  google
+}
+
+enum SubscriptionStatus {
+  active
+  cancelled
+  past_due
+  trialing
+}
+
+enum AiUsageType {
+  meal_plan
+  recipe
+  nutrition
+}
+
+// ─────────────────────────────────────────────────────────
+// Users & Profiles
+// ─────────────────────────────────────────────────────────
+
+model User {
+  id              String    @id @default(uuid()) @db.Uuid
+  email           String    @unique @db.VarChar(255)
+  passwordHash    String?   @map("password_hash")
+  name            String    @db.VarChar(100)
+  avatarUrl       String?   @map("avatar_url")
+  plan            UserPlan  @default(free)
+  planExpiresAt   DateTime? @map("plan_expires_at") @db.Timestamptz()
+  onboardingDone  Boolean   @default(false) @map("onboarding_done")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+
+  profile         UserProfile?
+  recipes         Recipe[]          @relation("RecipeAuthor")
+  mealPlans       MealPlan[]
+  shoppingLists   ShoppingList[]
+  subscriptions   Subscription[]
+  aiUsageLogs     AiUsageLog[]
+  bookmarks       RecipeBookmark[]
+
+  @@index([plan])
+  @@map("users")
+}
+
+model UserProfile {
+  id                   String        @id @default(uuid()) @db.Uuid
+  userId               String        @unique @map("user_id") @db.Uuid
+  dietaryGoals         Json?         @map("dietary_goals")
+  allergies            String[]      @default([])
+  diets                String[]      @default([])
+  cookingSkill         CookingSkill? @map("cooking_skill")
+  householdSize        Int           @default(1) @map("household_size") @db.SmallInt
+  preferredCuisines    String[]      @default([]) @map("preferred_cuisines")
+  dislikedIngredients  String[]      @default([]) @map("disliked_ingredients")
+
+  user                 User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+// ─────────────────────────────────────────────────────────
+// Recipes
+// ─────────────────────────────────────────────────────────
+
+model Recipe {
+  id                  String       @id @default(uuid()) @db.Uuid
+  title               String       @db.VarChar(255)
+  slug                String       @unique @db.VarChar(255)
+  description         String?      @db.Text
+  authorId            String?      @map("author_id") @db.Uuid
+  source              RecipeSource
+  prepTimeMin         Int?         @map("prep_time_min") @db.SmallInt
+  cookTimeMin         Int?         @map("cook_time_min") @db.SmallInt
+  servings            Int          @default(2) @db.SmallInt
+  caloriesPerServing  Decimal?     @map("calories_per_serving") @db.Decimal(8, 2)
+  proteinG            Decimal?     @map("protein_g") @db.Decimal(8, 2)
+  carbsG              Decimal?     @map("carbs_g") @db.Decimal(8, 2)
+  fatG                Decimal?     @map("fat_g") @db.Decimal(8, 2)
+  imageUrl            String?      @map("image_url")
+  isPublic            Boolean      @default(true) @map("is_public")
+  isApproved          Boolean      @default(false) @map("is_approved")
+  tags                String[]     @default([])
+  cuisine             String?      @db.VarChar(50)
+  mealType            MealType[]   @default([]) @map("meal_type")
+  createdAt           DateTime     @default(now()) @map("created_at") @db.Timestamptz()
+
+  author              User?              @relation("RecipeAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  ingredients         RecipeIngredient[]
+  mealPlanEntries     MealPlanEntry[]
+  bookmarks           RecipeBookmark[]
+
+  @@index([source])
+  @@index([cuisine])
+  @@index([isApproved, isPublic])
+  @@index([tags], type: Gin)
+  @@map("recipes")
+}
+
+model RecipeIngredient {
+  id          String   @id @default(uuid()) @db.Uuid
+  recipeId    String   @map("recipe_id") @db.Uuid
+  name        String   @db.VarChar(150)
+  quantity    Decimal  @db.Decimal(10, 3)
+  unit        String   @db.VarChar(50)
+  notes       String?  @db.VarChar(200)
+  orderIndex  Int      @default(0) @map("order_index") @db.SmallInt
+
+  recipe      Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@index([recipeId])
+  @@map("recipe_ingredients")
+}
+
+model RecipeBookmark {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  recipeId  String   @map("recipe_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, recipeId])
+  @@map("recipe_bookmarks")
+}
+
+// ─────────────────────────────────────────────────────────
+// Meal Plans
+// ─────────────────────────────────────────────────────────
+
+model MealPlan {
+  id                String        @id @default(uuid()) @db.Uuid
+  userId            String        @map("user_id") @db.Uuid
+  weekStart         DateTime      @map("week_start") @db.Date
+  generatedBy       GeneratedBy   @map("generated_by")
+  aiPromptSummary   String?       @map("ai_prompt_summary") @db.Text
+  locked            Boolean       @default(false)
+  createdAt         DateTime      @default(now()) @map("created_at") @db.Timestamptz()
+
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entries           MealPlanEntry[]
+  shoppingLists     ShoppingList[]
+
+  @@unique([userId, weekStart])
+  @@index([userId])
+  @@map("meal_plans")
+}
+
+model MealPlanEntry {
+  id          String    @id @default(uuid()) @db.Uuid
+  planId      String    @map("plan_id") @db.Uuid
+  recipeId    String    @map("recipe_id") @db.Uuid
+  dayOfWeek   Int       @map("day_of_week") @db.SmallInt // 0=Mon...6=Sun
+  mealType    MealType  @map("meal_type")
+  servings    Decimal   @default(1) @db.Decimal(4, 2)
+
+  plan        MealPlan  @relation(fields: [planId], references: [id], onDelete: Cascade)
+  recipe      Recipe    @relation(fields: [recipeId], references: [id])
+
+  @@index([planId])
+  @@index([recipeId])
+  @@map("meal_plan_entries")
+}
+
+// ─────────────────────────────────────────────────────────
+// Shopping Lists
+// ─────────────────────────────────────────────────────────
+
+model ShoppingList {
+  id            String    @id @default(uuid()) @db.Uuid
+  planId        String    @map("plan_id") @db.Uuid
+  userId        String    @map("user_id") @db.Uuid
+  generatedAt   DateTime  @default(now()) @map("generated_at") @db.Timestamptz()
+
+  plan          MealPlan            @relation(fields: [planId], references: [id], onDelete: Cascade)
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items         ShoppingListItem[]
+
+  @@index([userId])
+  @@index([planId])
+  @@map("shopping_lists")
+}
+
+model ShoppingListItem {
+  id              String    @id @default(uuid()) @db.Uuid
+  listId          String    @map("list_id") @db.Uuid
+  ingredientName  String    @map("ingredient_name") @db.VarChar(150)
+  totalQuantity   Decimal   @map("total_quantity") @db.Decimal(10, 3)
+  unit            String    @db.VarChar(50)
+  category        String?   @db.VarChar(80)
+  isChecked       Boolean   @default(false) @map("is_checked")
+
+  list            ShoppingList @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@index([listId])
+  @@map("shopping_list_items")
+}
+
+// ─────────────────────────────────────────────────────────
+// Subscriptions
+// ─────────────────────────────────────────────────────────
+
+model Subscription {
+  id                 String                @id @default(uuid()) @db.Uuid
+  userId             String                @map("user_id") @db.Uuid
+  provider           SubscriptionProvider
+  providerSubId      String                @map("provider_sub_id")
+  status             SubscriptionStatus
+  currentPeriodEnd   DateTime              @map("current_period_end") @db.Timestamptz()
+  createdAt          DateTime              @default(now()) @map("created_at") @db.Timestamptz()
+
+  user               User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerSubId])
+  @@index([userId])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+// ─────────────────────────────────────────────────────────
+// AI Usage Logs
+// ─────────────────────────────────────────────────────────
+
+model AiUsageLog {
+  id          String       @id @default(uuid()) @db.Uuid
+  userId      String       @map("user_id") @db.Uuid
+  type        AiUsageType
+  tokensUsed  Int          @map("tokens_used")
+  costUsd     Decimal      @map("cost_usd") @db.Decimal(10, 6)
+  latencyMs   Int          @map("latency_ms")
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz()
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type, createdAt])
+  @@map("ai_usage_logs")
+}

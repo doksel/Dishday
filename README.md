@@ -122,6 +122,64 @@ pnpm format           # prettier write
 
 > Supabase Auth manages identity. The `users` table mirrors `auth.users.id` (UUID) and stores app-level fields (plan, profile).
 
+## Data access layer (swap-friendly architecture)
+
+The API is layered so the database — or the whole data source — can be swapped without touching business logic. Dependencies flow inward only:
+
+```
+HTTP routes  ─►  services (use cases)  ─►  repository interfaces
+                                                    ▲
+                                          ┌─────────┴──────────┐
+                                          │                    │
+                                   Prisma + Postgres     In-memory  (or REST,
+                                   (current default)     Supabase JS, Mongo…)
+```
+
+**Layout under `services/api/src/`:**
+
+```
+repositories/
+├── interfaces.ts                    # contracts — the ONLY thing services depend on
+├── prisma/
+│   ├── mappers.ts                   # Prisma → @dishday/types conversion
+│   ├── recipe.repository.ts         # Prisma implementations
+│   ├── user.repository.ts
+│   ├── meal-plan.repository.ts
+│   ├── shopping-list.repository.ts
+│   ├── subscription.repository.ts
+│   ├── ai-usage.repository.ts
+│   └── index.ts                     # createPrismaRepositories(prisma)
+└── memory/
+    └── recipe.repository.ts         # alternative impl — same interface
+
+services/
+├── recipe.service.ts                # business logic, depends on interfaces
+├── meal-plan.service.ts
+└── index.ts                         # createServices(repos)
+
+container.ts                          # composition root — picks impls
+routes/                               # HTTP, receive container by argument
+```
+
+### What this buys you
+
+- **Swap the DB**: write `repositories/<driver>/*.repository.ts` against the same interfaces (Supabase JS, Drizzle, Mongo, even a REST proxy). Change one line in `container.ts` to `createSupabaseRepositories(supabase)`. Routes and services don't know or care.
+- **Mock for tests**: pass `createTestContainer({ recipes: new InMemoryRecipeRepository(), … })` into `createApp(container)` — no Postgres needed for unit tests.
+- **Type safety end-to-end**: repositories return domain types from `@dishday/types`, the same types the web/mobile clients consume via `@dishday/api-client`. Prisma's `Decimal` and `Date` are converted at the boundary in `mappers.ts`.
+
+### Adding a new entity (recipe of the day):
+
+1. Add the model to `prisma/schema.prisma` → `pnpm db:migrate`.
+2. Define a `RecipeOfTheDayRepository` interface in `repositories/interfaces.ts`.
+3. Implement it in `repositories/prisma/recipe-of-the-day.repository.ts`.
+4. Wire it into `createPrismaRepositories()` and the `Repositories` aggregate.
+5. (Optional) Write a service if there's non-trivial business logic.
+6. Add a route that calls `container.services.recipeOfTheDay.*`.
+
+### Frontend has its own abstraction
+
+`packages/api-client` plays the same role for `web`, `admin`, and `mobile`: every screen calls `api.recipes.list()` / `api.mealPlans.aiGenerate()` etc., never `fetch` directly. To point the apps at a different backend (or a mock), construct `createDishdayApi(client)` with a custom `ApiClient` or stub it in tests.
+
 ## AI features (Claude)
 
 Powered by `claude-sonnet-4-20250514`, dispatched through Bull + Redis to avoid blocking HTTP:
