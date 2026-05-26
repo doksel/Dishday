@@ -11,10 +11,10 @@
     "clean": "rm -rf .next .turbo"
   },
   "dependencies": {
-    "@dishday/api-client": "workspace:*",
-    "@dishday/types": "workspace:*",
-    "@dishday/ui": "workspace:*",
-    "@dishday/utils": "workspace:*",
+    "@dishday/api-client": "*",
+    "@dishday/types": "*",
+    "@dishday/ui": "*",
+    "@dishday/utils": "*",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.47.10",
     "@tanstack/react-query": "^5.62.7",

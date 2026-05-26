@@ -4,20 +4,15 @@
     "slug": "dishday",
     "version": "0.1.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
     "scheme": "dishday",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "app.dishday.mobile"
     },
     "android": {
-      "package": "app.dishday.mobile",
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
+      "package": "app.dishday.mobile"
     },
     "web": {
       "bundler": "metro"
@@ -29,13 +24,12 @@
         {
           "cameraPermission": "Allow Dishday to access the camera to scan barcodes."
         }
-      ]
+      ],
+      "expo-font",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
-    },
-    "extra": {
-      "apiUrl": "${EXPO_PUBLIC_API_URL}"
     }
   }
 }

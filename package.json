@@ -3,10 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "description": "Dishday — AI-powered meal planning platform (web · mobile · admin)",
-  "packageManager": "pnpm@9.12.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "services/*"
+  ],
   "engines": {
-    "node": ">=20.0.0",
-    "pnpm": ">=9.0.0"
+    "node": ">=20.0.0"
   },
   "scripts": {
     "dev": "turbo run dev",
@@ -16,11 +19,11 @@
     "type-check": "turbo run type-check",
     "clean": "turbo run clean && rm -rf node_modules .turbo",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "db:generate": "pnpm --filter @dishday/api db:generate",
-    "db:migrate": "pnpm --filter @dishday/api db:migrate",
-    "db:push": "pnpm --filter @dishday/api db:push",
-    "db:seed": "pnpm --filter @dishday/api db:seed",
-    "db:studio": "pnpm --filter @dishday/api db:studio"
+    "db:generate": "npm run db:generate -w @dishday/api",
+    "db:migrate": "npm run db:migrate -w @dishday/api",
+    "db:push": "npm run db:push -w @dishday/api",
+    "db:seed": "npm run db:seed -w @dishday/api",
+    "db:studio": "npm run db:studio -w @dishday/api"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

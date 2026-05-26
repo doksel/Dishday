@@ -13,7 +13,7 @@
     "clean": "rm -rf dist .turbo"
   },
   "dependencies": {
-    "@dishday/types": "workspace:*"
+    "@dishday/types": "*"
   },
   "devDependencies": {
     "typescript": "^5.7.2"
