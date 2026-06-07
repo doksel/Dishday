@@ -1,16 +1,7 @@
 import { Link } from 'expo-router';
 import { useState } from 'react';
-import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Screen } from '../../src/components/Screen';
 import { supabase } from '../../src/lib/supabase';
 import { useTheme, useThemedStyles, type Theme } from '../../src/theme';
 
@@ -39,66 +30,59 @@ export default function SignupScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.screen}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.keyboard}
-      >
-        <Text style={styles.title}>Create your account</Text>
+    <Screen variant="keyboard" centered>
+      <Text style={styles.title}>Create your account</Text>
 
-        <View style={styles.form}>
-          <TextInput
-            placeholder="Name"
-            placeholderTextColor={theme.colors.placeholder}
-            value={name}
-            onChangeText={setName}
-            style={styles.input}
-          />
-          <TextInput
-            placeholder="Email"
-            placeholderTextColor={theme.colors.placeholder}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            value={email}
-            onChangeText={setEmail}
-            style={styles.input}
-          />
-          <TextInput
-            placeholder="Password"
-            placeholderTextColor={theme.colors.placeholder}
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-            style={styles.input}
-          />
-          {error && <Text style={styles.error}>{error}</Text>}
-          {info && <Text style={styles.info}>{info}</Text>}
-          <Pressable
-            onPress={onSubmit}
-            disabled={loading}
-            style={[styles.submit, loading && styles.disabled]}
-          >
-            {loading ? (
-              <ActivityIndicator color={theme.colors.onPrimary} />
-            ) : (
-              <Text style={styles.submitText}>Create account</Text>
-            )}
+      <View style={styles.form}>
+        <TextInput
+          placeholder="Name"
+          placeholderTextColor={theme.colors.placeholder}
+          value={name}
+          onChangeText={setName}
+          style={styles.input}
+        />
+        <TextInput
+          placeholder="Email"
+          placeholderTextColor={theme.colors.placeholder}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          value={email}
+          onChangeText={setEmail}
+          style={styles.input}
+        />
+        <TextInput
+          placeholder="Password"
+          placeholderTextColor={theme.colors.placeholder}
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+          style={styles.input}
+        />
+        {error && <Text style={styles.error}>{error}</Text>}
+        {info && <Text style={styles.info}>{info}</Text>}
+        <Pressable
+          onPress={onSubmit}
+          disabled={loading}
+          style={[styles.submit, loading && styles.disabled]}
+        >
+          {loading ? (
+            <ActivityIndicator color={theme.colors.onPrimary} />
+          ) : (
+            <Text style={styles.submitText}>Create account</Text>
+          )}
+        </Pressable>
+        <Link href="/(auth)/login" asChild>
+          <Pressable>
+            <Text style={styles.link}>Already have an account? Sign in</Text>
           </Pressable>
-          <Link href="/(auth)/login" asChild>
-            <Pressable>
-              <Text style={styles.link}>Already have an account? Sign in</Text>
-            </Pressable>
-          </Link>
-        </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+        </Link>
+      </View>
+    </Screen>
   );
 }
 
 function makeStyles(theme: Theme) {
   return StyleSheet.create({
-    screen: { flex: 1, backgroundColor: theme.colors.background },
-    keyboard: { flex: 1, justifyContent: 'center', padding: theme.spacing.xl },
     title: { fontSize: 28, fontWeight: '700', color: theme.colors.text },
     form: { marginTop: theme.spacing.xl, gap: theme.spacing.md },
     input: {

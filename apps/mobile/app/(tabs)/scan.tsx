@@ -1,6 +1,8 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useState } from 'react';
-import { Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Screen } from '../../src/components/Screen';
 import { useThemedStyles, type Theme } from '../../src/theme';
 
 export default function ScanScreen() {
@@ -11,27 +13,29 @@ export default function ScanScreen() {
 
   if (!permission) {
     return (
-      <SafeAreaView style={styles.centered}>
+      <Screen centered>
         <Text style={styles.text}>Loading camera…</Text>
-      </SafeAreaView>
+      </Screen>
     );
   }
 
   if (!permission.granted) {
     return (
-      <SafeAreaView style={styles.centeredPadded}>
+      <Screen centered>
         <Text style={styles.permissionText}>
           Dishday needs camera access to scan grocery barcodes.
         </Text>
         <Pressable onPress={requestPermission} style={styles.grantBtn}>
           <Text style={styles.grantBtnText}>Grant permission</Text>
         </Pressable>
-      </SafeAreaView>
+      </Screen>
     );
   }
 
+  // Camera view is full-bleed with an absolutely-positioned overlay,
+  // so it can't use <Screen> (different layout from the other tabs).
   return (
-    <View style={styles.screen}>
+    <View style={styles.fullBleed}>
       <CameraView
         facing="back"
         style={styles.camera}
@@ -69,21 +73,7 @@ export default function ScanScreen() {
 
 function makeStyles(theme: Theme) {
   return StyleSheet.create({
-    screen: { flex: 1, backgroundColor: theme.colors.background },
-    centered: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: theme.colors.background,
-    },
-    centeredPadded: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      padding: theme.spacing.xl,
-      backgroundColor: theme.colors.background,
-    },
-    text: { color: theme.colors.text },
+    text: { color: theme.colors.text, textAlign: 'center' },
     permissionText: { fontSize: 16, textAlign: 'center', color: theme.colors.text },
     grantBtn: {
       marginTop: theme.spacing.lg,
@@ -91,8 +81,10 @@ function makeStyles(theme: Theme) {
       paddingVertical: 12,
       paddingHorizontal: 24,
       borderRadius: theme.radius.md,
+      alignSelf: 'center',
     },
     grantBtnText: { color: theme.colors.onPrimary, fontWeight: '600' },
+    fullBleed: { flex: 1, backgroundColor: theme.colors.background },
     camera: { flex: 1 },
     bottomBar: {
       position: 'absolute',

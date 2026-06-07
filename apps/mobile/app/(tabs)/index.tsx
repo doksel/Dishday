@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import type { MealPlan, MealType } from '@dishday/types';
 import { dayOfWeekMondayFirst, weekStartIso } from '@dishday/utils';
-import { ActivityIndicator, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { Screen } from '../../src/components/Screen';
 import { getApi } from '../../src/lib/api';
 import { useThemedStyles, useTheme, type Theme } from '../../src/theme';
 
@@ -29,56 +30,52 @@ export default function TodayScreen() {
   const plan = data?.find((p) => p.weekStart === week);
 
   return (
-    <SafeAreaView style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Today</Text>
-        <Text style={styles.subtitle}>{now.toLocaleDateString()}</Text>
+    <Screen variant="scroll" gap="md">
+      <Text style={styles.title}>Today</Text>
+      <Text style={styles.subtitle}>{now.toLocaleDateString()}</Text>
 
-        {isLoading && (
-          <View style={styles.loaderRow}>
-            <ActivityIndicator color={theme.colors.primary} />
-          </View>
-        )}
+      {isLoading && (
+        <View style={styles.loaderRow}>
+          <ActivityIndicator color={theme.colors.primary} />
+        </View>
+      )}
 
-        {error && (
-          <Text style={styles.error}>Could not load today's plan: {(error as Error).message}</Text>
-        )}
+      {error && (
+        <Text style={styles.error}>Could not load today's plan: {(error as Error).message}</Text>
+      )}
 
-        {!isLoading && !plan && (
-          <View style={styles.card}>
-            <Text style={styles.cardMutedBody}>
-              No plan for this week yet. Open the Planner tab to create one.
-            </Text>
-          </View>
-        )}
+      {!isLoading && !plan && (
+        <View style={styles.card}>
+          <Text style={styles.cardMutedBody}>
+            No plan for this week yet. Open the Planner tab to create one.
+          </Text>
+        </View>
+      )}
 
-        {plan &&
-          SLOTS.map((slot) => {
-            const entry = plan.entries?.find((e) => e.dayOfWeek === dow && e.mealType === slot);
-            return (
-              <View key={slot} style={styles.card}>
-                <Text style={styles.slotLabel}>{SLOT_LABEL[slot].toUpperCase()}</Text>
-                <Text style={entry ? styles.slotTitle : styles.slotTitleEmpty}>
-                  {entry?.recipe?.title ?? '—'}
+      {plan &&
+        SLOTS.map((slot) => {
+          const entry = plan.entries?.find((e) => e.dayOfWeek === dow && e.mealType === slot);
+          return (
+            <View key={slot} style={styles.card}>
+              <Text style={styles.slotLabel}>{SLOT_LABEL[slot].toUpperCase()}</Text>
+              <Text style={entry ? styles.slotTitle : styles.slotTitleEmpty}>
+                {entry?.recipe?.title ?? '—'}
+              </Text>
+              {entry?.recipe?.caloriesPerServing != null && (
+                <Text style={styles.slotMeta}>
+                  {Math.round(entry.recipe.caloriesPerServing)} kcal · {entry.servings} serving
+                  {entry.servings === 1 ? '' : 's'}
                 </Text>
-                {entry?.recipe?.caloriesPerServing != null && (
-                  <Text style={styles.slotMeta}>
-                    {Math.round(entry.recipe.caloriesPerServing)} kcal · {entry.servings} serving
-                    {entry.servings === 1 ? '' : 's'}
-                  </Text>
-                )}
-              </View>
-            );
-          })}
-      </ScrollView>
-    </SafeAreaView>
+              )}
+            </View>
+          );
+        })}
+    </Screen>
   );
 }
 
 function makeStyles(theme: Theme) {
   return StyleSheet.create({
-    screen: { flex: 1, backgroundColor: theme.colors.background },
-    content: { padding: theme.spacing.xl, gap: theme.spacing.md },
     title: { fontSize: 28, fontWeight: '700', color: theme.colors.text },
     subtitle: { color: theme.colors.textSecondary },
     loaderRow: { paddingVertical: theme.spacing.xl, alignItems: 'center' },

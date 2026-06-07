@@ -1,15 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { MealPlan, MealType } from '@dishday/types';
 import { weekStartIso } from '@dishday/utils';
-import {
-  ActivityIndicator,
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Screen } from '../../src/components/Screen';
 import { getApi } from '../../src/lib/api';
 import { useThemedStyles, useTheme, type Theme } from '../../src/theme';
 
@@ -41,86 +34,76 @@ export default function PlannerScreen() {
   });
 
   return (
-    <SafeAreaView style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Week of {week}</Text>
+    <Screen variant="scroll" gap="md">
+      <Text style={styles.title}>Week of {week}</Text>
 
-        {plans.isLoading && (
-          <View style={styles.loaderRow}>
-            <ActivityIndicator color={theme.colors.primary} />
+      {plans.isLoading && (
+        <View style={styles.loaderRow}>
+          <ActivityIndicator color={theme.colors.primary} />
+        </View>
+      )}
+
+      {plans.error && (
+        <Text style={styles.error}>Could not load plans: {(plans.error as Error).message}</Text>
+      )}
+
+      {!plans.isLoading && !currentPlan && (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>No plan for this week yet</Text>
+          <Text style={styles.cardBody}>
+            Start an empty plan and add recipes manually, or let AI build a balanced week for you.
+          </Text>
+          <View style={styles.row}>
+            <Pressable
+              onPress={() => create.mutate()}
+              disabled={create.isPending}
+              style={[styles.btnPrimary, create.isPending && styles.disabled]}
+            >
+              <Text style={styles.btnPrimaryText}>
+                {create.isPending ? 'Creating…' : 'Empty plan'}
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => aiGenerate.mutate()}
+              disabled={aiGenerate.isPending}
+              style={[styles.btnSecondary, aiGenerate.isPending && styles.disabled]}
+            >
+              <Text style={styles.btnSecondaryText}>
+                {aiGenerate.isPending ? 'Queueing…' : 'AI generate'}
+              </Text>
+            </Pressable>
           </View>
-        )}
+        </View>
+      )}
 
-        {plans.error && (
-          <Text style={styles.error}>Could not load plans: {(plans.error as Error).message}</Text>
-        )}
-
-        {!plans.isLoading && !currentPlan && (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>No plan for this week yet</Text>
-            <Text style={styles.cardBody}>
-              Start an empty plan and add recipes manually, or let AI build a balanced week for you.
-            </Text>
-            <View style={styles.row}>
-              <Pressable
-                onPress={() => create.mutate()}
-                disabled={create.isPending}
-                style={[styles.btnPrimary, create.isPending && styles.disabled]}
-              >
-                <Text style={styles.btnPrimaryText}>
-                  {create.isPending ? 'Creating…' : 'Empty plan'}
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={() => aiGenerate.mutate()}
-                disabled={aiGenerate.isPending}
-                style={[styles.btnSecondary, aiGenerate.isPending && styles.disabled]}
-              >
-                <Text style={styles.btnSecondaryText}>
-                  {aiGenerate.isPending ? 'Queueing…' : 'AI generate'}
-                </Text>
-              </Pressable>
-            </View>
+      {currentPlan &&
+        DAYS.map((dayLabel, dayIdx) => (
+          <View key={dayLabel} style={styles.card}>
+            <Text style={styles.dayLabel}>{dayLabel}</Text>
+            {SLOTS.map((slot) => {
+              const entry = currentPlan.entries?.find(
+                (e) => e.dayOfWeek === dayIdx && e.mealType === slot,
+              );
+              return (
+                <View
+                  key={slot}
+                  style={[styles.slotRow, slot !== 'snack' && styles.slotRowDivider]}
+                >
+                  <Text style={styles.slotName}>{slot}</Text>
+                  <Text style={entry ? styles.slotEntry : styles.slotEntryEmpty} numberOfLines={1}>
+                    {entry?.recipe?.title ?? '—'}
+                  </Text>
+                </View>
+              );
+            })}
           </View>
-        )}
-
-        {currentPlan &&
-          DAYS.map((dayLabel, dayIdx) => (
-            <View key={dayLabel} style={styles.card}>
-              <Text style={styles.dayLabel}>{dayLabel}</Text>
-              {SLOTS.map((slot) => {
-                const entry = currentPlan.entries?.find(
-                  (e) => e.dayOfWeek === dayIdx && e.mealType === slot,
-                );
-                return (
-                  <View
-                    key={slot}
-                    style={[
-                      styles.slotRow,
-                      slot !== 'snack' && styles.slotRowDivider,
-                    ]}
-                  >
-                    <Text style={styles.slotName}>{slot}</Text>
-                    <Text
-                      style={entry ? styles.slotEntry : styles.slotEntryEmpty}
-                      numberOfLines={1}
-                    >
-                      {entry?.recipe?.title ?? '—'}
-                    </Text>
-                  </View>
-                );
-              })}
-            </View>
-          ))}
-      </ScrollView>
-    </SafeAreaView>
+        ))}
+    </Screen>
   );
 }
 
 function makeStyles(theme: Theme) {
   return StyleSheet.create({
-    screen: { flex: 1, backgroundColor: theme.colors.background },
-    content: { padding: theme.spacing.xl, gap: theme.spacing.md },
     title: { fontSize: 28, fontWeight: '700', color: theme.colors.text },
     loaderRow: { paddingVertical: theme.spacing.xl, alignItems: 'center' },
     error: { color: theme.colors.danger },

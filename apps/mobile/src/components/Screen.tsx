@@ -1,0 +1,93 @@
+import type { ReactNode } from 'react';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
+import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
+import { useTheme, useThemedStyles, type Theme } from '../theme';
+
+type SpacingKey = keyof Theme['spacing'];
+
+export interface ScreenProps {
+  /** Container variant. Default `'view'`. */
+  variant?: 'scroll' | 'view' | 'keyboard';
+  /** Padding applied to the content area. Default `'xl'`. Set `'none'` to disable. */
+  padding?: SpacingKey | 'none';
+  /** Vertical gap between direct children. */
+  gap?: SpacingKey;
+  /** Vertically center the content (mostly useful with `keyboard` variant). */
+  centered?: boolean;
+  /** Which safe-area edges to respect. Default top + bottom. */
+  edges?: readonly Edge[];
+  /** Extra styles merged into the content container. */
+  style?: StyleProp<ViewStyle>;
+  children: ReactNode;
+}
+
+/**
+ * Common screen scaffold: a `SafeAreaView` background + a content container
+ * that switches between `ScrollView`, `KeyboardAvoidingView`, or plain `View`
+ * based on `variant`. All padding/gap values come from the theme's spacing scale.
+ *
+ * Uses `react-native-safe-area-context`'s `SafeAreaView` (the built-in one
+ * from `react-native` is deprecated).
+ */
+export function Screen({
+  variant = 'view',
+  padding = 'xl',
+  gap,
+  centered = false,
+  edges = ['top', 'bottom'],
+  style,
+  children,
+}: ScreenProps) {
+  const theme = useTheme();
+  const styles = useThemedStyles(makeStyles);
+
+  const contentStyle: StyleProp<ViewStyle> = [
+    padding !== 'none' && { padding: theme.spacing[padding] },
+    gap !== undefined && { gap: theme.spacing[gap] },
+    centered && styles.centered,
+    style,
+  ];
+
+  if (variant === 'scroll') {
+    return (
+      <SafeAreaView style={styles.safe} edges={edges}>
+        <ScrollView contentContainerStyle={contentStyle}>{children}</ScrollView>
+      </SafeAreaView>
+    );
+  }
+
+  if (variant === 'keyboard') {
+    return (
+      <SafeAreaView style={styles.safe} edges={edges}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={[styles.fill, contentStyle]}
+        >
+          {children}
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.safe} edges={edges}>
+      <View style={[styles.fill, contentStyle]}>{children}</View>
+    </SafeAreaView>
+  );
+}
+
+function makeStyles(theme: Theme) {
+  return StyleSheet.create({
+    safe: { flex: 1, backgroundColor: theme.colors.background },
+    fill: { flex: 1 },
+    centered: { flex: 1, justifyContent: 'center' },
+  });
+}
