@@ -1,4 +1,27 @@
+// Load .env BEFORE we parse process.env.
+// In a monorepo, .env lives at the workspace root. We try common locations
+// (closest first) so this works whether you run from services/api or from the root.
+import { config as loadEnv } from 'dotenv';
+import { existsSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
+
+const here = dirname(fileURLToPath(import.meta.url));
+
+// Candidates in order of preference (closer wins on conflict because override:false)
+const candidates = [
+  resolve(process.cwd(), '.env'),
+  resolve(here, '../../.env'), // services/api/.env (if running from compiled dist)
+  resolve(here, '../../../.env'), // services/api/src/.env (tsx mode, unlikely)
+  resolve(here, '../../../../.env'), // workspace root from services/api/src/config
+];
+
+for (const candidate of candidates) {
+  if (existsSync(candidate)) {
+    loadEnv({ path: candidate });
+  }
+}
 
 const schema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -10,13 +33,14 @@ const schema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
 
   // Database (Prisma — Supabase Postgres)
-  DATABASE_URL: z.string().url(),
+  DATABASE_URL: z.string().url(),         // Transaction pooler for runtime
+  DIRECT_URL: z.string().url().optional(), // Direct connection for migrations
 
   // Auth — internal short-lived service tokens / Supabase JWT secret if used
   JWT_SECRET: z.string().min(32),
 
-  // AI
-  ANTHROPIC_API_KEY: z.string().min(1),
+  // AI — optional. API starts without it; only /meal-plans/ai/* fails.
+  ANTHROPIC_API_KEY: z.string().min(1).optional(),
   ANTHROPIC_MODEL: z.string().default('claude-sonnet-4-20250514'),
 
   // Payments
@@ -38,6 +62,12 @@ const parsed = schema.safeParse(process.env);
 if (!parsed.success) {
   // eslint-disable-next-line no-console
   console.error('Invalid environment:', parsed.error.flatten().fieldErrors);
+  // eslint-disable-next-line no-console
+  console.error('Looked for .env in:');
+  for (const c of candidates) {
+    // eslint-disable-next-line no-console
+    console.error(`  ${existsSync(c) ? '✓' : '✗'} ${c}`);
+  }
   throw new Error('Invalid environment variables — see .env.example');
 }
 

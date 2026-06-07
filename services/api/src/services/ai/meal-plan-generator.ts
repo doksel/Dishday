@@ -13,7 +13,7 @@ import { z } from 'zod';
 import type { UserProfile } from '@dishday/types';
 import { env } from '../../config/env.js';
 import type { Repositories } from '../../repositories/interfaces.js';
-import { anthropic, estimateCostUsd } from './anthropic.js';
+import { estimateCostUsd, requireAnthropic } from './anthropic.js';
 
 const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
 
@@ -95,7 +95,7 @@ export async function generateWeeklyPlan(
   const userPrompt = buildUserPrompt(input);
 
   const t0 = Date.now();
-  const response = await anthropic.messages.create({
+  const response = await requireAnthropic().messages.create({
     model: env.ANTHROPIC_MODEL,
     max_tokens: 4096,
     system: SYSTEM_PROMPT,

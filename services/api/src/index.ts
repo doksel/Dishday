@@ -1,4 +1,4 @@
-import 'dotenv/config';
+// env.ts loads .env internally before parsing — no need to do it here.
 import { createApp } from './app.js';
 import { env } from './config/env.js';
 import { logger } from './config/logger.js';

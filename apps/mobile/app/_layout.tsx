@@ -3,10 +3,12 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { supabase } from '../src/lib/supabase';
+import { ThemeProvider, useTheme } from '../src/theme';
 
 const queryClient = new QueryClient();
 
-export default function RootLayout() {
+function AppShell() {
+  const theme = useTheme();
   const [ready, setReady] = useState(false);
   const [authed, setAuthed] = useState(false);
   const router = useRouter();
@@ -31,9 +33,24 @@ export default function RootLayout() {
   }, [authed, ready, segments, router]);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <StatusBar style="auto" />
-      <Stack screenOptions={{ headerShown: false }} />
-    </QueryClientProvider>
+    <>
+      <StatusBar style={theme.name === 'dark' ? 'light' : 'dark'} />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: theme.colors.background },
+        }}
+      />
+    </>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <AppShell />
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }

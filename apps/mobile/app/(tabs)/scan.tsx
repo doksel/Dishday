@@ -1,44 +1,61 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useState } from 'react';
 import { Pressable, SafeAreaView, Text, View } from 'react-native';
+import { useTheme } from '../../src/theme';
 
 export default function ScanScreen() {
+  const theme = useTheme();
   const [permission, requestPermission] = useCameraPermissions();
   const [code, setCode] = useState<string | null>(null);
   const [scanning, setScanning] = useState(true);
 
   if (!permission) {
     return (
-      <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Loading camera…</Text>
+      <SafeAreaView
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: theme.colors.background,
+        }}
+      >
+        <Text style={{ color: theme.colors.text }}>Loading camera…</Text>
       </SafeAreaView>
     );
   }
 
   if (!permission.granted) {
     return (
-      <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
-        <Text style={{ fontSize: 16, textAlign: 'center' }}>
+      <SafeAreaView
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: theme.spacing.xl,
+          backgroundColor: theme.colors.background,
+        }}
+      >
+        <Text style={{ fontSize: 16, textAlign: 'center', color: theme.colors.text }}>
           Dishday needs camera access to scan grocery barcodes.
         </Text>
         <Pressable
           onPress={requestPermission}
           style={{
-            marginTop: 16,
-            backgroundColor: '#4f46e5',
+            marginTop: theme.spacing.lg,
+            backgroundColor: theme.colors.primary,
             paddingVertical: 12,
             paddingHorizontal: 24,
-            borderRadius: 10,
+            borderRadius: theme.radius.md,
           }}
         >
-          <Text style={{ color: 'white', fontWeight: '600' }}>Grant permission</Text>
+          <Text style={{ color: theme.colors.onPrimary, fontWeight: '600' }}>Grant permission</Text>
         </Pressable>
       </SafeAreaView>
     );
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <CameraView
         facing="back"
         style={{ flex: 1 }}
@@ -52,9 +69,17 @@ export default function ScanScreen() {
             : undefined
         }
       />
-      <SafeAreaView style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: 24 }}>
-        <View style={{ backgroundColor: 'rgba(0,0,0,0.7)', borderRadius: 12, padding: 16 }}>
-          <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>
+      <SafeAreaView
+        style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: theme.spacing.xl }}
+      >
+        <View
+          style={{
+            backgroundColor: 'rgba(0,0,0,0.7)',
+            borderRadius: theme.radius.lg,
+            padding: theme.spacing.lg,
+          }}
+        >
+          <Text style={{ color: '#ffffff', fontSize: 16, fontWeight: '600' }}>
             {code ? `Scanned: ${code}` : 'Point at a barcode…'}
           </Text>
           {code && (
@@ -63,7 +88,7 @@ export default function ScanScreen() {
                 setCode(null);
                 setScanning(true);
               }}
-              style={{ marginTop: 8 }}
+              style={{ marginTop: theme.spacing.sm }}
             >
               <Text style={{ color: '#a5b4fc' }}>Scan another</Text>
             </Pressable>

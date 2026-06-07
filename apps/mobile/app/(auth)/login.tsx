@@ -11,8 +11,10 @@ import {
   View,
 } from 'react-native';
 import { supabase } from '../../src/lib/supabase';
+import { useTheme } from '../../src/theme';
 
 export default function LoginScreen() {
+  const theme = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -27,51 +29,73 @@ export default function LoginScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#fafafa' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={{ flex: 1, justifyContent: 'center', padding: 24 }}
+        style={{ flex: 1, justifyContent: 'center', padding: theme.spacing.xl }}
       >
-        <Text style={{ fontSize: 28, fontWeight: '700' }}>Welcome back</Text>
-        <Text style={{ marginTop: 4, color: '#71717a' }}>Sign in to your Dishday account.</Text>
+        <Text style={{ fontSize: 28, fontWeight: '700', color: theme.colors.text }}>
+          Welcome back
+        </Text>
+        <Text style={{ marginTop: 4, color: theme.colors.textSecondary }}>
+          Sign in to your Dishday account.
+        </Text>
 
-        <View style={{ marginTop: 24, gap: 12 }}>
+        <View style={{ marginTop: theme.spacing.xl, gap: theme.spacing.md }}>
           <TextInput
             placeholder="Email"
+            placeholderTextColor={theme.colors.placeholder}
             autoCapitalize="none"
             keyboardType="email-address"
             value={email}
             onChangeText={setEmail}
-            style={inputStyle}
+            style={{
+              borderWidth: 1,
+              borderColor: theme.colors.inputBorder,
+              backgroundColor: theme.colors.inputBackground,
+              color: theme.colors.text,
+              padding: 12,
+              borderRadius: theme.radius.md,
+              fontSize: 16,
+            }}
           />
           <TextInput
             placeholder="Password"
+            placeholderTextColor={theme.colors.placeholder}
             secureTextEntry
             value={password}
             onChangeText={setPassword}
-            style={inputStyle}
+            style={{
+              borderWidth: 1,
+              borderColor: theme.colors.inputBorder,
+              backgroundColor: theme.colors.inputBackground,
+              color: theme.colors.text,
+              padding: 12,
+              borderRadius: theme.radius.md,
+              fontSize: 16,
+            }}
           />
-          {error && <Text style={{ color: '#dc2626' }}>{error}</Text>}
+          {error && <Text style={{ color: theme.colors.danger }}>{error}</Text>}
           <Pressable
             onPress={onSubmit}
             disabled={loading}
             style={{
-              backgroundColor: '#4f46e5',
+              backgroundColor: theme.colors.primary,
               padding: 14,
-              borderRadius: 10,
+              borderRadius: theme.radius.md,
               alignItems: 'center',
               opacity: loading ? 0.6 : 1,
             }}
           >
             {loading ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={theme.colors.onPrimary} />
             ) : (
-              <Text style={{ color: '#fff', fontWeight: '600' }}>Sign in</Text>
+              <Text style={{ color: theme.colors.onPrimary, fontWeight: '600' }}>Sign in</Text>
             )}
           </Pressable>
           <Link href="/(auth)/signup" asChild>
             <Pressable>
-              <Text style={{ textAlign: 'center', color: '#4f46e5' }}>
+              <Text style={{ textAlign: 'center', color: theme.colors.primary }}>
                 No account? Create one
               </Text>
             </Pressable>
@@ -81,11 +105,3 @@ export default function LoginScreen() {
     </SafeAreaView>
   );
 }
-
-const inputStyle = {
-  borderWidth: 1,
-  borderColor: '#d4d4d8',
-  padding: 12,
-  borderRadius: 10,
-  fontSize: 16,
-} as const;

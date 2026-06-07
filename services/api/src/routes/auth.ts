@@ -35,8 +35,8 @@ export function authRouter(container: AppContainer): Router {
         });
       }
 
-      const profile = await users.getProfile(userId);
-      res.json({ user, profile });
+      // GET /auth/me — returns just the User (use /users/profile for full profile).
+      res.json(user);
     } catch (e) {
       next(e);
     }
