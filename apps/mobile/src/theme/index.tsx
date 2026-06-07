@@ -191,3 +191,24 @@ export function useThemePreference() {
   if (!ctx) throw new Error('useThemePreference must be used inside <ThemeProvider>');
   return { preference: ctx.preference, setPreference: ctx.setPreference };
 }
+
+/**
+ * Theme-aware StyleSheet hook.
+ * Pass a `makeStyles(theme)` factory (defined at module scope so its reference
+ * is stable). Returns a memoised StyleSheet that's regenerated only when the
+ * theme changes.
+ *
+ * ```tsx
+ * const styles = useThemedStyles(makeStyles);
+ *
+ * function makeStyles(theme: Theme) {
+ *   return StyleSheet.create({
+ *     container: { flex: 1, backgroundColor: theme.colors.background },
+ *   });
+ * }
+ * ```
+ */
+export function useThemedStyles<T>(factory: (theme: Theme) => T): T {
+  const theme = useTheme();
+  return useMemo(() => factory(theme), [theme, factory]);
+}

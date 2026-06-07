@@ -6,15 +6,17 @@ import {
   Platform,
   Pressable,
   SafeAreaView,
+  StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
 import { supabase } from '../../src/lib/supabase';
-import { useTheme } from '../../src/theme';
+import { useTheme, useThemedStyles, type Theme } from '../../src/theme';
 
 export default function LoginScreen() {
   const theme = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -29,19 +31,15 @@ export default function LoginScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
+    <SafeAreaView style={styles.screen}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={{ flex: 1, justifyContent: 'center', padding: theme.spacing.xl }}
+        style={styles.keyboard}
       >
-        <Text style={{ fontSize: 28, fontWeight: '700', color: theme.colors.text }}>
-          Welcome back
-        </Text>
-        <Text style={{ marginTop: 4, color: theme.colors.textSecondary }}>
-          Sign in to your Dishday account.
-        </Text>
+        <Text style={styles.title}>Welcome back</Text>
+        <Text style={styles.subtitle}>Sign in to your Dishday account.</Text>
 
-        <View style={{ marginTop: theme.spacing.xl, gap: theme.spacing.md }}>
+        <View style={styles.form}>
           <TextInput
             placeholder="Email"
             placeholderTextColor={theme.colors.placeholder}
@@ -49,15 +47,7 @@ export default function LoginScreen() {
             keyboardType="email-address"
             value={email}
             onChangeText={setEmail}
-            style={{
-              borderWidth: 1,
-              borderColor: theme.colors.inputBorder,
-              backgroundColor: theme.colors.inputBackground,
-              color: theme.colors.text,
-              padding: 12,
-              borderRadius: theme.radius.md,
-              fontSize: 16,
-            }}
+            style={styles.input}
           />
           <TextInput
             placeholder="Password"
@@ -65,43 +55,56 @@ export default function LoginScreen() {
             secureTextEntry
             value={password}
             onChangeText={setPassword}
-            style={{
-              borderWidth: 1,
-              borderColor: theme.colors.inputBorder,
-              backgroundColor: theme.colors.inputBackground,
-              color: theme.colors.text,
-              padding: 12,
-              borderRadius: theme.radius.md,
-              fontSize: 16,
-            }}
+            style={styles.input}
           />
-          {error && <Text style={{ color: theme.colors.danger }}>{error}</Text>}
+          {error && <Text style={styles.error}>{error}</Text>}
           <Pressable
             onPress={onSubmit}
             disabled={loading}
-            style={{
-              backgroundColor: theme.colors.primary,
-              padding: 14,
-              borderRadius: theme.radius.md,
-              alignItems: 'center',
-              opacity: loading ? 0.6 : 1,
-            }}
+            style={[styles.submit, loading && styles.disabled]}
           >
             {loading ? (
               <ActivityIndicator color={theme.colors.onPrimary} />
             ) : (
-              <Text style={{ color: theme.colors.onPrimary, fontWeight: '600' }}>Sign in</Text>
+              <Text style={styles.submitText}>Sign in</Text>
             )}
           </Pressable>
           <Link href="/(auth)/signup" asChild>
             <Pressable>
-              <Text style={{ textAlign: 'center', color: theme.colors.primary }}>
-                No account? Create one
-              </Text>
+              <Text style={styles.link}>No account? Create one</Text>
             </Pressable>
           </Link>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
+}
+
+function makeStyles(theme: Theme) {
+  return StyleSheet.create({
+    screen: { flex: 1, backgroundColor: theme.colors.background },
+    keyboard: { flex: 1, justifyContent: 'center', padding: theme.spacing.xl },
+    title: { fontSize: 28, fontWeight: '700', color: theme.colors.text },
+    subtitle: { marginTop: 4, color: theme.colors.textSecondary },
+    form: { marginTop: theme.spacing.xl, gap: theme.spacing.md },
+    input: {
+      borderWidth: 1,
+      borderColor: theme.colors.inputBorder,
+      backgroundColor: theme.colors.inputBackground,
+      color: theme.colors.text,
+      padding: 12,
+      borderRadius: theme.radius.md,
+      fontSize: 16,
+    },
+    error: { color: theme.colors.danger },
+    submit: {
+      backgroundColor: theme.colors.primary,
+      padding: 14,
+      borderRadius: theme.radius.md,
+      alignItems: 'center',
+    },
+    submitText: { color: theme.colors.onPrimary, fontWeight: '600' },
+    disabled: { opacity: 0.6 },
+    link: { textAlign: 'center', color: theme.colors.primary },
+  });
 }

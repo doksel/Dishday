@@ -1,64 +1,40 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useState } from 'react';
-import { Pressable, SafeAreaView, Text, View } from 'react-native';
-import { useTheme } from '../../src/theme';
+import { Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { useThemedStyles, type Theme } from '../../src/theme';
 
 export default function ScanScreen() {
-  const theme = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [permission, requestPermission] = useCameraPermissions();
   const [code, setCode] = useState<string | null>(null);
   const [scanning, setScanning] = useState(true);
 
   if (!permission) {
     return (
-      <SafeAreaView
-        style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: theme.colors.background,
-        }}
-      >
-        <Text style={{ color: theme.colors.text }}>Loading camera…</Text>
+      <SafeAreaView style={styles.centered}>
+        <Text style={styles.text}>Loading camera…</Text>
       </SafeAreaView>
     );
   }
 
   if (!permission.granted) {
     return (
-      <SafeAreaView
-        style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          padding: theme.spacing.xl,
-          backgroundColor: theme.colors.background,
-        }}
-      >
-        <Text style={{ fontSize: 16, textAlign: 'center', color: theme.colors.text }}>
+      <SafeAreaView style={styles.centeredPadded}>
+        <Text style={styles.permissionText}>
           Dishday needs camera access to scan grocery barcodes.
         </Text>
-        <Pressable
-          onPress={requestPermission}
-          style={{
-            marginTop: theme.spacing.lg,
-            backgroundColor: theme.colors.primary,
-            paddingVertical: 12,
-            paddingHorizontal: 24,
-            borderRadius: theme.radius.md,
-          }}
-        >
-          <Text style={{ color: theme.colors.onPrimary, fontWeight: '600' }}>Grant permission</Text>
+        <Pressable onPress={requestPermission} style={styles.grantBtn}>
+          <Text style={styles.grantBtnText}>Grant permission</Text>
         </Pressable>
       </SafeAreaView>
     );
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
+    <View style={styles.screen}>
       <CameraView
         facing="back"
-        style={{ flex: 1 }}
+        style={styles.camera}
         barcodeScannerSettings={{ barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'qr'] }}
         onBarcodeScanned={
           scanning
@@ -69,17 +45,9 @@ export default function ScanScreen() {
             : undefined
         }
       />
-      <SafeAreaView
-        style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: theme.spacing.xl }}
-      >
-        <View
-          style={{
-            backgroundColor: 'rgba(0,0,0,0.7)',
-            borderRadius: theme.radius.lg,
-            padding: theme.spacing.lg,
-          }}
-        >
-          <Text style={{ color: '#ffffff', fontSize: 16, fontWeight: '600' }}>
+      <SafeAreaView style={styles.bottomBar}>
+        <View style={styles.bottomCard}>
+          <Text style={styles.bottomTitle}>
             {code ? `Scanned: ${code}` : 'Point at a barcode…'}
           </Text>
           {code && (
@@ -88,13 +56,58 @@ export default function ScanScreen() {
                 setCode(null);
                 setScanning(true);
               }}
-              style={{ marginTop: theme.spacing.sm }}
+              style={styles.rescanBtn}
             >
-              <Text style={{ color: '#a5b4fc' }}>Scan another</Text>
+              <Text style={styles.rescanText}>Scan another</Text>
             </Pressable>
           )}
         </View>
       </SafeAreaView>
     </View>
   );
+}
+
+function makeStyles(theme: Theme) {
+  return StyleSheet.create({
+    screen: { flex: 1, backgroundColor: theme.colors.background },
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: theme.colors.background,
+    },
+    centeredPadded: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: theme.spacing.xl,
+      backgroundColor: theme.colors.background,
+    },
+    text: { color: theme.colors.text },
+    permissionText: { fontSize: 16, textAlign: 'center', color: theme.colors.text },
+    grantBtn: {
+      marginTop: theme.spacing.lg,
+      backgroundColor: theme.colors.primary,
+      paddingVertical: 12,
+      paddingHorizontal: 24,
+      borderRadius: theme.radius.md,
+    },
+    grantBtnText: { color: theme.colors.onPrimary, fontWeight: '600' },
+    camera: { flex: 1 },
+    bottomBar: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      padding: theme.spacing.xl,
+    },
+    bottomCard: {
+      backgroundColor: 'rgba(0,0,0,0.7)',
+      borderRadius: theme.radius.lg,
+      padding: theme.spacing.lg,
+    },
+    bottomTitle: { color: '#ffffff', fontSize: 16, fontWeight: '600' },
+    rescanBtn: { marginTop: theme.spacing.sm },
+    rescanText: { color: '#a5b4fc' },
+  });
 }
