@@ -4,14 +4,15 @@ Navigation hub. Each topic lives in its own file under `docs/` so it stays focus
 
 ## Getting started
 
-Start with the [root README](../README.md) for prerequisites, install steps, and the `pnpm dev` flow.
+For first-time setup, start with the [root README](../README.md). Then bookmark **[development.md](./development.md)** — it's what you'll open every morning.
 
 ## Topics
 
 | Doc | Covers |
 | --- | --- |
+| [**Development**](./development.md) | Daily workflow · which terminal runs what · troubleshooting cheatsheet |
 | [**Architecture**](./architecture.md) | Monorepo layout · service boundaries · repository pattern · how to swap the database |
-| [**AI integration**](./ai.md) | Provider abstraction · Claude vs Gemini · meal-plan generation pipeline · Bull queue + worker · cost and rate limits · debugging |
+| [**AI integration**](./ai.md) | Provider abstraction · Claude vs Gemini vs Mock · meal-plan generation pipeline · Bull queue + worker · cost and rate limits · debugging |
 
 ## Coming next (TODO)
 

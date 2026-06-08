@@ -58,32 +58,49 @@ dishday/
 4. Make sure **Auth → Email** is enabled (or any OAuth providers you want).
 5. (Optional) Create a Storage bucket `recipe-images` if you plan to use Supabase Storage for uploads.
 
-## Getting started
+## First-time setup
 
 ```bash
 # 1. Install workspaces
-pnpm install
+npm install --legacy-peer-deps
 
 # 2. Configure environment
 cp .env.example .env
-# → fill in SUPABASE_*, DATABASE_URL, JWT_SECRET, ANTHROPIC_API_KEY, STRIPE_*, REDIS_URL
+# fill in: SUPABASE_*, DATABASE_URL, DIRECT_URL, JWT_SECRET, REDIS_URL
+# (ANTHROPIC_API_KEY / GEMINI_API_KEY optional — MockProvider used otherwise)
 
-# 3. Start Redis locally (skip if you already have one running)
-docker run -d --name dishday-redis -p 6379:6379 redis:7
+# 3. Symlink .env into the API service so Prisma CLI finds it
+ln -sf $(pwd)/.env services/api/.env
 
-# 4. Initialise the database via Prisma (against Supabase Postgres)
-pnpm db:generate    # generate Prisma client
-pnpm db:migrate     # create + apply dev migration
-pnpm db:seed        # load sample recipes
-
-# 5. Start everything in parallel
-pnpm dev
-
-# 6. (in a separate terminal) start the AI worker
-npm run worker -w @dishday/api
+# 4. Initialise the database
+npm run db:generate
+npm run db:migrate
+npm run db:seed       # 18 demo recipes with food images
 ```
 
-After `pnpm dev` you'll have:
+## Daily startup — 4 terminals
+
+> 📖 Full workflow + troubleshooting in **[docs/development.md](./docs/development.md)**
+
+```bash
+# Terminal 1 — Redis (once; auto-starts on login afterwards)
+brew services start redis
+
+# Terminal 2 — Express API on :4000
+npm run dev -w @dishday/api
+
+# Terminal 3 — AI Worker (consumes Bull queue)
+npm run worker -w @dishday/api
+
+# Terminal 4 — Mobile (Expo CLI; press i / a / w)
+cd apps/mobile && npx expo start
+```
+
+Optional — web + admin in parallel via Turborepo:
+
+```bash
+npm run dev   # turbo: web :3000 · admin :3001 · api :4000
+```
 
 | App    | URL                          |
 | ------ | ---------------------------- |
@@ -91,13 +108,6 @@ After `pnpm dev` you'll have:
 | Admin  | http://localhost:3001        |
 | API    | http://localhost:4000        |
 | Health | http://localhost:4000/health |
-
-For mobile, in a separate terminal:
-
-```bash
-pnpm --filter @dishday/mobile dev
-# then press i / a / w in the Expo CLI
-```
 
 ## Useful scripts
 
