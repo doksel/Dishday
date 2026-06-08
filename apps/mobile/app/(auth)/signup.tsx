@@ -1,12 +1,12 @@
 import { Link } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Screen } from '../../src/components/Screen';
+import { Button, Input, Text } from '../../src/components/ui';
 import { supabase } from '../../src/lib/supabase';
-import { useTheme, useThemedStyles, type Theme } from '../../src/theme';
+import { useThemedStyles, type Theme } from '../../src/theme';
 
 export default function SignupScreen() {
-  const theme = useTheme();
   const styles = useThemedStyles(makeStyles);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -15,7 +15,8 @@ export default function SignupScreen() {
   const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // TODO: Set up email confirmation and password reset flows in Supabase and handle them here https://supabase.com/dashboard/project/[project_id]/auth/smtp
+  // TODO: Set up email confirmation and password reset flows in Supabase and handle them here
+  // https://supabase.com/dashboard/project/[project_id]/auth/smtp
   async function onSubmit() {
     setError(null);
     setInfo(null);
@@ -32,50 +33,35 @@ export default function SignupScreen() {
 
   return (
     <Screen variant="keyboard" centered>
-      <Text style={styles.title}>Create your account</Text>
+      <Text variant="displayLg">Create your account</Text>
+      <Text variant="bodyMd" color="textSecondary" style={styles.subtitle}>
+        A few seconds — and you're cooking.
+      </Text>
 
       <View style={styles.form}>
-        <TextInput
-          placeholder="Name"
-          placeholderTextColor={theme.colors.placeholder}
-          value={name}
-          onChangeText={setName}
-          style={styles.input}
-        />
-        <TextInput
-          placeholder="Email"
-          placeholderTextColor={theme.colors.placeholder}
+        <Input label="Name" placeholder="Your name" value={name} onChangeText={setName} />
+        <Input
+          label="Email"
+          placeholder="you@example.com"
           autoCapitalize="none"
           keyboardType="email-address"
+          autoComplete="email"
           value={email}
           onChangeText={setEmail}
-          style={styles.input}
         />
-        <TextInput
-          placeholder="Password"
-          placeholderTextColor={theme.colors.placeholder}
+        <Input
+          label="Password"
+          placeholder="At least 8 characters"
           secureTextEntry
+          autoComplete="new-password"
           value={password}
           onChangeText={setPassword}
-          style={styles.input}
+          error={error ?? undefined}
+          helperText={info ?? undefined}
         />
-        {error && <Text style={styles.error}>{error}</Text>}
-        {info && <Text style={styles.info}>{info}</Text>}
-        <Pressable
-          onPress={onSubmit}
-          disabled={loading}
-          style={[styles.submit, loading && styles.disabled]}
-        >
-          {loading ? (
-            <ActivityIndicator color={theme.colors.onPrimary} />
-          ) : (
-            <Text style={styles.submitText}>Create account</Text>
-          )}
-        </Pressable>
+        <Button label="Create account" onPress={onSubmit} loading={loading} fullWidth size="lg" />
         <Link href="/(auth)/login" asChild>
-          <Pressable>
-            <Text style={styles.link}>Already have an account? Sign in</Text>
-          </Pressable>
+          <Button label="Already have an account? Sign in" variant="ghost" fullWidth />
         </Link>
       </View>
     </Screen>
@@ -84,27 +70,7 @@ export default function SignupScreen() {
 
 function makeStyles(theme: Theme) {
   return StyleSheet.create({
-    title: { fontSize: 28, fontWeight: '700', color: theme.colors.text },
+    subtitle: { marginTop: theme.spacing.xs },
     form: { marginTop: theme.spacing.xl, gap: theme.spacing.md },
-    input: {
-      borderWidth: 1,
-      borderColor: theme.colors.inputBorder,
-      backgroundColor: theme.colors.inputBackground,
-      color: theme.colors.text,
-      padding: 12,
-      borderRadius: theme.radius.md,
-      fontSize: 16,
-    },
-    error: { color: theme.colors.danger },
-    info: { color: theme.colors.success },
-    submit: {
-      backgroundColor: theme.colors.primary,
-      padding: 14,
-      borderRadius: theme.radius.md,
-      alignItems: 'center',
-    },
-    submitText: { color: theme.colors.onPrimary, fontWeight: '600' },
-    disabled: { opacity: 0.6 },
-    link: { textAlign: 'center', color: theme.colors.primary },
   });
 }

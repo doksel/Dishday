@@ -127,8 +127,8 @@ export default function RecipesScreen() {
 function makeStyles(theme: Theme) {
   return StyleSheet.create({
     headerWrap: {
-      paddingHorizontal: theme.spacing.xl,
-      paddingTop: theme.spacing.xl,
+      paddingHorizontal: theme.spacing.md,
+      paddingTop: theme.spacing.lg,
       paddingBottom: theme.spacing.md,
       gap: theme.spacing.md,
     },
@@ -153,7 +153,7 @@ function makeStyles(theme: Theme) {
     chipActive: { backgroundColor: theme.colors.primary },
     chipText: { fontSize: 13, color: theme.colors.textSecondary, fontWeight: '500' },
     chipTextActive: { fontSize: 13, color: theme.colors.onPrimary, fontWeight: '600' },
-    list: { padding: theme.spacing.xl, paddingTop: 0 },
+    list: { padding: theme.spacing.md, paddingTop: 0 },
     separator: { height: theme.spacing.sm },
     loaderRow: { paddingVertical: theme.spacing.xl, alignItems: 'center' },
     error: { color: theme.colors.danger, paddingHorizontal: theme.spacing.xl },

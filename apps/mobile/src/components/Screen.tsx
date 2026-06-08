@@ -12,12 +12,20 @@ import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 import { useTheme, useThemedStyles, type Theme } from '../theme';
 
 type SpacingKey = keyof Theme['spacing'];
+type SpacingValue = SpacingKey | 'none';
 
 export interface ScreenProps {
   /** Container variant. Default `'view'`. */
   variant?: 'scroll' | 'view' | 'keyboard';
-  /** Padding applied to the content area. Default `'xl'`. Set `'none'` to disable. */
-  padding?: SpacingKey | 'none';
+  /**
+   * Shorthand for `paddingX` and `paddingY`. If set, applies to both axes.
+   * Individual `paddingX` / `paddingY` props take precedence.
+   */
+  padding?: SpacingValue;
+  /** Horizontal padding. Default `'md'` (16px). */
+  paddingX?: SpacingValue;
+  /** Vertical padding. Default `'lg'` (24px). */
+  paddingY?: SpacingValue;
   /** Vertical gap between direct children. */
   gap?: SpacingKey;
   /** Vertically center the content (mostly useful with `keyboard` variant). */
@@ -30,16 +38,20 @@ export interface ScreenProps {
 }
 
 /**
- * Common screen scaffold: a `SafeAreaView` background + a content container
+ * Common screen scaffold: `SafeAreaView` background + a content container
  * that switches between `ScrollView`, `KeyboardAvoidingView`, or plain `View`
- * based on `variant`. All padding/gap values come from the theme's spacing scale.
+ * based on `variant`.
  *
- * Uses `react-native-safe-area-context`'s `SafeAreaView` (the built-in one
- * from `react-native` is deprecated).
+ * Padding model:
+ *   - `paddingX` defaults to `md` (16px)
+ *   - `paddingY` defaults to `lg` (24px)
+ *   - `padding` is a shorthand that sets both; per-axis props override it.
  */
 export function Screen({
   variant = 'view',
-  padding = 'xl',
+  padding,
+  paddingX,
+  paddingY,
   gap,
   centered = false,
   edges = ['top', 'bottom'],
@@ -49,8 +61,12 @@ export function Screen({
   const theme = useTheme();
   const styles = useThemedStyles(makeStyles);
 
+  const px = paddingX ?? padding ?? 'md';
+  const py = paddingY ?? padding ?? 'lg';
+
   const contentStyle: StyleProp<ViewStyle> = [
-    padding !== 'none' && { padding: theme.spacing[padding] },
+    px !== 'none' && { paddingHorizontal: theme.spacing[px] },
+    py !== 'none' && { paddingVertical: theme.spacing[py] },
     gap !== undefined && { gap: theme.spacing[gap] },
     centered && styles.centered,
     style,

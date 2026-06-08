@@ -1,12 +1,12 @@
 import { Link } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Screen } from '../../src/components/Screen';
+import { Button, Input, Text } from '../../src/components/ui';
 import { supabase } from '../../src/lib/supabase';
-import { useTheme, useThemedStyles, type Theme } from '../../src/theme';
+import { useThemedStyles, type Theme } from '../../src/theme';
 
 export default function LoginScreen() {
-  const theme = useTheme();
   const styles = useThemedStyles(makeStyles);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,43 +23,33 @@ export default function LoginScreen() {
 
   return (
     <Screen variant="keyboard" centered>
-      <Text style={styles.title}>Welcome back</Text>
-      <Text style={styles.subtitle}>Sign in to your Dishday account.</Text>
+      <Text variant="displayLg">Welcome back</Text>
+      <Text variant="bodyMd" color="textSecondary" style={styles.subtitle}>
+        Sign in to your Dishday account.
+      </Text>
 
       <View style={styles.form}>
-        <TextInput
-          placeholder="Email"
-          placeholderTextColor={theme.colors.placeholder}
+        <Input
+          label="Email"
+          placeholder="you@example.com"
           autoCapitalize="none"
           keyboardType="email-address"
+          autoComplete="email"
           value={email}
           onChangeText={setEmail}
-          style={styles.input}
         />
-        <TextInput
-          placeholder="Password"
-          placeholderTextColor={theme.colors.placeholder}
+        <Input
+          label="Password"
+          placeholder="••••••••"
           secureTextEntry
+          autoComplete="current-password"
           value={password}
           onChangeText={setPassword}
-          style={styles.input}
+          error={error ?? undefined}
         />
-        {error && <Text style={styles.error}>{error}</Text>}
-        <Pressable
-          onPress={onSubmit}
-          disabled={loading}
-          style={[styles.submit, loading && styles.disabled]}
-        >
-          {loading ? (
-            <ActivityIndicator color={theme.colors.onPrimary} />
-          ) : (
-            <Text style={styles.submitText}>Sign in</Text>
-          )}
-        </Pressable>
+        <Button label="Sign in" onPress={onSubmit} loading={loading} fullWidth size="lg" />
         <Link href="/(auth)/signup" asChild>
-          <Pressable>
-            <Text style={styles.link}>No account? Create one</Text>
-          </Pressable>
+          <Button label="No account? Create one" variant="ghost" fullWidth />
         </Link>
       </View>
     </Screen>
@@ -68,27 +58,7 @@ export default function LoginScreen() {
 
 function makeStyles(theme: Theme) {
   return StyleSheet.create({
-    title: { fontSize: 28, fontWeight: '700', color: theme.colors.text },
-    subtitle: { marginTop: 4, color: theme.colors.textSecondary },
+    subtitle: { marginTop: theme.spacing.xs },
     form: { marginTop: theme.spacing.xl, gap: theme.spacing.md },
-    input: {
-      borderWidth: 1,
-      borderColor: theme.colors.inputBorder,
-      backgroundColor: theme.colors.inputBackground,
-      color: theme.colors.text,
-      padding: 12,
-      borderRadius: theme.radius.md,
-      fontSize: 16,
-    },
-    error: { color: theme.colors.danger },
-    submit: {
-      backgroundColor: theme.colors.primary,
-      padding: 14,
-      borderRadius: theme.radius.md,
-      alignItems: 'center',
-    },
-    submitText: { color: theme.colors.onPrimary, fontWeight: '600' },
-    disabled: { opacity: 0.6 },
-    link: { textAlign: 'center', color: theme.colors.primary },
   });
 }

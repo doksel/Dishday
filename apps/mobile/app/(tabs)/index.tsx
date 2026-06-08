@@ -1,10 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import type { MealPlan, MealType } from '@dishday/types';
 import { dayOfWeekMondayFirst, weekStartIso } from '@dishday/utils';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { Screen } from '../../src/components/Screen';
+import { Card, Text } from '../../src/components/ui';
 import { getApi } from '../../src/lib/api';
-import { useThemedStyles, useTheme, type Theme } from '../../src/theme';
+import { useTheme, useThemedStyles, type Theme } from '../../src/theme';
 
 const SLOTS: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
 const SLOT_LABEL: Record<MealType, string> = {
@@ -31,8 +32,16 @@ export default function TodayScreen() {
 
   return (
     <Screen variant="scroll" gap="md">
-      <Text style={styles.title}>Today</Text>
-      <Text style={styles.subtitle}>{now.toLocaleDateString()}</Text>
+      <View>
+        <Text variant="displayLg">Today</Text>
+        <Text variant="bodyMd" color="textSecondary">
+          {now.toLocaleDateString(undefined, {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+          })}
+        </Text>
+      </View>
 
       {isLoading && (
         <View style={styles.loaderRow}>
@@ -41,33 +50,41 @@ export default function TodayScreen() {
       )}
 
       {error && (
-        <Text style={styles.error}>Could not load today's plan: {(error as Error).message}</Text>
+        <Text variant="bodyMd" color="danger">
+          Could not load today's plan: {(error as Error).message}
+        </Text>
       )}
 
       {!isLoading && !plan && (
-        <View style={styles.card}>
-          <Text style={styles.cardMutedBody}>
+        <Card elevation={1}>
+          <Text variant="bodyMd" color="textSecondary">
             No plan for this week yet. Open the Planner tab to create one.
           </Text>
-        </View>
+        </Card>
       )}
 
       {plan &&
         SLOTS.map((slot) => {
           const entry = plan.entries?.find((e) => e.dayOfWeek === dow && e.mealType === slot);
           return (
-            <View key={slot} style={styles.card}>
-              <Text style={styles.slotLabel}>{SLOT_LABEL[slot].toUpperCase()}</Text>
-              <Text style={entry ? styles.slotTitle : styles.slotTitleEmpty}>
+            <Card key={slot} elevation={1}>
+              <Text variant="labelSm" color="textMuted">
+                {SLOT_LABEL[slot].toUpperCase()}
+              </Text>
+              <Text
+                variant="headlineMd"
+                color={entry ? 'text' : 'textMuted'}
+                style={styles.slotTitle}
+              >
                 {entry?.recipe?.title ?? '—'}
               </Text>
               {entry?.recipe?.caloriesPerServing != null && (
-                <Text style={styles.slotMeta}>
+                <Text variant="bodyMd" color="textSecondary" style={styles.slotMeta}>
                   {Math.round(entry.recipe.caloriesPerServing)} kcal · {entry.servings} serving
                   {entry.servings === 1 ? '' : 's'}
                 </Text>
               )}
-            </View>
+            </Card>
           );
         })}
     </Screen>
@@ -76,21 +93,8 @@ export default function TodayScreen() {
 
 function makeStyles(theme: Theme) {
   return StyleSheet.create({
-    title: { fontSize: 28, fontWeight: '700', color: theme.colors.text },
-    subtitle: { color: theme.colors.textSecondary },
     loaderRow: { paddingVertical: theme.spacing.xl, alignItems: 'center' },
-    error: { color: theme.colors.danger },
-    card: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: theme.radius.lg,
-      padding: theme.spacing.lg,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-    },
-    cardMutedBody: { color: theme.colors.textSecondary },
-    slotLabel: { fontSize: 12, color: theme.colors.textMuted },
-    slotTitle: { marginTop: 4, fontSize: 16, fontWeight: '600', color: theme.colors.text },
-    slotTitleEmpty: { marginTop: 4, fontSize: 16, fontWeight: '600', color: theme.colors.textMuted },
-    slotMeta: { marginTop: 4, fontSize: 12, color: theme.colors.textSecondary },
+    slotTitle: { marginTop: theme.spacing.base },
+    slotMeta: { marginTop: theme.spacing.base },
   });
 }

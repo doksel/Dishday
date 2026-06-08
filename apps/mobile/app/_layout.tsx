@@ -1,5 +1,16 @@
+import {
+  PlusJakartaSans_600SemiBold,
+  PlusJakartaSans_700Bold,
+  useFonts as usePlusJakartaSans,
+} from '@expo-google-fonts/plus-jakarta-sans';
+import {
+  WorkSans_400Regular,
+  WorkSans_500Medium,
+  WorkSans_600SemiBold,
+} from '@expo-google-fonts/work-sans';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack, useRouter, useSegments } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -7,6 +18,9 @@ import { supabase } from '../src/lib/supabase';
 import { ThemeProvider, useTheme } from '../src/theme';
 
 const queryClient = new QueryClient();
+
+// Keep the splash screen visible until fonts are ready.
+SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
 function AppShell() {
   const theme = useTheme();
@@ -47,6 +61,20 @@ function AppShell() {
 }
 
 export default function RootLayout() {
+  const [fontsLoaded] = usePlusJakartaSans({
+    PlusJakartaSans_600SemiBold,
+    PlusJakartaSans_700Bold,
+    WorkSans_400Regular,
+    WorkSans_500Medium,
+    WorkSans_600SemiBold,
+  });
+
+  useEffect(() => {
+    if (fontsLoaded) SplashScreen.hideAsync().catch(() => undefined);
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) return null;
+
   return (
     <SafeAreaProvider>
       <ThemeProvider>

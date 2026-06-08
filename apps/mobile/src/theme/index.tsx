@@ -8,126 +8,264 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { Appearance, type ColorSchemeName } from 'react-native';
+import { Appearance, type ColorSchemeName, type TextStyle } from 'react-native';
 
 // ─── Tokens ───────────────────────────────────────────────
+// Palette: Organic Modernist (Sage Green + Cream + Terracotta).
+// Generated from Material 3 tokens; see docs/design-system.md.
 
 export interface ThemeColors {
-  // backgrounds
-  background: string;
-  surface: string;
-  surfaceVariant: string;
+  // Surfaces (cream → white tonal layering)
+  background: string; // base — cream
+  surface: string; // cards — white
+  surfaceVariant: string; // alternate surface
+  surfaceContainer: string;
+  surfaceContainerHigh: string;
 
-  // text
-  text: string;
-  textSecondary: string;
-  textMuted: string;
-  textInverse: string;
+  // Text on surfaces
+  text: string; // on-surface
+  textSecondary: string; // on-surface-variant
+  textMuted: string; // outline / lighter
+  textInverse: string; // for use over dark surfaces
 
-  // brand
+  // Brand (Sage)
   primary: string;
-  primaryHover: string;
   onPrimary: string;
+  primaryContainer: string;
+  onPrimaryContainer: string;
+  /** 10% opacity Sage — for chip backgrounds, subtle tints */
+  primaryTint: string;
 
-  // semantic
+  // Accent (Terracotta)
+  tertiary: string;
+  onTertiary: string;
+  tertiaryContainer: string;
+  onTertiaryContainer: string;
+
+  // Semantic
   success: string;
   danger: string;
   warning: string;
 
-  // borders
-  border: string;
-  borderStrong: string;
+  // Borders / outlines
+  border: string; // outline-variant
+  borderStrong: string; // outline
 
-  // inputs
+  // Inputs
   inputBackground: string;
   inputBorder: string;
   placeholder: string;
 
-  // tab bar
+  // Tab bar
   tabBarBackground: string;
   tabBarActive: string;
   tabBarInactive: string;
   tabBarBorder: string;
 }
 
+export interface ThemeTypography {
+  displayLg: TextStyle;
+  headlineLg: TextStyle;
+  headlineMd: TextStyle;
+  bodyLg: TextStyle;
+  bodyMd: TextStyle;
+  labelLg: TextStyle;
+  labelSm: TextStyle;
+}
+
+export interface ThemeSpacing {
+  base: number;
+  xs: number;
+  sm: number;
+  md: number;
+  lg: number;
+  xl: number;
+  containerMargin: number;
+  gutter: number;
+}
+
+export interface ThemeRadius {
+  sm: number;
+  md: number;
+  lg: number;
+  xl: number;
+  full: number;
+}
+
 export interface Theme {
   name: 'light' | 'dark';
   colors: ThemeColors;
-  spacing: { xs: number; sm: number; md: number; lg: number; xl: number };
-  radius: { sm: number; md: number; lg: number; full: number };
+  typography: ThemeTypography;
+  spacing: ThemeSpacing;
+  radius: ThemeRadius;
 }
 
-const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24 };
-const radius = { sm: 6, md: 10, lg: 14, full: 999 };
+const spacing: ThemeSpacing = {
+  base: 4,
+  xs: 8,
+  sm: 12,
+  md: 16,
+  lg: 24,
+  xl: 32,
+  containerMargin: 20,
+  gutter: 12,
+};
+
+const radius: ThemeRadius = {
+  sm: 4,
+  md: 12,
+  lg: 16,
+  xl: 24,
+  full: 9999,
+};
+
+const FONT_HEADING = 'PlusJakartaSans_700Bold';
+const FONT_HEADING_SEMI = 'PlusJakartaSans_600SemiBold';
+const FONT_BODY = 'WorkSans_400Regular';
+const FONT_BODY_MED = 'WorkSans_500Medium';
+const FONT_BODY_SEMI = 'WorkSans_600SemiBold';
+
+const typography: ThemeTypography = {
+  displayLg: {
+    fontFamily: FONT_HEADING,
+    fontSize: 32,
+    fontWeight: '700',
+    lineHeight: 40,
+    letterSpacing: -0.5,
+  },
+  headlineLg: {
+    fontFamily: FONT_HEADING,
+    fontSize: 24,
+    fontWeight: '700',
+    lineHeight: 32,
+    letterSpacing: -0.25,
+  },
+  headlineMd: {
+    fontFamily: FONT_HEADING_SEMI,
+    fontSize: 20,
+    fontWeight: '600',
+    lineHeight: 28,
+  },
+  bodyLg: {
+    fontFamily: FONT_BODY,
+    fontSize: 17,
+    fontWeight: '400',
+    lineHeight: 24,
+  },
+  bodyMd: {
+    fontFamily: FONT_BODY,
+    fontSize: 15,
+    fontWeight: '400',
+    lineHeight: 22,
+  },
+  labelLg: {
+    fontFamily: FONT_BODY_SEMI,
+    fontSize: 13,
+    fontWeight: '600',
+    lineHeight: 18,
+    letterSpacing: 0.15,
+  },
+  labelSm: {
+    fontFamily: FONT_BODY_MED,
+    fontSize: 11,
+    fontWeight: '500',
+    lineHeight: 16,
+  },
+};
+
+// ─── Light theme ──────────────────────────────────────────
 
 export const lightTheme: Theme = {
   name: 'light',
   colors: {
-    background: '#fafafa',
+    background: '#fcf8fb',
     surface: '#ffffff',
-    surfaceVariant: '#f4f4f5',
+    surfaceVariant: '#f6f3f5',
+    surfaceContainer: '#f0edef',
+    surfaceContainerHigh: '#eae7ea',
 
-    text: '#18181b',
-    textSecondary: '#52525b',
-    textMuted: '#a1a1aa',
-    textInverse: '#ffffff',
+    text: '#1b1b1d',
+    textSecondary: '#3e4942',
+    textMuted: '#6e7a72',
+    textInverse: '#f3f0f2',
 
-    primary: '#4f46e5',
-    primaryHover: '#4338ca',
+    primary: '#006c48',
     onPrimary: '#ffffff',
+    primaryContainer: '#4caf82',
+    onPrimaryContainer: '#003d27',
+    primaryTint: 'rgba(0, 108, 72, 0.10)',
 
-    success: '#059669',
-    danger: '#dc2626',
-    warning: '#d97706',
+    tertiary: '#9a4523',
+    onTertiary: '#ffffff',
+    tertiaryContainer: '#e8825a',
+    onTertiaryContainer: '#621e00',
 
-    border: '#e4e4e7',
-    borderStrong: '#d4d4d8',
+    success: '#006c48',
+    danger: '#ba1a1a',
+    warning: '#9a4523',
 
-    inputBackground: '#ffffff',
-    inputBorder: '#d4d4d8',
-    placeholder: '#a1a1aa',
+    border: '#bdcac0',
+    borderStrong: '#6e7a72',
+
+    inputBackground: '#f6f3f5',
+    inputBorder: '#bdcac0',
+    placeholder: '#6e7a72',
 
     tabBarBackground: '#ffffff',
-    tabBarActive: '#4f46e5',
-    tabBarInactive: '#71717a',
-    tabBarBorder: '#e4e4e7',
+    tabBarActive: '#006c48',
+    tabBarInactive: '#6e7a72',
+    tabBarBorder: '#bdcac0',
   },
+  typography,
   spacing,
   radius,
 };
 
+// ─── Dark theme ───────────────────────────────────────────
+// Derived from Material 3 dark-mode pairings of the same source palette.
+
 export const darkTheme: Theme = {
   name: 'dark',
   colors: {
-    background: '#09090b',
-    surface: '#18181b',
-    surfaceVariant: '#27272a',
+    background: '#101412',
+    surface: '#1a1f1c',
+    surfaceVariant: '#222825',
+    surfaceContainer: '#262d29',
+    surfaceContainerHigh: '#2b3431',
 
-    text: '#fafafa',
-    textSecondary: '#a1a1aa',
-    textMuted: '#71717a',
-    textInverse: '#18181b',
+    text: '#e4e2e4',
+    textSecondary: '#bdcac0',
+    textMuted: '#8b9990',
+    textInverse: '#1b1b1d',
 
-    primary: '#818cf8',
-    primaryHover: '#a5b4fc',
-    onPrimary: '#1e1b4b',
+    primary: '#77d9a9',
+    onPrimary: '#003d27',
+    primaryContainer: '#005236',
+    onPrimaryContainer: '#93f6c4',
+    primaryTint: 'rgba(119, 217, 169, 0.16)',
 
-    success: '#34d399',
-    danger: '#f87171',
-    warning: '#fbbf24',
+    tertiary: '#ffb59a',
+    onTertiary: '#621e00',
+    tertiaryContainer: '#7b2e0d',
+    onTertiaryContainer: '#ffdbcf',
 
-    border: '#27272a',
-    borderStrong: '#3f3f46',
+    success: '#77d9a9',
+    danger: '#ffb4ab',
+    warning: '#ffb59a',
 
-    inputBackground: '#18181b',
-    inputBorder: '#3f3f46',
-    placeholder: '#52525b',
+    border: '#3e4942',
+    borderStrong: '#6e7a72',
 
-    tabBarBackground: '#09090b',
-    tabBarActive: '#818cf8',
-    tabBarInactive: '#71717a',
-    tabBarBorder: '#27272a',
+    inputBackground: '#1a1f1c',
+    inputBorder: '#3e4942',
+    placeholder: '#8b9990',
+
+    tabBarBackground: '#101412',
+    tabBarActive: '#77d9a9',
+    tabBarInactive: '#8b9990',
+    tabBarBorder: '#222825',
   },
+  typography,
   spacing,
   radius,
 };
@@ -150,7 +288,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [preference, setPreferenceState] = useState<ThemePreference>('system');
   const [systemScheme, setSystemScheme] = useState<ColorSchemeName>(Appearance.getColorScheme());
 
-  // Load saved preference once on mount
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY)
       .then((v) => {
@@ -159,7 +296,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       .catch(() => undefined);
   }, []);
 
-  // React to OS-level appearance changes
   useEffect(() => {
     const sub = Appearance.addChangeListener(({ colorScheme }) => setSystemScheme(colorScheme));
     return () => sub.remove();
@@ -175,7 +311,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return effective === 'dark' ? darkTheme : lightTheme;
   }, [preference, systemScheme]);
 
-  const value = useMemo(() => ({ theme, preference, setPreference }), [theme, preference, setPreference]);
+  const value = useMemo(
+    () => ({ theme, preference, setPreference }),
+    [theme, preference, setPreference],
+  );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
@@ -194,19 +333,9 @@ export function useThemePreference() {
 
 /**
  * Theme-aware StyleSheet hook.
- * Pass a `makeStyles(theme)` factory (defined at module scope so its reference
- * is stable). Returns a memoised StyleSheet that's regenerated only when the
- * theme changes.
- *
- * ```tsx
- * const styles = useThemedStyles(makeStyles);
- *
- * function makeStyles(theme: Theme) {
- *   return StyleSheet.create({
- *     container: { flex: 1, backgroundColor: theme.colors.background },
- *   });
- * }
- * ```
+ * `makeStyles(theme)` factory should be defined at module scope so its
+ * reference stays stable. Returns a memoised StyleSheet regenerated only
+ * when the theme changes.
  */
 export function useThemedStyles<T>(factory: (theme: Theme) => T): T {
   const theme = useTheme();

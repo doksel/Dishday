@@ -18,6 +18,8 @@
     "@dishday/api-client": "*",
     "@dishday/types": "*",
     "@dishday/utils": "*",
+    "@expo-google-fonts/plus-jakarta-sans": "^0.4.0",
+    "@expo-google-fonts/work-sans": "^0.4.0",
     "@expo/metro-runtime": "^55.0.11",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@supabase/supabase-js": "^2.47.10",
