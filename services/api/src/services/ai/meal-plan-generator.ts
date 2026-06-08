@@ -32,6 +32,10 @@ const planSchema = z.object({
             proteinG: z.number(),
             carbsG: z.number(),
             fatG: z.number(),
+            prepTimeMin: z.number().int().nonnegative().optional(),
+            cookTimeMin: z.number().int().nonnegative().optional(),
+            tags: z.array(z.string()).optional(),
+            cuisine: z.string().optional(),
             ingredients: z.array(
               z.object({
                 name: z.string(),
@@ -62,6 +66,10 @@ Output STRICT JSON matching this schema (no prose, no markdown):
           "description": "string",
           "calories": number,
           "proteinG": number, "carbsG": number, "fatG": number,
+          "prepTimeMin": number,   // minutes of prep
+          "cookTimeMin": number,   // minutes of cooking
+          "cuisine": "italian|asian|american|mediterranean|...",
+          "tags": ["vegan"|"vegetarian"|"gluten-free"|"high-protein"|"quick"|"easy"|"spicy"|"comfort"],
           "ingredients": [{"name": "string", "quantity": number, "unit": "g|ml|cup|tbsp|piece"}]
         }
       ]

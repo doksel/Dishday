@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
-import { useThemedStyles, type Theme } from '../../theme';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme, useThemedStyles, type Theme } from '../../theme';
 import { Text } from './Text';
 
 export type ChipVariant = 'tint' | 'solid' | 'outline';
@@ -10,6 +11,8 @@ export interface ChipProps {
   /** Sage by default. Set `'tertiary'` for terracotta accent. */
   tone?: 'primary' | 'tertiary' | 'neutral';
   selected?: boolean;
+  /** Optional Ionicons name rendered before the label. */
+  iconName?: React.ComponentProps<typeof Ionicons>['name'];
   onPress?: () => void;
   style?: StyleProp<ViewStyle>;
 }
@@ -17,15 +20,18 @@ export interface ChipProps {
 /**
  * Pill-shaped tag. By default uses a 10% Primary tint background with dark
  * Primary text — matches the design system's "Vegan/Gluten-Free" chip spec.
+ * Pass `iconName` to render a small icon before the label.
  */
 export function Chip({
   label,
   variant = 'tint',
   tone = 'primary',
   selected = false,
+  iconName,
   onPress,
   style,
 }: ChipProps) {
+  const theme = useTheme();
   const styles = useThemedStyles(makeStyles);
 
   const containerStyle = [
@@ -35,28 +41,34 @@ export function Chip({
     style,
   ];
 
-  const labelColor =
+  const labelColor: keyof Theme['colors'] =
     selected && variant !== 'solid'
       ? 'onPrimary'
       : variant === 'solid'
-      ? tone === 'tertiary'
-        ? 'onTertiary'
-        : 'onPrimary'
-      : tone === 'tertiary'
-      ? 'tertiary'
-      : tone === 'neutral'
-      ? 'textSecondary'
-      : 'primary';
+        ? tone === 'tertiary'
+          ? 'onTertiary'
+          : 'onPrimary'
+        : tone === 'tertiary'
+          ? 'tertiary'
+          : tone === 'neutral'
+            ? 'textSecondary'
+            : 'primary';
 
   const content = (
-    <Text variant="labelLg" color={labelColor as never}>
-      {label}
-    </Text>
+    <View style={styles.row}>
+      {iconName ? <Ionicons name={iconName} size={14} color={theme.colors[labelColor]} /> : null}
+      <Text variant="labelLg" color={labelColor}>
+        {label}
+      </Text>
+    </View>
   );
 
   if (onPress) {
     return (
-      <Pressable onPress={onPress} style={({ pressed }) => [...containerStyle, pressed && styles.pressed]}>
+      <Pressable
+        onPress={onPress}
+        style={({ pressed }) => [...containerStyle, pressed && styles.pressed]}
+      >
         {content}
       </Pressable>
     );
@@ -72,6 +84,7 @@ function makeStyles(theme: Theme) {
       borderRadius: theme.radius.full,
       alignSelf: 'flex-start',
     },
+    row: { flexDirection: 'row', alignItems: 'center', gap: 6 },
     pressed: { opacity: 0.85 },
 
     // tint = 10% opacity background, dark text

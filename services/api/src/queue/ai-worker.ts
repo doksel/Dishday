@@ -47,6 +47,12 @@ export function startAiWorker() {
           proteinG: meal.proteinG,
           carbsG: meal.carbsG,
           fatG: meal.fatG,
+          // Fall back to sensible defaults when the model doesn't supply these.
+          prepTimeMin: meal.prepTimeMin ?? defaultPrepTime(meal.mealType),
+          cookTimeMin: meal.cookTimeMin ?? defaultCookTime(meal.mealType),
+          tags:
+            meal.tags && meal.tags.length > 0 ? meal.tags : defaultTags(meal.mealType),
+          cuisine: meal.cuisine ?? null,
           isPublic: false,
           isApproved: true,
           mealType: [meal.mealType],
@@ -76,4 +82,50 @@ export function startAiWorker() {
   );
 
   return aiQueue;
+}
+
+// Defaults used when the AI provider doesn't include these fields in its output.
+function defaultPrepTime(mealType: string): number {
+  switch (mealType) {
+    case 'breakfast':
+      return 5;
+    case 'snack':
+      return 3;
+    case 'lunch':
+      return 10;
+    case 'dinner':
+      return 15;
+    default:
+      return 10;
+  }
+}
+
+function defaultCookTime(mealType: string): number {
+  switch (mealType) {
+    case 'breakfast':
+      return 7;
+    case 'snack':
+      return 0;
+    case 'lunch':
+      return 15;
+    case 'dinner':
+      return 25;
+    default:
+      return 15;
+  }
+}
+
+function defaultTags(mealType: string): string[] {
+  switch (mealType) {
+    case 'breakfast':
+      return ['quick', 'easy'];
+    case 'snack':
+      return ['quick', 'no-cook'];
+    case 'lunch':
+      return ['easy'];
+    case 'dinner':
+      return ['comfort'];
+    default:
+      return ['easy'];
+  }
 }
