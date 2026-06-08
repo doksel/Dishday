@@ -1,8 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { MealPlan, MealType } from '@dishday/types';
+import type { DayOfWeek, MealPlan, MealType, Recipe } from '@dishday/types';
 import { weekStartIso } from '@dishday/utils';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { RecipePickerModal } from '../../src/components/RecipePickerModal';
 import { Screen } from '../../src/components/Screen';
 import { getApi } from '../../src/lib/api';
 import { useThemedStyles, useTheme, type Theme } from '../../src/theme';
@@ -10,13 +11,21 @@ import { useThemedStyles, useTheme, type Theme } from '../../src/theme';
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
 const SLOTS: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
 
+interface PickerTarget {
+  planId: string;
+  dayOfWeek: DayOfWeek;
+  mealType: MealType;
+}
+
 export default function PlannerScreen() {
   const theme = useTheme();
   const styles = useThemedStyles(makeStyles);
   const api = getApi();
   const qc = useQueryClient();
   const week = weekStartIso();
+
   const [pendingJobId, setPendingJobId] = useState<string | null>(null);
+  const [picker, setPicker] = useState<PickerTarget | null>(null);
 
   const plans = useQuery<MealPlan[]>({
     queryKey: ['meal-plans'],
@@ -35,19 +44,38 @@ export default function PlannerScreen() {
     onSuccess: (data) => setPendingJobId(data.jobId),
   });
 
-  // Poll the AI job until completed/failed.
+  const addEntry = useMutation({
+    mutationFn: ({
+      planId,
+      recipeId,
+      dayOfWeek,
+      mealType,
+    }: {
+      planId: string;
+      recipeId: string;
+      dayOfWeek: DayOfWeek;
+      mealType: MealType;
+    }) => api.mealPlans.addEntry(planId, { recipeId, dayOfWeek, mealType }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['meal-plans'] }),
+  });
+
+  const removeEntry = useMutation({
+    mutationFn: ({ planId, entryId }: { planId: string; entryId: string }) =>
+      api.mealPlans.removeEntry(planId, entryId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['meal-plans'] }),
+  });
+
+  // Poll AI job
   const aiJob = useQuery({
     queryKey: ['ai-job', pendingJobId],
     queryFn: () => api.mealPlans.aiJob(pendingJobId!),
     enabled: !!pendingJobId,
     refetchInterval: (q) => {
       const state = q.state.data?.state;
-      if (state === 'completed' || state === 'failed') return false;
-      return 2000;
+      return state === 'completed' || state === 'failed' ? false : 2000;
     },
   });
 
-  // When the job finishes, refresh plans and clear the pending pointer.
   useEffect(() => {
     if (!aiJob.data) return;
     if (aiJob.data.state === 'completed') {
@@ -61,6 +89,33 @@ export default function PlannerScreen() {
   const aiPending =
     aiGenerate.isPending ||
     (pendingJobId !== null && aiJob.data?.state !== 'completed' && aiJob.data?.state !== 'failed');
+
+  function handleSlotPress(dayOfWeek: DayOfWeek, mealType: MealType, occupiedEntryId?: string) {
+    if (!currentPlan) return;
+    if (occupiedEntryId) {
+      Alert.alert('Remove this meal?', 'It will be cleared from the slot.', [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: () => removeEntry.mutate({ planId: currentPlan.id, entryId: occupiedEntryId }),
+        },
+      ]);
+      return;
+    }
+    setPicker({ planId: currentPlan.id, dayOfWeek, mealType });
+  }
+
+  function handlePickRecipe(recipe: Recipe) {
+    if (!picker) return;
+    addEntry.mutate({
+      planId: picker.planId,
+      recipeId: recipe.id,
+      dayOfWeek: picker.dayOfWeek,
+      mealType: picker.mealType,
+    });
+    setPicker(null);
+  }
 
   return (
     <Screen variant="scroll" gap="md">
@@ -103,10 +158,7 @@ export default function PlannerScreen() {
                 {create.isPending ? 'Creating…' : 'Empty plan'}
               </Text>
             </Pressable>
-            <Pressable
-              onPress={() => aiGenerate.mutate()}
-              style={styles.btnSecondary}
-            >
+            <Pressable onPress={() => aiGenerate.mutate()} style={styles.btnSecondary}>
               <Text style={styles.btnSecondaryText}>AI generate</Text>
             </Pressable>
           </View>
@@ -122,19 +174,33 @@ export default function PlannerScreen() {
                 (e) => e.dayOfWeek === dayIdx && e.mealType === slot,
               );
               return (
-                <View
+                <Pressable
                   key={slot}
-                  style={[styles.slotRow, slot !== 'snack' && styles.slotRowDivider]}
+                  onPress={() =>
+                    handleSlotPress(dayIdx as DayOfWeek, slot, entry?.id)
+                  }
+                  style={({ pressed }) => [
+                    styles.slotRow,
+                    slot !== 'snack' && styles.slotRowDivider,
+                    pressed && styles.slotPressed,
+                  ]}
                 >
                   <Text style={styles.slotName}>{slot}</Text>
                   <Text style={entry ? styles.slotEntry : styles.slotEntryEmpty} numberOfLines={1}>
-                    {entry?.recipe?.title ?? '—'}
+                    {entry?.recipe?.title ?? 'Tap to add…'}
                   </Text>
-                </View>
+                </Pressable>
               );
             })}
           </View>
         ))}
+
+      <RecipePickerModal
+        visible={picker !== null}
+        mealType={picker?.mealType}
+        onClose={() => setPicker(null)}
+        onSelect={handlePickRecipe}
+      />
     </Screen>
   );
 }
@@ -182,8 +248,14 @@ function makeStyles(theme: Theme) {
     btnSecondaryText: { color: theme.colors.text, fontWeight: '600' },
     disabled: { opacity: 0.6 },
     dayLabel: { fontSize: 14, fontWeight: '700', color: theme.colors.text },
-    slotRow: { flexDirection: 'row', paddingVertical: 6 },
+    slotRow: {
+      flexDirection: 'row',
+      paddingVertical: 8,
+      paddingHorizontal: 4,
+      borderRadius: theme.radius.sm,
+    },
     slotRowDivider: { borderBottomWidth: 1, borderBottomColor: theme.colors.border },
+    slotPressed: { backgroundColor: theme.colors.surfaceVariant },
     slotName: {
       width: 80,
       fontSize: 12,
@@ -191,6 +263,6 @@ function makeStyles(theme: Theme) {
       textTransform: 'capitalize',
     },
     slotEntry: { flex: 1, fontSize: 14, color: theme.colors.text },
-    slotEntryEmpty: { flex: 1, fontSize: 14, color: theme.colors.textMuted },
+    slotEntryEmpty: { flex: 1, fontSize: 14, color: theme.colors.textMuted, fontStyle: 'italic' },
   });
 }

@@ -1,6 +1,8 @@
 import type {
   AuthSession,
   MealPlan,
+  MealPlanEntry,
+  MealType,
   Paginated,
   Recipe,
   RecipeFilter,
@@ -54,6 +56,12 @@ export function createDishdayApi(client: ApiClient) {
           result: { ok: boolean; resultId?: string } | null;
           failedReason: string | null;
         }>(`/meal-plans/ai/jobs/${jobId}`),
+      addEntry: (
+        planId: string,
+        data: { recipeId: string; dayOfWeek: number; mealType: MealType; servings?: number },
+      ) => client.post<MealPlanEntry>(`/meal-plans/${planId}/entries`, data),
+      removeEntry: (planId: string, entryId: string) =>
+        client.delete<void>(`/meal-plans/${planId}/entries/${entryId}`),
     },
     shoppingLists: {
       forPlan: (planId: string) => client.get<ShoppingList>(`/shopping-lists/${planId}`),
