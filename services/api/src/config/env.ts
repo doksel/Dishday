@@ -39,9 +39,12 @@ const schema = z.object({
   // Auth — internal short-lived service tokens / Supabase JWT secret if used
   JWT_SECRET: z.string().min(32),
 
-  // AI — optional. API starts without it; only /meal-plans/ai/* fails.
+  // AI — optional. API starts without keys; only /meal-plans/ai/* fails.
+  // Priority: Anthropic > Gemini (see services/ai/provider.ts).
   ANTHROPIC_API_KEY: z.string().min(1).optional(),
   ANTHROPIC_MODEL: z.string().default('claude-sonnet-4-20250514'),
+  GEMINI_API_KEY: z.string().min(1).optional(),
+  GEMINI_MODEL: z.string().default('gemini-2.0-flash'),
 
   // Payments
   STRIPE_SECRET_KEY: z.string().min(1).optional(),

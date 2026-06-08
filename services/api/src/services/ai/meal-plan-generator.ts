@@ -1,19 +1,20 @@
 /**
- * Generate a weekly meal plan via Claude.
+ * Generate a weekly meal plan via an `AiProvider`.
  *
  * Pipeline:
  *   1. Build a prompt from the user's profile (allergies, diets, goals…)
- *   2. Call Claude with a strict JSON schema in the system prompt
+ *   2. Call the provider with a strict JSON schema in the system prompt
  *   3. Parse + validate
  *   4. Log token usage / cost
  *   5. Return the structured plan ready to be persisted as MealPlan + MealPlanEntries
+ *
+ * Provider is selected once via `getAiProvider()` — see `provider.ts`.
  */
 
 import { z } from 'zod';
 import type { UserProfile } from '@dishday/types';
-import { env } from '../../config/env.js';
 import type { Repositories } from '../../repositories/interfaces.js';
-import { estimateCostUsd, requireAnthropic } from './anthropic.js';
+import { getAiProvider } from './provider.js';
 
 const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
 
@@ -92,39 +93,33 @@ export async function generateWeeklyPlan(
   repos: Repositories,
   input: GenerateInput,
 ): Promise<GenerateResult> {
+  const provider = getAiProvider();
   const userPrompt = buildUserPrompt(input);
 
   const t0 = Date.now();
-  const response = await requireAnthropic().messages.create({
-    model: env.ANTHROPIC_MODEL,
-    max_tokens: 4096,
-    system: SYSTEM_PROMPT,
-    messages: [{ role: 'user', content: userPrompt }],
+  const completion = await provider.generate({
+    systemPrompt: SYSTEM_PROMPT,
+    userPrompt,
+    maxTokens: 4096,
+    responseFormat: 'json',
   });
   const latencyMs = Date.now() - t0;
 
-  const text = response.content
-    .filter((b): b is Anthropic.TextBlock => b.type === 'text')
-    .map((b) => b.text)
-    .join('');
-
-  // Strip code fences if Claude added any
-  const jsonText = text
+  // Anthropic may wrap output in code fences; Gemini returns raw JSON when responseMimeType set.
+  const jsonText = completion.text
     .replace(/^```(?:json)?\s*/i, '')
     .replace(/```\s*$/i, '')
     .trim();
 
   const parsed = planSchema.parse(JSON.parse(jsonText));
 
-  const tokensUsed = response.usage.input_tokens + response.usage.output_tokens;
-  const costUsd = estimateCostUsd(response.usage.input_tokens, response.usage.output_tokens);
+  const tokensUsed = completion.inputTokens + completion.outputTokens;
 
-  // fire-and-forget log; await for correctness in tests
   await repos.aiUsageLogs.log({
     userId: input.userId,
     type: 'meal_plan',
     tokensUsed,
-    costUsd,
+    costUsd: completion.costUsd,
     latencyMs,
   });
 
@@ -132,12 +127,10 @@ export async function generateWeeklyPlan(
     plan: parsed,
     promptSummary: userPrompt.slice(0, 500),
     tokensUsed,
-    costUsd,
+    costUsd: completion.costUsd,
     latencyMs,
   };
 }
-
-import type Anthropic from '@anthropic-ai/sdk';
 
 function buildUserPrompt({ profile, weekStart }: GenerateInput): string {
   const lines: string[] = [`Generate a 7-day meal plan starting Monday ${weekStart}.`];
@@ -153,7 +146,8 @@ function buildUserPrompt({ profile, weekStart }: GenerateInput): string {
     );
   }
   if (profile.diets.length) lines.push(`Diets: ${profile.diets.join(', ')}.`);
-  if (profile.allergies.length) lines.push(`Allergies (NEVER include): ${profile.allergies.join(', ')}.`);
+  if (profile.allergies.length)
+    lines.push(`Allergies (NEVER include): ${profile.allergies.join(', ')}.`);
   if (profile.dislikedIngredients.length)
     lines.push(`Disliked (avoid): ${profile.dislikedIngredients.join(', ')}.`);
   if (profile.preferredCuisines.length)

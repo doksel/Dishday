@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { MealPlan, MealType } from '@dishday/types';
 import { weekStartIso } from '@dishday/utils';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Screen } from '../../src/components/Screen';
 import { getApi } from '../../src/lib/api';
@@ -15,6 +16,7 @@ export default function PlannerScreen() {
   const api = getApi();
   const qc = useQueryClient();
   const week = weekStartIso();
+  const [pendingJobId, setPendingJobId] = useState<string | null>(null);
 
   const plans = useQuery<MealPlan[]>({
     queryKey: ['meal-plans'],
@@ -30,8 +32,35 @@ export default function PlannerScreen() {
 
   const aiGenerate = useMutation({
     mutationFn: () => api.mealPlans.aiGenerate({ weekStart: week }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['meal-plans'] }),
+    onSuccess: (data) => setPendingJobId(data.jobId),
   });
+
+  // Poll the AI job until completed/failed.
+  const aiJob = useQuery({
+    queryKey: ['ai-job', pendingJobId],
+    queryFn: () => api.mealPlans.aiJob(pendingJobId!),
+    enabled: !!pendingJobId,
+    refetchInterval: (q) => {
+      const state = q.state.data?.state;
+      if (state === 'completed' || state === 'failed') return false;
+      return 2000;
+    },
+  });
+
+  // When the job finishes, refresh plans and clear the pending pointer.
+  useEffect(() => {
+    if (!aiJob.data) return;
+    if (aiJob.data.state === 'completed') {
+      qc.invalidateQueries({ queryKey: ['meal-plans'] });
+      setPendingJobId(null);
+    } else if (aiJob.data.state === 'failed') {
+      setPendingJobId(null);
+    }
+  }, [aiJob.data, qc]);
+
+  const aiPending =
+    aiGenerate.isPending ||
+    (pendingJobId !== null && aiJob.data?.state !== 'completed' && aiJob.data?.state !== 'failed');
 
   return (
     <Screen variant="scroll" gap="md">
@@ -47,7 +76,18 @@ export default function PlannerScreen() {
         <Text style={styles.error}>Could not load plans: {(plans.error as Error).message}</Text>
       )}
 
-      {!plans.isLoading && !currentPlan && (
+      {aiPending && (
+        <View style={styles.banner}>
+          <ActivityIndicator color={theme.colors.onPrimary} />
+          <Text style={styles.bannerText}>Generating your meal plan…</Text>
+        </View>
+      )}
+
+      {aiJob.data?.state === 'failed' && aiJob.data.failedReason && (
+        <Text style={styles.error}>AI generation failed: {aiJob.data.failedReason}</Text>
+      )}
+
+      {!plans.isLoading && !currentPlan && !aiPending && (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>No plan for this week yet</Text>
           <Text style={styles.cardBody}>
@@ -65,12 +105,9 @@ export default function PlannerScreen() {
             </Pressable>
             <Pressable
               onPress={() => aiGenerate.mutate()}
-              disabled={aiGenerate.isPending}
-              style={[styles.btnSecondary, aiGenerate.isPending && styles.disabled]}
+              style={styles.btnSecondary}
             >
-              <Text style={styles.btnSecondaryText}>
-                {aiGenerate.isPending ? 'Queueing…' : 'AI generate'}
-              </Text>
+              <Text style={styles.btnSecondaryText}>AI generate</Text>
             </Pressable>
           </View>
         </View>
@@ -107,6 +144,15 @@ function makeStyles(theme: Theme) {
     title: { fontSize: 28, fontWeight: '700', color: theme.colors.text },
     loaderRow: { paddingVertical: theme.spacing.xl, alignItems: 'center' },
     error: { color: theme.colors.danger },
+    banner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.sm,
+      backgroundColor: theme.colors.primary,
+      padding: theme.spacing.md,
+      borderRadius: theme.radius.md,
+    },
+    bannerText: { color: theme.colors.onPrimary, fontWeight: '600' },
     card: {
       backgroundColor: theme.colors.surface,
       borderRadius: theme.radius.lg,

@@ -31,9 +31,18 @@ export class PrismaMealPlanRepository implements MealPlanRepository {
   }
 
   async listByUser(userId: string): Promise<MealPlan[]> {
+    // Include entries + recipe basics (title, macros) but NOT ingredients —
+    // list view shows only recipe titles in slots; shopping list calls
+    // `findById` separately when it needs the full ingredient breakdown.
     const plans = await this.prisma.mealPlan.findMany({
       where: { userId },
       orderBy: { weekStart: 'desc' },
+      include: {
+        entries: {
+          include: { recipe: true },
+          orderBy: [{ dayOfWeek: 'asc' }, { mealType: 'asc' }],
+        },
+      },
     });
     return plans.map((p) => mealPlanFromPrisma(p));
   }

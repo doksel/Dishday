@@ -1,19 +1,43 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { env } from '../../config/env.js';
+import type { AiCompletion, AiGenerateOptions, AiProvider } from './types.js';
 
-/** Lazy Anthropic client — null when ANTHROPIC_API_KEY is not configured. */
-export const anthropic: Anthropic | null = env.ANTHROPIC_API_KEY
-  ? new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
-  : null;
+// Claude Sonnet 4 pricing (Dec 2024): $3 per 1M input, $15 per 1M output.
+const INPUT_USD_PER_M = 3;
+const OUTPUT_USD_PER_M = 15;
 
-export function requireAnthropic(): Anthropic {
-  if (!anthropic) {
-    throw new Error('Anthropic is not configured (set ANTHROPIC_API_KEY in .env)');
+export class AnthropicProvider implements AiProvider {
+  readonly name = 'anthropic' as const;
+  private readonly client: Anthropic;
+
+  constructor(apiKey: string, readonly model: string) {
+    this.client = new Anthropic({ apiKey });
   }
-  return anthropic;
-}
 
-/** Rough USD cost for claude-sonnet-4 (Dec 2024 pricing: $3 in / $15 out per 1M tokens). */
-export function estimateCostUsd(inputTokens: number, outputTokens: number): number {
-  return (inputTokens / 1_000_000) * 3 + (outputTokens / 1_000_000) * 15;
+  async generate({
+    systemPrompt,
+    userPrompt,
+    maxTokens = 4096,
+  }: AiGenerateOptions): Promise<AiCompletion> {
+    const response = await this.client.messages.create({
+      model: this.model,
+      max_tokens: maxTokens,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userPrompt }],
+    });
+
+    const text = response.content
+      .filter((b): b is Anthropic.TextBlock => b.type === 'text')
+      .map((b) => b.text)
+      .join('');
+
+    const inputTokens = response.usage.input_tokens;
+    const outputTokens = response.usage.output_tokens;
+
+    return {
+      text,
+      inputTokens,
+      outputTokens,
+      costUsd: (inputTokens / 1_000_000) * INPUT_USD_PER_M + (outputTokens / 1_000_000) * OUTPUT_USD_PER_M,
+    };
+  }
 }

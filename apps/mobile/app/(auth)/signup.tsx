@@ -15,6 +15,7 @@ export default function SignupScreen() {
   const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // TODO: Set up email confirmation and password reset flows in Supabase and handle them here https://supabase.com/dashboard/project/[project_id]/auth/smtp
   async function onSubmit() {
     setError(null);
     setInfo(null);

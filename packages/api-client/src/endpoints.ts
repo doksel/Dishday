@@ -45,8 +45,15 @@ export function createDishdayApi(client: ApiClient) {
       list: () => client.get<MealPlan[]>('/meal-plans'),
       get: (id: string) => client.get<MealPlan>(`/meal-plans/${id}`),
       create: (data: Partial<MealPlan>) => client.post<MealPlan>('/meal-plans', data),
-      aiGenerate: (data: { weekStart: string }) =>
-        client.post<MealPlan>('/meal-plans/ai/generate', data),
+      aiGenerate: (data: { weekStart?: string }) =>
+        client.post<{ jobId: string; status: string }>('/meal-plans/ai/generate', data),
+      aiJob: (jobId: string) =>
+        client.get<{
+          id: string;
+          state: 'waiting' | 'active' | 'completed' | 'failed' | 'delayed' | 'paused';
+          result: { ok: boolean; resultId?: string } | null;
+          failedReason: string | null;
+        }>(`/meal-plans/ai/jobs/${jobId}`),
     },
     shoppingLists: {
       forPlan: (planId: string) => client.get<ShoppingList>(`/shopping-lists/${planId}`),
