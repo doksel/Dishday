@@ -2,10 +2,15 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+// Helper: standard Unsplash CDN URL sized for mobile cards.
+const img = (id: string) =>
+  `https://images.unsplash.com/${id}?w=600&h=400&fit=crop&q=80&auto=format`;
+
 interface SeedRecipe {
   title: string;
   slug: string;
   description: string;
+  imageUrl: string;
   prepTimeMin: number;
   cookTimeMin: number;
   servings: number;
@@ -25,6 +30,7 @@ const RECIPES: SeedRecipe[] = [
     title: 'Greek Yogurt Parfait',
     slug: 'greek-yogurt-parfait',
     description: 'Layered Greek yogurt with berries, granola, and honey.',
+    imageUrl: img('photo-1488477181946-6428a0291777'),
     prepTimeMin: 5, cookTimeMin: 0, servings: 1,
     caloriesPerServing: 350, proteinG: 22, carbsG: 45, fatG: 8,
     tags: ['high-protein', 'quick', 'vegetarian'],
@@ -41,6 +47,7 @@ const RECIPES: SeedRecipe[] = [
     title: 'Avocado Toast with Poached Egg',
     slug: 'avocado-toast-poached-egg',
     description: 'Sourdough toast topped with smashed avocado and a poached egg.',
+    imageUrl: img('photo-1525351484163-7529414344d8'),
     prepTimeMin: 5, cookTimeMin: 5, servings: 1,
     caloriesPerServing: 420, proteinG: 18, carbsG: 32, fatG: 24,
     tags: ['vegetarian', 'quick'],
@@ -58,6 +65,7 @@ const RECIPES: SeedRecipe[] = [
     title: 'Oatmeal with Banana & Almonds',
     slug: 'oatmeal-banana-almonds',
     description: 'Rolled oats cooked in milk, topped with banana slices and almonds.',
+    imageUrl: img('photo-1517673400267-0251440c45dc'),
     prepTimeMin: 2, cookTimeMin: 8, servings: 1,
     caloriesPerServing: 380, proteinG: 14, carbsG: 60, fatG: 10,
     tags: ['vegetarian', 'high-fiber'],
@@ -74,6 +82,7 @@ const RECIPES: SeedRecipe[] = [
     title: 'Veggie Scramble',
     slug: 'veggie-scramble',
     description: 'Scrambled eggs with spinach, tomatoes, and feta cheese.',
+    imageUrl: img('photo-1606787366850-de6330128bfc'),
     prepTimeMin: 5, cookTimeMin: 7, servings: 1,
     caloriesPerServing: 340, proteinG: 24, carbsG: 8, fatG: 22,
     tags: ['low-carb', 'vegetarian', 'keto'],
@@ -91,6 +100,7 @@ const RECIPES: SeedRecipe[] = [
     title: 'Berry Smoothie Bowl',
     slug: 'berry-smoothie-bowl',
     description: 'Frozen berries blended with yogurt, topped with chia and coconut.',
+    imageUrl: img('photo-1494390248081-4e521a5940db'),
     prepTimeMin: 7, cookTimeMin: 0, servings: 1,
     caloriesPerServing: 310, proteinG: 12, carbsG: 50, fatG: 9,
     tags: ['vegetarian', 'no-cook'],
@@ -109,6 +119,7 @@ const RECIPES: SeedRecipe[] = [
     title: 'Mediterranean Quinoa Bowl',
     slug: 'mediterranean-quinoa-bowl',
     description: 'Quinoa with chickpeas, cucumber, feta, and lemon dressing.',
+    imageUrl: img('photo-1546069901-ba9599a7e63c'),
     prepTimeMin: 10, cookTimeMin: 15, servings: 1,
     caloriesPerServing: 520, proteinG: 22, carbsG: 65, fatG: 18,
     tags: ['vegetarian', 'high-fiber'],
@@ -127,6 +138,7 @@ const RECIPES: SeedRecipe[] = [
     title: 'Chicken Caesar Wrap',
     slug: 'chicken-caesar-wrap',
     description: 'Grilled chicken, romaine, parmesan and Caesar dressing in a tortilla.',
+    imageUrl: img('photo-1626700051175-6818013e1d4f'),
     prepTimeMin: 5, cookTimeMin: 10, servings: 1,
     caloriesPerServing: 560, proteinG: 35, carbsG: 42, fatG: 26,
     tags: ['high-protein'],
@@ -144,6 +156,7 @@ const RECIPES: SeedRecipe[] = [
     title: 'Tomato Basil Soup with Grilled Cheese',
     slug: 'tomato-basil-soup-grilled-cheese',
     description: 'Creamy tomato soup with a classic cheddar grilled cheese.',
+    imageUrl: img('photo-1547592180-85f173990554'),
     prepTimeMin: 10, cookTimeMin: 20, servings: 1,
     caloriesPerServing: 580, proteinG: 18, carbsG: 60, fatG: 28,
     tags: ['vegetarian', 'comfort'],
@@ -161,6 +174,7 @@ const RECIPES: SeedRecipe[] = [
     title: 'Buddha Bowl',
     slug: 'buddha-bowl',
     description: 'Brown rice, roasted sweet potato, kale, edamame, and tahini drizzle.',
+    imageUrl: img('photo-1512621776951-a57141f2eefd'),
     prepTimeMin: 10, cookTimeMin: 30, servings: 1,
     caloriesPerServing: 540, proteinG: 18, carbsG: 78, fatG: 14,
     tags: ['vegan', 'high-fiber'],
@@ -178,6 +192,7 @@ const RECIPES: SeedRecipe[] = [
     title: 'Tuna Niçoise Salad',
     slug: 'tuna-nicoise-salad',
     description: 'French-style salad with tuna, green beans, potatoes, olives, and egg.',
+    imageUrl: img('photo-1540420773420-3366772f4999'),
     prepTimeMin: 15, cookTimeMin: 15, servings: 1,
     caloriesPerServing: 480, proteinG: 30, carbsG: 32, fatG: 22,
     tags: ['high-protein', 'pescetarian'],
@@ -197,6 +212,7 @@ const RECIPES: SeedRecipe[] = [
     title: 'Salmon with Roasted Vegetables',
     slug: 'salmon-roasted-vegetables',
     description: 'Pan-seared salmon with asparagus and baby potatoes.',
+    imageUrl: img('photo-1467003909585-2f8a72700288'),
     prepTimeMin: 10, cookTimeMin: 25, servings: 1,
     caloriesPerServing: 620, proteinG: 38, carbsG: 42, fatG: 28,
     tags: ['high-protein', 'pescetarian'],
@@ -214,6 +230,7 @@ const RECIPES: SeedRecipe[] = [
     title: 'Spaghetti Bolognese',
     slug: 'spaghetti-bolognese',
     description: 'Classic beef ragù over spaghetti, finished with parmesan.',
+    imageUrl: img('photo-1551892374-ecf8754cf8b0'),
     prepTimeMin: 10, cookTimeMin: 35, servings: 1,
     caloriesPerServing: 680, proteinG: 32, carbsG: 78, fatG: 22,
     tags: ['comfort', 'classic'],
@@ -231,6 +248,7 @@ const RECIPES: SeedRecipe[] = [
     title: 'Thai Green Curry',
     slug: 'thai-green-curry',
     description: 'Chicken in green curry with coconut milk, over jasmine rice.',
+    imageUrl: img('photo-1455619452474-d2be8b1e70cd'),
     prepTimeMin: 15, cookTimeMin: 25, servings: 1,
     caloriesPerServing: 640, proteinG: 30, carbsG: 60, fatG: 26,
     tags: ['spicy'],
@@ -248,6 +266,7 @@ const RECIPES: SeedRecipe[] = [
     title: 'Classic Margherita Pizza',
     slug: 'classic-margherita-pizza',
     description: 'Simple Italian classic with tomato, mozzarella, and fresh basil.',
+    imageUrl: img('photo-1565299624946-b28f40a0ae38'),
     prepTimeMin: 20, cookTimeMin: 12, servings: 2,
     caloriesPerServing: 540, proteinG: 22, carbsG: 65, fatG: 20,
     tags: ['vegetarian', 'classic'],
@@ -264,6 +283,7 @@ const RECIPES: SeedRecipe[] = [
     title: 'Beef Stir-Fry with Broccoli',
     slug: 'beef-stir-fry-broccoli',
     description: 'Tender beef strips stir-fried with broccoli in a garlic-soy sauce.',
+    imageUrl: img('photo-1512058564366-18510be2db19'),
     prepTimeMin: 10, cookTimeMin: 12, servings: 1,
     caloriesPerServing: 560, proteinG: 34, carbsG: 48, fatG: 22,
     tags: ['high-protein', 'quick'],
@@ -283,6 +303,7 @@ const RECIPES: SeedRecipe[] = [
     title: 'Apple with Peanut Butter',
     slug: 'apple-peanut-butter',
     description: 'Sliced apple with a tablespoon of natural peanut butter.',
+    imageUrl: img('photo-1568901839119-aabbc1f78d7e'),
     prepTimeMin: 3, cookTimeMin: 0, servings: 1,
     caloriesPerServing: 220, proteinG: 6, carbsG: 28, fatG: 10,
     tags: ['vegan', 'quick', 'no-cook'],
@@ -297,6 +318,7 @@ const RECIPES: SeedRecipe[] = [
     title: 'Hummus & Veggie Sticks',
     slug: 'hummus-veggie-sticks',
     description: 'Carrots and bell pepper sticks with classic hummus.',
+    imageUrl: img('photo-1593538212469-43c3b9f8b30c'),
     prepTimeMin: 5, cookTimeMin: 0, servings: 1,
     caloriesPerServing: 180, proteinG: 6, carbsG: 22, fatG: 8,
     tags: ['vegan', 'no-cook'],
@@ -312,6 +334,7 @@ const RECIPES: SeedRecipe[] = [
     title: 'Trail Mix',
     slug: 'trail-mix',
     description: 'Nuts, dried fruit, and dark chocolate chips.',
+    imageUrl: img('photo-1599909533321-2d1d2dfdc1d4'),
     prepTimeMin: 2, cookTimeMin: 0, servings: 1,
     caloriesPerServing: 250, proteinG: 7, carbsG: 22, fatG: 16,
     tags: ['vegetarian', 'no-cook', 'energy'],
@@ -332,6 +355,11 @@ async function main() {
     const { ingredients, ...rest } = recipe;
     const existing = await prisma.recipe.findUnique({ where: { slug: rest.slug } });
     if (existing) {
+      // Update imageUrl in case it was added/changed since last seed
+      await prisma.recipe.update({
+        where: { slug: rest.slug },
+        data: { imageUrl: rest.imageUrl },
+      });
       updated += 1;
       continue;
     }
@@ -346,7 +374,7 @@ async function main() {
     });
     created += 1;
   }
-  console.log(`✓ Seed complete — ${created} created, ${updated} already existed`);
+  console.log(`✓ Seed complete — ${created} created, ${updated} updated`);
 }
 
 main()

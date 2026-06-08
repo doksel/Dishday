@@ -2,12 +2,13 @@ import { useQuery } from '@tanstack/react-query';
 import type { DayOfWeek, MealPlan, MealPlanEntry } from '@dishday/types';
 import { dayOfWeekMondayFirst, planWeekDates, weekStartIso } from '@dishday/utils';
 import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   ScrollView,
   StyleSheet,
   View,
+  type LayoutChangeEvent,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppHeader } from '../../src/components/AppHeader';
@@ -36,6 +37,11 @@ export default function HomeScreen() {
   const todayDow = dayOfWeekMondayFirst(today);
   const [selectedDow, setSelectedDow] = useState<DayOfWeek>(todayDow);
 
+  // Refs for scroll-to-section behaviour
+  const scrollRef = useRef<ScrollView>(null);
+  // dayOfWeek → y offset within the ScrollView content
+  const sectionY = useRef<Record<number, number>>({});
+
   const plan = plans.data?.find((p) => p.weekStart === week);
   const entries = plan?.entries ?? [];
   const totalMeals = entries.length;
@@ -51,25 +57,37 @@ export default function HomeScreen() {
     return map;
   }, [entries]);
 
+  function handleDatePress(dow: DayOfWeek) {
+    setSelectedDow(dow);
+    const y = sectionY.current[dow];
+    if (y !== undefined) {
+      scrollRef.current?.scrollTo({ y: Math.max(0, y - 16), animated: true });
+    }
+  }
+
+  function captureSectionY(dow: number) {
+    return (e: LayoutChangeEvent) => {
+      sectionY.current[dow] = e.nativeEvent.layout.y;
+    };
+  }
+
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         <AppHeader
           userName={me.data?.name}
           avatarUrl={me.data?.avatarUrl}
-          onNotificationsPress={() => {
-            // TODO: open notifications screen
-          }}
           onAvatarPress={() => router.push('/(tabs)/profile')}
         />
 
         {/* Hero */}
         <View style={styles.hero}>
           <Text variant="headlineLg">Your Weekly Plan</Text>
-          <Text variant="bodyMd" color="textSecondary" style={styles.heroSubtitle}>
+          <Text variant="bodyMd" color="textSecondary">
             {totalMeals > 0
               ? `You have ${totalMeals} meal${totalMeals === 1 ? '' : 's'} planned for this week. Stay nourished!`
               : "No meals planned yet — pick a recipe to start filling your week."}
@@ -88,7 +106,7 @@ export default function HomeScreen() {
               dayName={date.toLocaleDateString('en', { weekday: 'short' })}
               dayOfMonth={date.getDate()}
               active={idx === selectedDow}
-              onPress={() => setSelectedDow(idx as DayOfWeek)}
+              onPress={() => handleDatePress(idx as DayOfWeek)}
             />
           ))}
         </ScrollView>
@@ -123,7 +141,7 @@ export default function HomeScreen() {
               0,
             );
             return (
-              <View key={dow} style={styles.daySection}>
+              <View key={dow} style={styles.daySection} onLayout={captureSectionY(dow)}>
                 <View style={styles.dayHeader}>
                   <Text variant="headlineMd">
                     {date.toLocaleDateString('en', { weekday: 'long' })}
@@ -139,9 +157,10 @@ export default function HomeScreen() {
                       imageUrl={entry.recipe?.imageUrl}
                       mealType={entry.mealType}
                       title={entry.recipe?.title ?? '—'}
-                      onPress={() => {
-                        // TODO: navigate to recipe detail
-                      }}
+                      onPress={() =>
+                        entry.recipeId &&
+                        router.push({ pathname: '/recipe/[id]', params: { id: entry.recipeId } })
+                      }
                       onActionPress={() => router.push('/(tabs)/planner')}
                     />
                   ))}
@@ -151,9 +170,7 @@ export default function HomeScreen() {
           })}
       </ScrollView>
 
-      {plan && (
-        <Fab icon="calendar-outline" onPress={() => router.push('/(tabs)/planner')} />
-      )}
+      {plan && <Fab icon="calendar-outline" onPress={() => router.push('/(tabs)/planner')} />}
     </SafeAreaView>
   );
 }
@@ -164,11 +181,10 @@ function makeStyles(theme: Theme) {
     scrollContent: {
       paddingHorizontal: theme.spacing.md,
       paddingTop: theme.spacing.xs,
-      paddingBottom: 100, // room for FAB
+      paddingBottom: 100,
       gap: theme.spacing.lg,
     },
     hero: { gap: theme.spacing.sm },
-    heroSubtitle: {},
     dateRow: {
       gap: theme.spacing.sm,
       paddingHorizontal: theme.spacing.base,

@@ -1,14 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
+  FlatList,
   Pressable,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
-import { FlatList } from 'react-native';
 import type { MealType } from '@dishday/types';
 import { Screen } from '../../src/components/Screen';
 import { getApi } from '../../src/lib/api';
@@ -25,6 +26,7 @@ const FILTERS: { label: string; value: MealType | undefined }[] = [
 export default function RecipesScreen() {
   const theme = useTheme();
   const styles = useThemedStyles(makeStyles);
+  const router = useRouter();
   const api = getApi();
   const [q, setQ] = useState('');
   const [mealType, setMealType] = useState<MealType | undefined>(undefined);
@@ -91,7 +93,10 @@ export default function RecipesScreen() {
             </Text>
           }
           renderItem={({ item }) => (
-            <View style={styles.card}>
+            <Pressable
+              onPress={() => router.push({ pathname: '/recipe/[id]', params: { id: item.id } })}
+              style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+            >
               <Text style={styles.cardTitle}>{item.title}</Text>
               {item.description && (
                 <Text style={styles.cardDesc} numberOfLines={2}>
@@ -116,7 +121,7 @@ export default function RecipesScreen() {
                   ))}
                 </View>
               )}
-            </View>
+            </Pressable>
           )}
         />
       )}
@@ -166,6 +171,7 @@ function makeStyles(theme: Theme) {
       borderColor: theme.colors.border,
       gap: 4,
     },
+    cardPressed: { opacity: 0.94 },
     cardTitle: { fontSize: 16, fontWeight: '600', color: theme.colors.text },
     cardDesc: { fontSize: 13, color: theme.colors.textSecondary },
     metaRow: { flexDirection: 'row', gap: 12, marginTop: 4 },
