@@ -1,0 +1,20 @@
+{
+  "save": "Speichern",
+  "cancel": "Abbrechen",
+  "delete": "Löschen",
+  "confirm": "Bestätigen",
+  "loading": "Lädt…",
+  "error": "Etwas ist schiefgelaufen",
+  "retry": "Erneut versuchen",
+  "signIn": "Anmelden",
+  "signUp": "Registrieren",
+  "signOut": "Abmelden",
+  "back": "Zurück",
+  "close": "Schließen",
+  "language": "Sprache",
+  "plan": {
+    "free": "FREE",
+    "pro": "PRO",
+    "admin": "ADMIN"
+  }
+}

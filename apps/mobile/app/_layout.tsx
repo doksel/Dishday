@@ -14,6 +14,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { initI18n } from '../src/i18n';
 import { supabase } from '../src/lib/supabase';
 import { ThemeProvider, useTheme } from '../src/theme';
 
@@ -68,12 +69,17 @@ export default function RootLayout() {
     WorkSans_500Medium,
     WorkSans_600SemiBold,
   });
+  const [i18nReady, setI18nReady] = useState(false);
 
   useEffect(() => {
-    if (fontsLoaded) SplashScreen.hideAsync().catch(() => undefined);
-  }, [fontsLoaded]);
+    initI18n().then(() => setI18nReady(true));
+  }, []);
 
-  if (!fontsLoaded) return null;
+  useEffect(() => {
+    if (fontsLoaded && i18nReady) SplashScreen.hideAsync().catch(() => undefined);
+  }, [fontsLoaded, i18nReady]);
+
+  if (!fontsLoaded || !i18nReady) return null;
 
   return (
     <SafeAreaProvider>

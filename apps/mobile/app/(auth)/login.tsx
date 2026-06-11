@@ -1,5 +1,6 @@
 import { Link } from 'expo-router';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 import { Screen } from '../../src/components/Screen';
 import { Button, Input, Text } from '../../src/components/ui';
@@ -8,6 +9,7 @@ import { useThemedStyles, type Theme } from '../../src/theme';
 
 export default function LoginScreen() {
   const styles = useThemedStyles(makeStyles);
+  const { t } = useTranslation('auth');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -23,15 +25,15 @@ export default function LoginScreen() {
 
   return (
     <Screen variant="keyboard" centered>
-      <Text variant="displayLg">Welcome back</Text>
+      <Text variant="displayLg">{t('login.title')}</Text>
       <Text variant="bodyMd" color="textSecondary" style={styles.subtitle}>
-        Sign in to your Dishday account.
+        {t('login.subtitle')}
       </Text>
 
       <View style={styles.form}>
         <Input
-          label="Email"
-          placeholder="you@example.com"
+          label={t('login.email')}
+          placeholder={t('login.emailPlaceholder')}
           autoCapitalize="none"
           keyboardType="email-address"
           autoComplete="email"
@@ -39,17 +41,17 @@ export default function LoginScreen() {
           onChangeText={setEmail}
         />
         <Input
-          label="Password"
-          placeholder="••••••••"
+          label={t('login.password')}
+          placeholder={t('login.passwordPlaceholder')}
           secureTextEntry
           autoComplete="current-password"
           value={password}
           onChangeText={setPassword}
           error={error ?? undefined}
         />
-        <Button label="Sign in" onPress={onSubmit} loading={loading} fullWidth size="lg" />
+        <Button label={t('login.submit')} onPress={onSubmit} loading={loading} fullWidth size="lg" />
         <Link href="/(auth)/signup" asChild>
-          <Button label="No account? Create one" variant="ghost" fullWidth />
+          <Button label={t('login.toSignup')} variant="ghost" fullWidth />
         </Link>
       </View>
     </Screen>

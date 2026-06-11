@@ -1,0 +1,13 @@
+{
+  "title": "Profil",
+  "appearance": "ERSCHEINUNGSBILD",
+  "language": "SPRACHE",
+  "theme": {
+    "system": "System",
+    "light": "Hell",
+    "dark": "Dunkel"
+  },
+  "errors": {
+    "loadFailed": "Profil konnte nicht geladen werden"
+  }
+}

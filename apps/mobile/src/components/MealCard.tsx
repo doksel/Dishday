@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
 import type { MealType } from '@dishday/types';
 import { Icon, Text } from './ui';
@@ -19,6 +20,7 @@ export interface MealCardProps {
  */
 export function MealCard({ imageUrl, mealType, title, onActionPress, onPress }: MealCardProps) {
   const styles = useThemedStyles(makeStyles);
+  const { t } = useTranslation('mealTypes');
 
   return (
     <Pressable
@@ -34,7 +36,7 @@ export function MealCard({ imageUrl, mealType, title, onActionPress, onPress }: 
       )}
       <View style={styles.body}>
         <Text variant="labelSm" color="primary" style={styles.mealType}>
-          {mealType.toUpperCase()}
+          {t(mealType).toUpperCase()}
         </Text>
         <Text variant="bodyLg" style={styles.title} numberOfLines={2}>
           {title}
@@ -60,7 +62,6 @@ function makeStyles(theme: Theme) {
       borderWidth: 1,
       borderColor: theme.colors.border,
       overflow: 'hidden',
-      // Soft ambient shadow (Level 1 per design spec)
       shadowColor: theme.colors.text,
       shadowOpacity: theme.name === 'dark' ? 0.18 : 0.04,
       shadowRadius: 20,

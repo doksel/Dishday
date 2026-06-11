@@ -1,5 +1,6 @@
 import { Link } from 'expo-router';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 import { Screen } from '../../src/components/Screen';
 import { Button, Input, Text } from '../../src/components/ui';
@@ -8,6 +9,7 @@ import { useThemedStyles, type Theme } from '../../src/theme';
 
 export default function SignupScreen() {
   const styles = useThemedStyles(makeStyles);
+  const { t } = useTranslation('auth');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -15,8 +17,7 @@ export default function SignupScreen() {
   const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // TODO: Set up email confirmation and password reset flows in Supabase and handle them here
-  // https://supabase.com/dashboard/project/[project_id]/auth/smtp
+  // TODO: Set up email confirmation and password reset flows in Supabase
   async function onSubmit() {
     setError(null);
     setInfo(null);
@@ -28,21 +29,26 @@ export default function SignupScreen() {
     });
     setLoading(false);
     if (error) return setError(error.message);
-    if (!data.session) setInfo('Check your email to confirm.');
+    if (!data.session) setInfo(t('signup.checkEmail'));
   }
 
   return (
     <Screen variant="keyboard" centered>
-      <Text variant="displayLg">Create your account</Text>
+      <Text variant="displayLg">{t('signup.title')}</Text>
       <Text variant="bodyMd" color="textSecondary" style={styles.subtitle}>
-        A few seconds — and you're cooking.
+        {t('signup.subtitle')}
       </Text>
 
       <View style={styles.form}>
-        <Input label="Name" placeholder="Your name" value={name} onChangeText={setName} />
         <Input
-          label="Email"
-          placeholder="you@example.com"
+          label={t('signup.name')}
+          placeholder={t('signup.namePlaceholder')}
+          value={name}
+          onChangeText={setName}
+        />
+        <Input
+          label={t('login.email')}
+          placeholder={t('login.emailPlaceholder')}
           autoCapitalize="none"
           keyboardType="email-address"
           autoComplete="email"
@@ -50,8 +56,8 @@ export default function SignupScreen() {
           onChangeText={setEmail}
         />
         <Input
-          label="Password"
-          placeholder="At least 8 characters"
+          label={t('login.password')}
+          placeholder={t('signup.passwordPlaceholder')}
           secureTextEntry
           autoComplete="new-password"
           value={password}
@@ -59,9 +65,9 @@ export default function SignupScreen() {
           error={error ?? undefined}
           helperText={info ?? undefined}
         />
-        <Button label="Create account" onPress={onSubmit} loading={loading} fullWidth size="lg" />
+        <Button label={t('signup.submit')} onPress={onSubmit} loading={loading} fullWidth size="lg" />
         <Link href="/(auth)/login" asChild>
-          <Button label="Already have an account? Sign in" variant="ghost" fullWidth />
+          <Button label={t('signup.toLogin')} variant="ghost" fullWidth />
         </Link>
       </View>
     </Screen>

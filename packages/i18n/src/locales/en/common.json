@@ -1,0 +1,20 @@
+{
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "confirm": "Confirm",
+  "loading": "Loading…",
+  "error": "Something went wrong",
+  "retry": "Retry",
+  "signIn": "Sign in",
+  "signUp": "Sign up",
+  "signOut": "Sign out",
+  "back": "Back",
+  "close": "Close",
+  "language": "Language",
+  "plan": {
+    "free": "FREE",
+    "pro": "PRO",
+    "admin": "ADMIN"
+  }
+}

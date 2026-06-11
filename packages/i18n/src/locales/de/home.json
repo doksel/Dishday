@@ -1,0 +1,15 @@
+{
+  "title": "Dein Wochenplan",
+  "subtitle_one": "Du hast {{count}} Mahlzeit für diese Woche geplant. Iss gut!",
+  "subtitle_other": "Du hast {{count}} Mahlzeiten für diese Woche geplant. Iss gut!",
+  "emptySubtitle": "Noch keine Mahlzeiten geplant — wähle ein Rezept, um deine Woche zu füllen.",
+  "emptyPlan": "Noch kein Plan für diese Woche. Öffne den Planner-Tab, um einen zu erstellen.",
+  "loadError": "Plan konnte nicht geladen werden: {{error}}",
+  "kcal": "{{value}} kcal",
+  "greeting": {
+    "morning": "Guten Morgen",
+    "afternoon": "Guten Tag",
+    "evening": "Guten Abend",
+    "night": "Gute Nacht"
+  }
+}

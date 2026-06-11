@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
 import { Icon, Text } from './ui';
 import { useThemedStyles, type Theme } from '../theme';
@@ -17,7 +18,7 @@ export interface AppHeaderProps {
 
 /**
  * Top app bar — avatar + brand/greeting + notifications bell.
- * Greeting follows the local time of day.
+ * Greeting follows the local time of day, localized via i18n.
  */
 export function AppHeader({
   brand = 'Dishday',
@@ -27,8 +28,11 @@ export function AppHeader({
   onAvatarPress,
 }: AppHeaderProps) {
   const styles = useThemedStyles(makeStyles);
-  const greeting = timeGreeting();
+  const { t } = useTranslation('home');
+
+  const greeting = t(`greeting.${timeKey()}`);
   const initial = userName?.trim().charAt(0).toUpperCase();
+  const firstName = userName?.split(' ')[0];
 
   return (
     <View style={styles.header}>
@@ -50,7 +54,7 @@ export function AppHeader({
           </Text>
           <Text variant="labelSm" color="textSecondary">
             {greeting}
-            {userName ? `, ${userName.split(' ')[0]}` : ''}
+            {firstName ? `, ${firstName}` : ''}
           </Text>
         </View>
       </View>
@@ -61,12 +65,13 @@ export function AppHeader({
   );
 }
 
-function timeGreeting(): string {
+type GreetingKey = 'morning' | 'afternoon' | 'evening' | 'night';
+function timeKey(): GreetingKey {
   const h = new Date().getHours();
-  if (h < 5) return 'Good night';
-  if (h < 12) return 'Good morning';
-  if (h < 18) return 'Good afternoon';
-  return 'Good evening';
+  if (h < 5) return 'night';
+  if (h < 12) return 'morning';
+  if (h < 18) return 'afternoon';
+  return 'evening';
 }
 
 function makeStyles(theme: Theme) {

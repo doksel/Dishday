@@ -1,0 +1,20 @@
+{
+  "save": "Сохранить",
+  "cancel": "Отмена",
+  "delete": "Удалить",
+  "confirm": "Подтвердить",
+  "loading": "Загрузка…",
+  "error": "Что-то пошло не так",
+  "retry": "Повторить",
+  "signIn": "Войти",
+  "signUp": "Регистрация",
+  "signOut": "Выйти",
+  "back": "Назад",
+  "close": "Закрыть",
+  "language": "Язык",
+  "plan": {
+    "free": "FREE",
+    "pro": "PRO",
+    "admin": "ADMIN"
+  }
+}

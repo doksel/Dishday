@@ -1,0 +1,13 @@
+{
+  "title": "Perfil",
+  "appearance": "APARIENCIA",
+  "language": "IDIOMA",
+  "theme": {
+    "system": "Sistema",
+    "light": "Claro",
+    "dark": "Oscuro"
+  },
+  "errors": {
+    "loadFailed": "No se pudo cargar el perfil"
+  }
+}

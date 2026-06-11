@@ -1,0 +1,13 @@
+{
+  "title": "Profilo",
+  "appearance": "ASPETTO",
+  "language": "LINGUA",
+  "theme": {
+    "system": "Sistema",
+    "light": "Chiaro",
+    "dark": "Scuro"
+  },
+  "errors": {
+    "loadFailed": "Impossibile caricare il profilo"
+  }
+}

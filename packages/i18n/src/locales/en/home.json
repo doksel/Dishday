@@ -1,0 +1,15 @@
+{
+  "title": "Your Weekly Plan",
+  "subtitle_one": "You have {{count}} meal planned for this week. Stay nourished!",
+  "subtitle_other": "You have {{count}} meals planned for this week. Stay nourished!",
+  "emptySubtitle": "No meals planned yet — pick a recipe to start filling your week.",
+  "emptyPlan": "No plan yet for this week. Open the Planner tab to create one.",
+  "loadError": "Could not load plan: {{error}}",
+  "kcal": "{{value}} kcal",
+  "greeting": {
+    "morning": "Good morning",
+    "afternoon": "Good afternoon",
+    "evening": "Good evening",
+    "night": "Good night"
+  }
+}

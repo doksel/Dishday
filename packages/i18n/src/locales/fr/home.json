@@ -1,0 +1,15 @@
+{
+  "title": "Votre plan hebdomadaire",
+  "subtitle_one": "Vous avez {{count}} repas prévu pour cette semaine. Mangez sainement !",
+  "subtitle_other": "Vous avez {{count}} repas prévus pour cette semaine. Mangez sainement !",
+  "emptySubtitle": "Aucun repas planifié — choisissez une recette pour commencer à remplir votre semaine.",
+  "emptyPlan": "Pas encore de plan pour cette semaine. Ouvrez l'onglet Planner pour en créer un.",
+  "loadError": "Impossible de charger le plan : {{error}}",
+  "kcal": "{{value}} kcal",
+  "greeting": {
+    "morning": "Bonjour",
+    "afternoon": "Bon après-midi",
+    "evening": "Bonsoir",
+    "night": "Bonne nuit"
+  }
+}

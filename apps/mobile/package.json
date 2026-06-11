@@ -16,8 +16,11 @@
   },
   "dependencies": {
     "@dishday/api-client": "*",
+    "@dishday/i18n": "*",
     "@dishday/types": "*",
     "@dishday/utils": "*",
+    "i18next": "^23.16.6",
+    "react-i18next": "^15.4.0",
     "@expo-google-fonts/plus-jakarta-sans": "^0.4.0",
     "@expo-google-fonts/work-sans": "^0.4.0",
     "@expo/metro-runtime": "^55.0.11",

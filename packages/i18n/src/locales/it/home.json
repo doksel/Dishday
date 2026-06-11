@@ -1,0 +1,15 @@
+{
+  "title": "Il tuo piano settimanale",
+  "subtitle_one": "Hai {{count}} pasto pianificato per questa settimana. Mangia bene!",
+  "subtitle_other": "Hai {{count}} pasti pianificati per questa settimana. Mangia bene!",
+  "emptySubtitle": "Nessun pasto pianificato — scegli una ricetta per iniziare a riempire la settimana.",
+  "emptyPlan": "Nessun piano per questa settimana. Apri la scheda Planner per crearne uno.",
+  "loadError": "Impossibile caricare il piano: {{error}}",
+  "kcal": "{{value}} kcal",
+  "greeting": {
+    "morning": "Buongiorno",
+    "afternoon": "Buon pomeriggio",
+    "evening": "Buonasera",
+    "night": "Buonanotte"
+  }
+}

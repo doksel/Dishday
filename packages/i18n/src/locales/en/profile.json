@@ -1,0 +1,13 @@
+{
+  "title": "Profile",
+  "appearance": "APPEARANCE",
+  "language": "LANGUAGE",
+  "theme": {
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "errors": {
+    "loadFailed": "Could not load profile"
+  }
+}

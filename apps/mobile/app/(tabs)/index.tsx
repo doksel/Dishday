@@ -3,6 +3,7 @@ import type { DayOfWeek, MealPlan, MealPlanEntry } from '@dishday/types';
 import { dayOfWeekMondayFirst, planWeekDates, weekStartIso } from '@dishday/utils';
 import { useRouter } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   ScrollView,
@@ -24,6 +25,7 @@ export default function HomeScreen() {
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const api = getApi();
+  const { t, i18n } = useTranslation('home');
 
   const me = useQuery({ queryKey: ['auth', 'me'], queryFn: () => api.auth.me() });
   const plans = useQuery<MealPlan[]>({
@@ -37,16 +39,13 @@ export default function HomeScreen() {
   const todayDow = dayOfWeekMondayFirst(today);
   const [selectedDow, setSelectedDow] = useState<DayOfWeek>(todayDow);
 
-  // Refs for scroll-to-section behaviour
   const scrollRef = useRef<ScrollView>(null);
-  // dayOfWeek → y offset within the ScrollView content
   const sectionY = useRef<Record<number, number>>({});
 
   const plan = plans.data?.find((p) => p.weekStart === week);
   const entries = plan?.entries ?? [];
   const totalMeals = entries.length;
 
-  // Group entries by day-of-week
   const entriesByDay = useMemo(() => {
     const map = new Map<number, MealPlanEntry[]>();
     for (const e of entries) {
@@ -84,17 +83,15 @@ export default function HomeScreen() {
           onAvatarPress={() => router.push('/(tabs)/profile')}
         />
 
-        {/* Hero */}
         <View style={styles.hero}>
-          <Text variant="headlineLg">Your Weekly Plan</Text>
+          <Text variant="headlineLg">{t('title')}</Text>
           <Text variant="bodyMd" color="textSecondary">
             {totalMeals > 0
-              ? `You have ${totalMeals} meal${totalMeals === 1 ? '' : 's'} planned for this week. Stay nourished!`
-              : "No meals planned yet — pick a recipe to start filling your week."}
+              ? t('subtitle', { count: totalMeals })
+              : t('emptySubtitle')}
           </Text>
         </View>
 
-        {/* Date scroller */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -103,7 +100,7 @@ export default function HomeScreen() {
           {weekDates.map((date, idx) => (
             <DateCard
               key={idx}
-              dayName={date.toLocaleDateString('en', { weekday: 'short' })}
+              dayName={date.toLocaleDateString(i18n.language, { weekday: 'short' })}
               dayOfMonth={date.getDate()}
               active={idx === selectedDow}
               onPress={() => handleDatePress(idx as DayOfWeek)}
@@ -119,19 +116,18 @@ export default function HomeScreen() {
 
         {plans.error && (
           <Text variant="bodyMd" color="danger">
-            Could not load plan: {(plans.error as Error).message}
+            {t('loadError', { error: (plans.error as Error).message })}
           </Text>
         )}
 
         {!plans.isLoading && !plan && (
           <View style={styles.empty}>
             <Text variant="bodyMd" color="textSecondary" align="center">
-              No plan yet for this week. Open the Planner tab to create one.
+              {t('emptyPlan')}
             </Text>
           </View>
         )}
 
-        {/* Day sections */}
         {plan &&
           weekDates.map((date, dow) => {
             const dayEntries = entriesByDay.get(dow) ?? [];
@@ -144,10 +140,10 @@ export default function HomeScreen() {
               <View key={dow} style={styles.daySection} onLayout={captureSectionY(dow)}>
                 <View style={styles.dayHeader}>
                   <Text variant="headlineMd">
-                    {date.toLocaleDateString('en', { weekday: 'long' })}
+                    {date.toLocaleDateString(i18n.language, { weekday: 'long' })}
                   </Text>
                   <Text variant="labelLg" color="tertiary">
-                    {Math.round(dayKcal).toLocaleString()} kcal
+                    {t('kcal', { value: Math.round(dayKcal).toLocaleString(i18n.language) })}
                   </Text>
                 </View>
                 <View style={styles.mealList}>
@@ -158,10 +154,27 @@ export default function HomeScreen() {
                       mealType={entry.mealType}
                       title={entry.recipe?.title ?? '—'}
                       onPress={() =>
-                        entry.recipeId &&
-                        router.push({ pathname: '/recipe/[id]', params: { id: entry.recipeId } })
+                        plan &&
+                        router.push({
+                          pathname: '/meal',
+                          params: {
+                            planId: plan.id,
+                            dow: String(entry.dayOfWeek),
+                            mealType: entry.mealType,
+                          },
+                        })
                       }
-                      onActionPress={() => router.push('/(tabs)/planner')}
+                      onActionPress={() =>
+                        plan &&
+                        router.push({
+                          pathname: '/meal',
+                          params: {
+                            planId: plan.id,
+                            dow: String(entry.dayOfWeek),
+                            mealType: entry.mealType,
+                          },
+                        })
+                      }
                     />
                   ))}
                 </View>
