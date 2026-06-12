@@ -1,9 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../src/theme';
 
 export default function TabsLayout() {
   const theme = useTheme();
+  const { t } = useTranslation('common');
 
   return (
     <Tabs
@@ -20,21 +22,21 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Today',
+          title: t('nav.today'),
           tabBarIcon: ({ color, size }) => <Ionicons name="today" color={color} size={size} />,
         }}
       />
       <Tabs.Screen
         name="planner"
         options={{
-          title: 'Planner',
+          title: t('nav.planner'),
           tabBarIcon: ({ color, size }) => <Ionicons name="calendar" color={color} size={size} />,
         }}
       />
       <Tabs.Screen
         name="recipes"
         options={{
-          title: 'Recipes',
+          title: t('nav.recipes'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="restaurant-outline" color={color} size={size} />
           ),
@@ -43,7 +45,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="scan"
         options={{
-          title: 'Scan',
+          title: t('nav.scan'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="barcode-outline" color={color} size={size} />
           ),
@@ -52,7 +54,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: t('nav.profile'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person-circle-outline" color={color} size={size} />
           ),

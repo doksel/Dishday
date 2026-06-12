@@ -1,0 +1,16 @@
+{
+  "loadError": "Не вдалося завантажити рецепт: {{error}}",
+  "ingredients": "Інгредієнти",
+  "items_one": "{{count}} інгредієнт",
+  "items_few": "{{count}} інгредієнти",
+  "items_many": "{{count}} інгредієнтів",
+  "items_other": "{{count}} інгредієнтів",
+  "process": "ПРИГОТУВАННЯ",
+  "startCooking": "Почати готувати",
+  "min_one": "{{value}} хв",
+  "min_few": "{{value}} хв",
+  "min_many": "{{value}} хв",
+  "min_other": "{{value}} хв",
+  "hourMin": "{{h}}год {{m}}хв",
+  "hour": "{{h}}год"
+}

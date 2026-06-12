@@ -1,0 +1,15 @@
+{
+  "title": "Woche vom {{week}}",
+  "loadError": "Pläne konnten nicht geladen werden: {{error}}",
+  "generating": "Mahlzeitenplan wird erstellt…",
+  "aiFailed": "AI-Generierung fehlgeschlagen: {{reason}}",
+  "emptyTitle": "Noch kein Plan für diese Woche",
+  "emptyBody": "Erstelle einen leeren Plan und füge Rezepte manuell hinzu, oder lass AI eine ausgewogene Woche zusammenstellen.",
+  "emptyPlan": "Leerer Plan",
+  "creating": "Wird erstellt…",
+  "aiGenerate": "AI-Generierung",
+  "tapToAdd": "Tippen zum Hinzufügen…",
+  "removeTitle": "Diese Mahlzeit entfernen?",
+  "removeBody": "Der Slot wird geleert.",
+  "remove": "Entfernen"
+}

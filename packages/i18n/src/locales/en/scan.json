@@ -1,0 +1,8 @@
+{
+  "loading": "Loading camera…",
+  "permissionPrompt": "Dishday needs camera access to scan grocery barcodes.",
+  "grantPermission": "Grant permission",
+  "scanned": "Scanned: {{code}}",
+  "pointAt": "Point at a barcode…",
+  "scanAnother": "Scan another"
+}

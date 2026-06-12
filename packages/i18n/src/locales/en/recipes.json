@@ -1,0 +1,23 @@
+{
+  "title": "Recipes",
+  "searchPlaceholder": "Search recipes…",
+  "filters": {
+    "all": "All",
+    "breakfast": "Breakfast",
+    "lunch": "Lunch",
+    "dinner": "Dinner",
+    "snack": "Snack"
+  },
+  "loadError": "Could not load recipes: {{error}}",
+  "noMatch": "No recipes match this filter.",
+  "empty": "No recipes yet — run `npm run db:seed` to load defaults.",
+  "meta": {
+    "kcal": "{{value}} kcal",
+    "min": "{{value}} min"
+  },
+  "picker": {
+    "title": "Pick a recipe",
+    "titleWithMeal": "Pick a recipe — {{meal}}",
+    "noMatch": "No recipes match this search."
+  }
+}

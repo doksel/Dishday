@@ -1,0 +1,15 @@
+{
+  "title": "{{day}}, {{meal}}",
+  "totalCalories": "ВСЕГО КАЛОРИЙ",
+  "protein": "Белки",
+  "carbs": "Углеводы",
+  "healthyFats": "Полезные жиры",
+  "yourMeal": "Ваш приём",
+  "items_one": "{{count}} блюдо",
+  "items_few": "{{count}} блюда",
+  "items_many": "{{count}} блюд",
+  "items_other": "{{count}} блюд",
+  "empty": "Блюд ещё нет. Нажмите кнопку ниже, чтобы добавить.",
+  "addAnother": "Добавить блюдо в {{meal}}",
+  "loadError": "Не удалось загрузить: {{error}}"
+}

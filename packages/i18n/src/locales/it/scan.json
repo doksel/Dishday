@@ -1,0 +1,8 @@
+{
+  "loading": "Caricamento fotocamera…",
+  "permissionPrompt": "Dishday ha bisogno dell'accesso alla fotocamera per scansionare i codici a barre.",
+  "grantPermission": "Concedi permesso",
+  "scanned": "Scansionato: {{code}}",
+  "pointAt": "Inquadra un codice a barre…",
+  "scanAnother": "Scansiona di nuovo"
+}

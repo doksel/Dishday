@@ -1,0 +1,13 @@
+{
+  "title": "{{day}} {{meal}}",
+  "totalCalories": "CALORIE TOTALI",
+  "protein": "Proteine",
+  "carbs": "Carboidrati",
+  "healthyFats": "Grassi sani",
+  "yourMeal": "Il tuo pasto",
+  "items_one": "{{count}} elemento",
+  "items_other": "{{count}} elementi",
+  "empty": "Ancora nessun piatto. Tocca il pulsante in basso per aggiungerne uno.",
+  "addAnother": "Aggiungi un altro elemento a {{meal}}",
+  "loadError": "Impossibile caricare: {{error}}"
+}

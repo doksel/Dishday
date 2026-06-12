@@ -16,5 +16,12 @@
     "free": "FREE",
     "pro": "PRO",
     "admin": "ADMIN"
+  },
+  "nav": {
+    "today": "Heute",
+    "planner": "Planer",
+    "recipes": "Rezepte",
+    "scan": "Scannen",
+    "profile": "Profil"
   }
 }

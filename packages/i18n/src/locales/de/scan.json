@@ -1,0 +1,8 @@
+{
+  "loading": "Kamera lädt…",
+  "permissionPrompt": "Dishday benötigt Kamerazugriff, um Barcodes zu scannen.",
+  "grantPermission": "Zugriff erlauben",
+  "scanned": "Gescannt: {{code}}",
+  "pointAt": "Auf einen Barcode richten…",
+  "scanAnother": "Weiter scannen"
+}

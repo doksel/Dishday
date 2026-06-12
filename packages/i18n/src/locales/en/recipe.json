@@ -1,0 +1,12 @@
+{
+  "loadError": "Could not load recipe: {{error}}",
+  "ingredients": "Ingredients",
+  "items_one": "{{count}} item",
+  "items_other": "{{count}} items",
+  "process": "THE PROCESS",
+  "startCooking": "Start Cooking",
+  "min_one": "{{value}} min",
+  "min_other": "{{value}} mins",
+  "hourMin": "{{h}}h {{m}}m",
+  "hour": "{{h}}h"
+}

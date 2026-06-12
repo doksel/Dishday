@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Image,
@@ -10,20 +11,12 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { planWeekDates, weekStartIso } from '@dishday/utils';
 import type { MealPlan, MealPlanEntry, MealType, Recipe } from '@dishday/types';
 import { RecipePickerModal } from '../src/components/RecipePickerModal';
 import { Button, Chip, Icon, Text } from '../src/components/ui';
 import { getApi } from '../src/lib/api';
 import { useTheme, useThemedStyles, type Theme } from '../src/theme';
-
-const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-
-const MEAL_NAMES: Record<MealType, string> = {
-  breakfast: 'Breakfast',
-  lunch: 'Lunch',
-  dinner: 'Dinner',
-  snack: 'Snack',
-};
 
 /** Per-meal kcal targets used for the calorie-progress bar. */
 const KCAL_TARGET: Record<MealType, number> = {
@@ -47,6 +40,8 @@ export default function MealSlotScreen() {
   const insets = useSafeAreaInsets();
   const qc = useQueryClient();
   const api = getApi();
+  const { t, i18n } = useTranslation('meal');
+  const tMealTypes = useTranslation('mealTypes').t;
 
   const params = useLocalSearchParams<{ planId: string; dow: string; mealType: MealType }>();
   const planId = params.planId;
@@ -114,7 +109,11 @@ export default function MealSlotScreen() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['recipes', 'bookmarks'] }),
   });
 
-  const title = `${DAY_NAMES[dow]} ${MEAL_NAMES[mealType]}`;
+  // Localized weekday name via Intl
+  const weekDates = planWeekDates(weekStartIso());
+  const dayName = weekDates[dow]?.toLocaleDateString(i18n.language, { weekday: 'long' }) ?? '';
+  const mealName = tMealTypes(mealType);
+  const title = t('title', { day: dayName, meal: mealName });
 
   return (
     <View style={styles.root}>
@@ -154,7 +153,7 @@ export default function MealSlotScreen() {
 
         {plan.error && (
           <Text variant="bodyMd" color="danger">
-            Could not load: {(plan.error as Error).message}
+            {t('loadError', { error: (plan.error as Error).message })}
           </Text>
         )}
 
@@ -165,7 +164,7 @@ export default function MealSlotScreen() {
               {/* Total calories — full width */}
               <View style={[styles.bentoCard, styles.bentoFull]}>
                 <Text variant="labelLg" color="primary" style={styles.bentoLabelTop}>
-                  TOTAL CALORIES
+                  {t('totalCalories')}
                 </Text>
                 <View style={styles.kcalRow}>
                   <Text variant="displayLg">{Math.round(macros.kcal).toLocaleString()}</Text>
@@ -181,7 +180,7 @@ export default function MealSlotScreen() {
                 <View style={styles.bentoLabelRow}>
                   <View style={[styles.dot, { backgroundColor: theme.colors.primary }]} />
                   <Text variant="labelSm" color="textSecondary">
-                    Protein
+                    {t('protein')}
                   </Text>
                 </View>
                 <Text variant="headlineMd">{Math.round(macros.proteinG)}g</Text>
@@ -192,7 +191,7 @@ export default function MealSlotScreen() {
                 <View style={styles.bentoLabelRow}>
                   <View style={[styles.dot, { backgroundColor: theme.colors.tertiary }]} />
                   <Text variant="labelSm" color="textSecondary">
-                    Carbs
+                    {t('carbs')}
                   </Text>
                 </View>
                 <Text variant="headlineMd">{Math.round(macros.carbsG)}g</Text>
@@ -204,7 +203,7 @@ export default function MealSlotScreen() {
                   <View style={styles.bentoLabelRow}>
                     <View style={[styles.dot, { backgroundColor: theme.colors.borderStrong }]} />
                     <Text variant="labelSm" color="textSecondary">
-                      Healthy Fats
+                      {t('healthyFats')}
                     </Text>
                   </View>
                   <Text variant="labelLg">{Math.round(macros.fatG)}g</Text>
@@ -215,9 +214,9 @@ export default function MealSlotScreen() {
 
             {/* Section header */}
             <View style={styles.sectionHeader}>
-              <Text variant="headlineLg">Your Meal</Text>
+              <Text variant="headlineLg">{t('yourMeal')}</Text>
               <Text variant="labelLg" color="primary">
-                {entries.length} {entries.length === 1 ? 'Item' : 'Items'}
+                {t('items', { count: entries.length })}
               </Text>
             </View>
 
@@ -226,7 +225,7 @@ export default function MealSlotScreen() {
               {entries.length === 0 && (
                 <View style={styles.empty}>
                   <Text variant="bodyMd" color="textSecondary" align="center">
-                    No dishes yet. Tap the button below to add one.
+                    {t('empty')}
                   </Text>
                 </View>
               )}
@@ -259,7 +258,7 @@ export default function MealSlotScreen() {
       {plan.data && (
         <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 12 }]}>
           <Button
-            label={`Add another item to ${MEAL_NAMES[mealType].toLowerCase()}`}
+            label={t('addAnother', { meal: mealName.toLowerCase() })}
             variant="primary"
             size="lg"
             fullWidth

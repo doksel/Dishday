@@ -4,7 +4,14 @@
  *   - Resources come from `@dishday/i18n` (shared JSON files)
  *   - Initial locale: user-saved (AsyncStorage) → device locale → `'en'`
  *   - Persisted on every change via AsyncStorage
+ *
+ *   NOTE: `intl-pluralrules` must be imported BEFORE i18next so that
+ *   `Intl.PluralRules` exists on Hermes (otherwise i18next v23 falls back to
+ *   compatibilityJSON v3 and our `_one/_few/_many/_other` keys won't resolve).
  */
+
+// Polyfill must run first — Hermes does not ship Intl.PluralRules.
+import 'intl-pluralrules';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DEFAULT_LOCALE, isSupportedLocale, resources, type LocaleCode } from '@dishday/i18n';
@@ -38,7 +45,10 @@ export function initI18n(): Promise<typeof i18n> {
       resources,
       lng,
       fallbackLng: DEFAULT_LOCALE,
-      ns: ['common', 'profile', 'home', 'auth', 'mealTypes'],
+      ns: [
+        'common', 'profile', 'home', 'auth', 'mealTypes',
+        'planner', 'recipes', 'meal', 'recipe', 'scan',
+      ],
       defaultNS: 'common',
       interpolation: { escapeValue: false }, // React already escapes
       returnNull: false,

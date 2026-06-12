@@ -1,0 +1,15 @@
+{
+  "title": "Semana del {{week}}",
+  "loadError": "No se pudieron cargar los planes: {{error}}",
+  "generating": "Generando tu plan…",
+  "aiFailed": "Falló la generación AI: {{reason}}",
+  "emptyTitle": "Aún no hay plan para esta semana",
+  "emptyBody": "Empieza un plan vacío y añade recetas manualmente, o deja que la AI cree una semana equilibrada.",
+  "emptyPlan": "Plan vacío",
+  "creating": "Creando…",
+  "aiGenerate": "Generar con AI",
+  "tapToAdd": "Toca para añadir…",
+  "removeTitle": "¿Eliminar esta comida?",
+  "removeBody": "El espacio quedará vacío.",
+  "remove": "Eliminar"
+}

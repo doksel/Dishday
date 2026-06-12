@@ -1,0 +1,23 @@
+{
+  "title": "Ricette",
+  "searchPlaceholder": "Cerca ricette…",
+  "filters": {
+    "all": "Tutte",
+    "breakfast": "Colazione",
+    "lunch": "Pranzo",
+    "dinner": "Cena",
+    "snack": "Spuntino"
+  },
+  "loadError": "Impossibile caricare le ricette: {{error}}",
+  "noMatch": "Nessuna ricetta corrisponde a questo filtro.",
+  "empty": "Ancora nessuna ricetta — esegui `npm run db:seed`.",
+  "meta": {
+    "kcal": "{{value}} kcal",
+    "min": "{{value}} min"
+  },
+  "picker": {
+    "title": "Scegli una ricetta",
+    "titleWithMeal": "Scegli una ricetta — {{meal}}",
+    "noMatch": "Nessuna ricetta corrisponde."
+  }
+}

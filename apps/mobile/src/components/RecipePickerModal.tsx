@@ -1,12 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   FlatList,
   Modal,
   Pressable,
   StyleSheet,
-  Text,
   TextInput,
   View,
 } from 'react-native';
@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import type { MealType, Recipe } from '@dishday/types';
 import { getApi } from '../lib/api';
 import { useTheme, useThemedStyles, type Theme } from '../theme';
+import { Text } from './ui';
 
 export interface RecipePickerModalProps {
   visible: boolean;
@@ -31,6 +32,9 @@ export function RecipePickerModal({
   const theme = useTheme();
   const styles = useThemedStyles(makeStyles);
   const api = getApi();
+  const { t } = useTranslation('recipes');
+  const tMealTypes = useTranslation('mealTypes').t;
+  const tCommon = useTranslation('common').t;
   const [q, setQ] = useState('');
 
   const recipes = useQuery({
@@ -39,21 +43,28 @@ export function RecipePickerModal({
     enabled: visible,
   });
 
+  const title = mealType
+    ? t('picker.titleWithMeal', { meal: tMealTypes(mealType) })
+    : t('picker.title');
+
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={onClose}
+    >
       <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
         <View style={styles.header}>
-          <Text style={styles.title}>
-            Pick a recipe{mealType ? ` — ${mealType}` : ''}
-          </Text>
+          <Text variant="headlineMd">{title}</Text>
           <Pressable onPress={onClose} hitSlop={8}>
-            <Text style={styles.close}>Close</Text>
+            <Text variant="bodyLg" color="primary">{tCommon('close')}</Text>
           </Pressable>
         </View>
 
         <View style={styles.searchWrap}>
           <TextInput
-            placeholder="Search recipes…"
+            placeholder={t('searchPlaceholder')}
             placeholderTextColor={theme.colors.placeholder}
             value={q}
             onChangeText={setQ}
@@ -70,8 +81,8 @@ export function RecipePickerModal({
         )}
 
         {recipes.error && (
-          <Text style={styles.error}>
-            Could not load recipes: {(recipes.error as Error).message}
+          <Text variant="bodyMd" color="danger" style={styles.error}>
+            {t('loadError', { error: (recipes.error as Error).message })}
           </Text>
         )}
 
@@ -82,7 +93,9 @@ export function RecipePickerModal({
             contentContainerStyle={styles.list}
             ItemSeparatorComponent={() => <View style={styles.separator} />}
             ListEmptyComponent={
-              <Text style={styles.empty}>No recipes match this search.</Text>
+              <Text variant="bodyMd" color="textMuted" style={styles.empty}>
+                {t('picker.noMatch')}
+              </Text>
             }
             renderItem={({ item }) => (
               <Pressable
@@ -90,34 +103,29 @@ export function RecipePickerModal({
                 style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
               >
                 <View style={styles.rowMain}>
-                  <Text style={styles.rowTitle} numberOfLines={1}>
+                  <Text variant="bodyLg" numberOfLines={1} style={styles.rowTitle}>
                     {item.title}
                   </Text>
                   {item.description && (
-                    <Text style={styles.rowDesc} numberOfLines={2}>
+                    <Text variant="bodyMd" color="textSecondary" numberOfLines={2}>
                       {item.description}
                     </Text>
                   )}
                   <View style={styles.metaRow}>
                     {item.caloriesPerServing != null && (
-                      <Text style={styles.metaItem}>
-                        {Math.round(item.caloriesPerServing)} kcal
+                      <Text variant="labelSm" color="textMuted">
+                        {t('meta.kcal', { value: Math.round(item.caloriesPerServing) })}
                       </Text>
                     )}
                     {item.prepTimeMin != null && (
-                      <Text style={styles.metaItem}>{item.prepTimeMin} min prep</Text>
+                      <Text variant="labelSm" color="textMuted">
+                        {t('meta.min', { value: item.prepTimeMin })}
+                      </Text>
                     )}
-                    {item.cuisine && <Text style={styles.metaItem}>{item.cuisine}</Text>}
+                    {item.cuisine && (
+                      <Text variant="labelSm" color="textMuted">{item.cuisine}</Text>
+                    )}
                   </View>
-                  {item.tags.length > 0 && (
-                    <View style={styles.tags}>
-                      {item.tags.slice(0, 3).map((t) => (
-                        <View key={t} style={styles.tag}>
-                          <Text style={styles.tagText}>{t}</Text>
-                        </View>
-                      ))}
-                    </View>
-                  )}
                 </View>
               </Pressable>
             )}
@@ -135,13 +143,11 @@ function makeStyles(theme: Theme) {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      paddingHorizontal: theme.spacing.lg,
+      paddingHorizontal: theme.spacing.md,
       paddingTop: theme.spacing.sm,
       paddingBottom: theme.spacing.sm,
     },
-    title: { fontSize: 20, fontWeight: '700', color: theme.colors.text },
-    close: { color: theme.colors.primary, fontWeight: '600', fontSize: 16 },
-    searchWrap: { paddingHorizontal: theme.spacing.lg, paddingBottom: theme.spacing.sm },
+    searchWrap: { paddingHorizontal: theme.spacing.md, paddingBottom: theme.spacing.sm },
     search: {
       backgroundColor: theme.colors.inputBackground,
       borderColor: theme.colors.inputBorder,
@@ -152,28 +158,15 @@ function makeStyles(theme: Theme) {
       fontSize: 16,
       color: theme.colors.text,
     },
-    list: { padding: theme.spacing.lg, gap: 0 },
+    list: { padding: theme.spacing.md },
     separator: { height: 1, backgroundColor: theme.colors.border, marginVertical: 6 },
     loaderRow: { paddingVertical: theme.spacing.xl, alignItems: 'center' },
-    error: { color: theme.colors.danger, paddingHorizontal: theme.spacing.lg },
-    empty: { color: theme.colors.textMuted, textAlign: 'center', marginTop: theme.spacing.xl },
-    row: {
-      paddingVertical: theme.spacing.md,
-      borderRadius: theme.radius.md,
-    },
+    error: { paddingHorizontal: theme.spacing.md },
+    empty: { textAlign: 'center', marginTop: theme.spacing.xl },
+    row: { paddingVertical: theme.spacing.md, borderRadius: theme.radius.md },
     rowPressed: { backgroundColor: theme.colors.surfaceVariant },
     rowMain: { gap: 4 },
-    rowTitle: { fontSize: 16, fontWeight: '600', color: theme.colors.text },
-    rowDesc: { fontSize: 13, color: theme.colors.textSecondary },
+    rowTitle: { fontWeight: '600' },
     metaRow: { flexDirection: 'row', gap: 12, marginTop: 4 },
-    metaItem: { fontSize: 12, color: theme.colors.textMuted },
-    tags: { flexDirection: 'row', gap: 4, marginTop: 6, flexWrap: 'wrap' },
-    tag: {
-      backgroundColor: theme.colors.surfaceVariant,
-      paddingHorizontal: 8,
-      paddingVertical: 2,
-      borderRadius: theme.radius.full,
-    },
-    tagText: { fontSize: 11, color: theme.colors.textSecondary },
   });
 }

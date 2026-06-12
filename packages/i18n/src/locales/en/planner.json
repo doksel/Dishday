@@ -1,0 +1,15 @@
+{
+  "title": "Week of {{week}}",
+  "loadError": "Could not load plans: {{error}}",
+  "generating": "Generating your meal plan…",
+  "aiFailed": "AI generation failed: {{reason}}",
+  "emptyTitle": "No plan for this week yet",
+  "emptyBody": "Start an empty plan and add recipes manually, or let AI build a balanced week for you.",
+  "emptyPlan": "Empty plan",
+  "creating": "Creating…",
+  "aiGenerate": "AI generate",
+  "tapToAdd": "Tap to add…",
+  "removeTitle": "Remove this meal?",
+  "removeBody": "It will be cleared from the slot.",
+  "remove": "Remove"
+}

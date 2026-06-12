@@ -1,0 +1,13 @@
+{
+  "title": "{{day}} {{meal}}",
+  "totalCalories": "GESAMTKALORIEN",
+  "protein": "Eiweiß",
+  "carbs": "Kohlenhydrate",
+  "healthyFats": "Gute Fette",
+  "yourMeal": "Deine Mahlzeit",
+  "items_one": "{{count}} Gericht",
+  "items_other": "{{count}} Gerichte",
+  "empty": "Noch keine Gerichte. Tippe unten, um eines hinzuzufügen.",
+  "addAnother": "Weiteres Gericht zu {{meal}} hinzufügen",
+  "loadError": "Konnte nicht geladen werden: {{error}}"
+}

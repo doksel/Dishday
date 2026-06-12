@@ -1,0 +1,23 @@
+{
+  "title": "Recetas",
+  "searchPlaceholder": "Buscar recetas…",
+  "filters": {
+    "all": "Todas",
+    "breakfast": "Desayuno",
+    "lunch": "Almuerzo",
+    "dinner": "Cena",
+    "snack": "Tentempié"
+  },
+  "loadError": "No se pudieron cargar las recetas: {{error}}",
+  "noMatch": "Ninguna receta coincide con este filtro.",
+  "empty": "Aún no hay recetas — ejecuta `npm run db:seed`.",
+  "meta": {
+    "kcal": "{{value}} kcal",
+    "min": "{{value}} min"
+  },
+  "picker": {
+    "title": "Elige una receta",
+    "titleWithMeal": "Elige una receta — {{meal}}",
+    "noMatch": "Ninguna receta coincide."
+  }
+}

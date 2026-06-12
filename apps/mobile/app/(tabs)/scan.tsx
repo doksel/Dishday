@@ -1,12 +1,14 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
+import { Pressable, SafeAreaView, StyleSheet, View } from 'react-native';
 import { Screen } from '../../src/components/Screen';
+import { Text } from '../../src/components/ui';
 import { useThemedStyles, type Theme } from '../../src/theme';
 
 export default function ScanScreen() {
   const styles = useThemedStyles(makeStyles);
+  const { t } = useTranslation('scan');
   const [permission, requestPermission] = useCameraPermissions();
   const [code, setCode] = useState<string | null>(null);
   const [scanning, setScanning] = useState(true);
@@ -14,7 +16,7 @@ export default function ScanScreen() {
   if (!permission) {
     return (
       <Screen centered>
-        <Text style={styles.text}>Loading camera…</Text>
+        <Text variant="bodyMd">{t('loading')}</Text>
       </Screen>
     );
   }
@@ -22,18 +24,14 @@ export default function ScanScreen() {
   if (!permission.granted) {
     return (
       <Screen centered>
-        <Text style={styles.permissionText}>
-          Dishday needs camera access to scan grocery barcodes.
-        </Text>
+        <Text variant="bodyMd" align="center">{t('permissionPrompt')}</Text>
         <Pressable onPress={requestPermission} style={styles.grantBtn}>
-          <Text style={styles.grantBtnText}>Grant permission</Text>
+          <Text variant="bodyLg" color="onPrimary">{t('grantPermission')}</Text>
         </Pressable>
       </Screen>
     );
   }
 
-  // Camera view is full-bleed with an absolutely-positioned overlay,
-  // so it can't use <Screen> (different layout from the other tabs).
   return (
     <View style={styles.fullBleed}>
       <CameraView
@@ -51,8 +49,8 @@ export default function ScanScreen() {
       />
       <SafeAreaView style={styles.bottomBar}>
         <View style={styles.bottomCard}>
-          <Text style={styles.bottomTitle}>
-            {code ? `Scanned: ${code}` : 'Point at a barcode…'}
+          <Text variant="bodyLg" style={styles.bottomTitle}>
+            {code ? t('scanned', { code }) : t('pointAt')}
           </Text>
           {code && (
             <Pressable
@@ -62,7 +60,7 @@ export default function ScanScreen() {
               }}
               style={styles.rescanBtn}
             >
-              <Text style={styles.rescanText}>Scan another</Text>
+              <Text variant="bodyMd" style={styles.rescanText}>{t('scanAnother')}</Text>
             </Pressable>
           )}
         </View>
@@ -73,17 +71,14 @@ export default function ScanScreen() {
 
 function makeStyles(theme: Theme) {
   return StyleSheet.create({
-    text: { color: theme.colors.text, textAlign: 'center' },
-    permissionText: { fontSize: 16, textAlign: 'center', color: theme.colors.text },
     grantBtn: {
       marginTop: theme.spacing.lg,
       backgroundColor: theme.colors.primary,
       paddingVertical: 12,
       paddingHorizontal: 24,
-      borderRadius: theme.radius.md,
+      borderRadius: theme.radius.full,
       alignSelf: 'center',
     },
-    grantBtnText: { color: theme.colors.onPrimary, fontWeight: '600' },
     fullBleed: { flex: 1, backgroundColor: theme.colors.background },
     camera: { flex: 1 },
     bottomBar: {
@@ -91,14 +86,14 @@ function makeStyles(theme: Theme) {
       bottom: 0,
       left: 0,
       right: 0,
-      padding: theme.spacing.xl,
+      padding: theme.spacing.md,
     },
     bottomCard: {
       backgroundColor: 'rgba(0,0,0,0.7)',
       borderRadius: theme.radius.lg,
       padding: theme.spacing.lg,
     },
-    bottomTitle: { color: '#ffffff', fontSize: 16, fontWeight: '600' },
+    bottomTitle: { color: '#ffffff', fontWeight: '600' },
     rescanBtn: { marginTop: theme.spacing.sm },
     rescanText: { color: '#a5b4fc' },
   });

@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Image,
@@ -48,6 +49,7 @@ export default function RecipeDetailScreen() {
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const api = getApi();
+  const { t } = useTranslation('recipe');
 
   const [saved, setSaved] = useState(false);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<string>>(new Set());
@@ -113,7 +115,7 @@ export default function RecipeDetailScreen() {
         {recipe.error && (
           <View style={styles.body}>
             <Text variant="bodyMd" color="danger">
-              Could not load recipe: {(recipe.error as Error).message}
+              {t('loadError', { error: (recipe.error as Error).message })}
             </Text>
           </View>
         )}
@@ -133,7 +135,7 @@ export default function RecipeDetailScreen() {
                 <View style={styles.timePill}>
                   <Icon name="time-outline" color="primary" size={16} />
                   <Text variant="labelLg" color="text">
-                    {formatDuration(totalMins)}
+                    {formatDuration(totalMins, t)}
                   </Text>
                 </View>
               )}
@@ -199,9 +201,9 @@ export default function RecipeDetailScreen() {
               {recipe.data.ingredients && recipe.data.ingredients.length > 0 && (
                 <View style={styles.section}>
                   <View style={styles.sectionHeader}>
-                    <Text variant="headlineMd">Ingredients</Text>
+                    <Text variant="headlineMd">{t('ingredients')}</Text>
                     <Text variant="labelLg" color="primary">
-                      {recipe.data.ingredients.length} items
+                      {t('items', { count: recipe.data.ingredients.length })}
                     </Text>
                   </View>
                   <View style={styles.ingredientsList}>
@@ -226,7 +228,7 @@ export default function RecipeDetailScreen() {
               {recipe.data.description && (
                 <View style={styles.processBox}>
                   <Text variant="labelLg" color="textSecondary" style={styles.processLabel}>
-                    THE PROCESS
+                    {t('process')}
                   </Text>
                   <Text variant="bodyMd" color="textSecondary" style={styles.processBody}>
                     {recipe.data.description}
@@ -242,7 +244,7 @@ export default function RecipeDetailScreen() {
       {recipe.data && (
         <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 12 }]}>
           <Button
-            label="Start Cooking"
+            label={t('startCooking')}
             variant="tertiary"
             size="lg"
             fullWidth
@@ -281,11 +283,11 @@ function NutritionItem({
   );
 }
 
-function formatDuration(totalMins: number): string {
-  if (totalMins < 60) return `${totalMins} min${totalMins === 1 ? '' : 's'}`;
+function formatDuration(totalMins: number, t: (k: string, opts?: Record<string, unknown>) => string): string {
+  if (totalMins < 60) return t('min', { value: totalMins, count: totalMins });
   const h = Math.floor(totalMins / 60);
   const m = totalMins % 60;
-  return m === 0 ? `${h}h` : `${h}h ${m}m`;
+  return m === 0 ? t('hour', { h }) : t('hourMin', { h, m });
 }
 
 function formatQuantity(q: number): string {

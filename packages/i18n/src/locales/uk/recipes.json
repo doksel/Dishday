@@ -1,0 +1,23 @@
+{
+  "title": "Рецепти",
+  "searchPlaceholder": "Пошук рецептів…",
+  "filters": {
+    "all": "Усі",
+    "breakfast": "Сніданок",
+    "lunch": "Обід",
+    "dinner": "Вечеря",
+    "snack": "Перекус"
+  },
+  "loadError": "Не вдалося завантажити рецепти: {{error}}",
+  "noMatch": "Немає рецептів за цим фільтром.",
+  "empty": "Рецептів ще немає — запустіть `npm run db:seed`.",
+  "meta": {
+    "kcal": "{{value}} ккал",
+    "min": "{{value}} хв"
+  },
+  "picker": {
+    "title": "Оберіть рецепт",
+    "titleWithMeal": "Оберіть рецепт — {{meal}}",
+    "noMatch": "Немає рецептів за цим запитом."
+  }
+}

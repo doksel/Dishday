@@ -1,0 +1,12 @@
+{
+  "loadError": "Rezept konnte nicht geladen werden: {{error}}",
+  "ingredients": "Zutaten",
+  "items_one": "{{count}} Zutat",
+  "items_other": "{{count}} Zutaten",
+  "process": "ZUBEREITUNG",
+  "startCooking": "Loslegen",
+  "min_one": "{{value}} Min.",
+  "min_other": "{{value}} Min.",
+  "hourMin": "{{h}} Std. {{m}} Min.",
+  "hour": "{{h}} Std."
+}

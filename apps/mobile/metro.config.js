@@ -20,6 +20,7 @@ config.watchFolders = [
   path.resolve(workspaceRoot, 'packages/api-client'),
   path.resolve(workspaceRoot, 'packages/types'),
   path.resolve(workspaceRoot, 'packages/utils'),
+  path.resolve(workspaceRoot, 'packages/i18n'),
 ];
 
 // 2. Resolution paths — local first, then root (for hoisted deps).

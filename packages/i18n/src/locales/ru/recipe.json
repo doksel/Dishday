@@ -1,0 +1,16 @@
+{
+  "loadError": "Не удалось загрузить рецепт: {{error}}",
+  "ingredients": "Ингредиенты",
+  "items_one": "{{count}} ингредиент",
+  "items_few": "{{count}} ингредиента",
+  "items_many": "{{count}} ингредиентов",
+  "items_other": "{{count}} ингредиентов",
+  "process": "ПРИГОТОВЛЕНИЕ",
+  "startCooking": "Начать готовить",
+  "min_one": "{{value}} мин",
+  "min_few": "{{value}} мин",
+  "min_many": "{{value}} мин",
+  "min_other": "{{value}} мин",
+  "hourMin": "{{h}}ч {{m}}мин",
+  "hour": "{{h}}ч"
+}

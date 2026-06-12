@@ -1,0 +1,15 @@
+{
+  "title": "{{day}}, {{meal}}",
+  "totalCalories": "ВСЬОГО КАЛОРІЙ",
+  "protein": "Білки",
+  "carbs": "Вуглеводи",
+  "healthyFats": "Корисні жири",
+  "yourMeal": "Ваш прийом",
+  "items_one": "{{count}} страва",
+  "items_few": "{{count}} страви",
+  "items_many": "{{count}} страв",
+  "items_other": "{{count}} страв",
+  "empty": "Страв ще немає. Натисніть кнопку нижче, щоб додати.",
+  "addAnother": "Додати страву до {{meal}}",
+  "loadError": "Не вдалося завантажити: {{error}}"
+}

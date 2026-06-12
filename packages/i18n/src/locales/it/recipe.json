@@ -1,0 +1,12 @@
+{
+  "loadError": "Impossibile caricare la ricetta: {{error}}",
+  "ingredients": "Ingredienti",
+  "items_one": "{{count}} elemento",
+  "items_other": "{{count}} elementi",
+  "process": "PROCEDIMENTO",
+  "startCooking": "Inizia a cucinare",
+  "min_one": "{{value}} min",
+  "min_other": "{{value}} min",
+  "hourMin": "{{h}}h {{m}}m",
+  "hour": "{{h}}h"
+}
