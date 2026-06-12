@@ -63,8 +63,12 @@ export class PrismaRecipeRepository implements RecipeRepository {
     const created = await this.prisma.recipe.create({
       data: {
         title: data.title,
+        ...(data.titleI18n !== undefined && { titleI18n: data.titleI18n ?? undefined }),
         slug: data.slug,
         description: data.description ?? null,
+        ...(data.descriptionI18n !== undefined && {
+          descriptionI18n: data.descriptionI18n ?? undefined,
+        }),
         authorId: data.authorId ?? null,
         source: data.source,
         prepTimeMin: data.prepTimeMin ?? null,
@@ -84,6 +88,7 @@ export class PrismaRecipeRepository implements RecipeRepository {
           ingredients: {
             create: data.ingredients.map((ing) => ({
               name: ing.name,
+              ...(ing.nameI18n != null && { nameI18n: ing.nameI18n }),
               quantity: ing.quantity,
               unit: ing.unit,
               notes: ing.notes ?? null,
@@ -102,8 +107,12 @@ export class PrismaRecipeRepository implements RecipeRepository {
       where: { id },
       data: {
         ...(data.title !== undefined && { title: data.title }),
+        ...(data.titleI18n !== undefined && { titleI18n: data.titleI18n ?? undefined }),
         ...(data.slug !== undefined && { slug: data.slug }),
         ...(data.description !== undefined && { description: data.description }),
+        ...(data.descriptionI18n !== undefined && {
+          descriptionI18n: data.descriptionI18n ?? undefined,
+        }),
         ...(data.prepTimeMin !== undefined && { prepTimeMin: data.prepTimeMin }),
         ...(data.cookTimeMin !== undefined && { cookTimeMin: data.cookTimeMin }),
         ...(data.servings !== undefined && { servings: data.servings }),

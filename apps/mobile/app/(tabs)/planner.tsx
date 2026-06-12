@@ -7,6 +7,7 @@ import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-nat
 import { RecipePickerModal } from '../../src/components/RecipePickerModal';
 import { Screen } from '../../src/components/Screen';
 import { getApi } from '../../src/lib/api';
+import { apiErrorMessage } from '../../src/lib/apiError';
 import { useThemedStyles, useTheme, type Theme } from '../../src/theme';
 import { Text } from '../../src/components/ui';
 
@@ -125,7 +126,7 @@ export default function PlannerScreen() {
 
       {plans.error && (
         <Text variant="bodyMd" color="danger">
-          {t('loadError', { error: (plans.error as Error).message })}
+          {t('loadError', { error: apiErrorMessage(plans.error, t) })}
         </Text>
       )}
 

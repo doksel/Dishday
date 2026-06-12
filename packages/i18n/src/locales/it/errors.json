@@ -1,0 +1,10 @@
+{
+  "NOT_FOUND": "Non trovato.",
+  "UNAUTHORIZED": "Accedi per continuare.",
+  "VALIDATION_ERROR": "Alcuni campi non sono validi. Controlla e riprova.",
+  "INTERNAL_ERROR": "Qualcosa è andato storto dalla nostra parte. Riprova.",
+  "NO_SUBSCRIPTION": "Nessun abbonamento attivo.",
+  "PLAN_REQUIRED": "Questa funzione richiede il piano Pro.",
+  "NETWORK_ERROR": "Impossibile contattare il server. Controlla la connessione e riprova.",
+  "UNKNOWN": "Qualcosa è andato storto. Riprova."
+}

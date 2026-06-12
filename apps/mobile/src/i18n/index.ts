@@ -48,6 +48,7 @@ export function initI18n(): Promise<typeof i18n> {
       ns: [
         'common', 'profile', 'home', 'auth', 'mealTypes',
         'planner', 'recipes', 'meal', 'recipe', 'scan',
+        'errors',
       ],
       defaultNS: 'common',
       interpolation: { escapeValue: false }, // React already escapes

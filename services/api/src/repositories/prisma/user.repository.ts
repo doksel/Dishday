@@ -29,6 +29,7 @@ export class PrismaUserRepository implements UserRepository {
         passwordHash: data.passwordHash ?? null,
         avatarUrl: data.avatarUrl ?? null,
         plan: data.plan ?? 'free',
+        ...(data.locale !== undefined && { locale: data.locale }),
       },
     });
     return userFromPrisma(u);
@@ -45,6 +46,7 @@ export class PrismaUserRepository implements UserRepository {
           planExpiresAt: data.planExpiresAt ? new Date(data.planExpiresAt) : null,
         }),
         ...(data.onboardingDone !== undefined && { onboardingDone: data.onboardingDone }),
+        ...(data.locale !== undefined && { locale: data.locale }),
       },
     });
     return userFromPrisma(u);

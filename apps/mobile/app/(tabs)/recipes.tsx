@@ -14,6 +14,7 @@ import type { MealType } from '@dishday/types';
 import { Screen } from '../../src/components/Screen';
 import { Text } from '../../src/components/ui';
 import { getApi } from '../../src/lib/api';
+import { apiErrorMessage } from '../../src/lib/apiError';
 import { useTheme, useThemedStyles, type Theme } from '../../src/theme';
 
 export default function RecipesScreen() {
@@ -79,7 +80,7 @@ export default function RecipesScreen() {
 
       {recipes.error && (
         <Text variant="bodyMd" color="danger" style={styles.error}>
-          {t('loadError', { error: (recipes.error as Error).message })}
+          {t('loadError', { error: apiErrorMessage(recipes.error, t) })}
         </Text>
       )}
 

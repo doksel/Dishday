@@ -1,0 +1,10 @@
+{
+  "NOT_FOUND": "Introuvable.",
+  "UNAUTHORIZED": "Connectez-vous pour continuer.",
+  "VALIDATION_ERROR": "Certains champs sont invalides. Vérifiez et réessayez.",
+  "INTERNAL_ERROR": "Une erreur est survenue de notre côté. Veuillez réessayer.",
+  "NO_SUBSCRIPTION": "Aucun abonnement actif.",
+  "PLAN_REQUIRED": "Cette fonctionnalité nécessite le plan Pro.",
+  "NETWORK_ERROR": "Impossible de contacter le serveur. Vérifiez la connexion et réessayez.",
+  "UNKNOWN": "Une erreur est survenue. Veuillez réessayer."
+}

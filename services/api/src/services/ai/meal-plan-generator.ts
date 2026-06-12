@@ -52,7 +52,32 @@ const planSchema = z.object({
 
 export type GeneratedPlan = z.infer<typeof planSchema>;
 
-const SYSTEM_PROMPT = `You are a nutritionist generating personalised weekly meal plans.
+/**
+ * Map BCP-47 language code → human-readable name for the prompt.
+ * Kept in-file because (a) the list is tiny, (b) we don't want to pull the
+ * full `@dishday/i18n` resource bundle into the worker just for a label.
+ */
+const LANGUAGE_NAMES: Record<string, string> = {
+  en: 'English',
+  ru: 'Russian',
+  uk: 'Ukrainian',
+  de: 'German',
+  it: 'Italian',
+  es: 'Spanish',
+  fr: 'French',
+};
+
+/** Default locale used when the user hasn't pinned one. Matches DEFAULT_LOCALE in @dishday/i18n. */
+const DEFAULT_AI_LOCALE = 'en';
+
+/**
+ * Build the system prompt for the given output language.
+ * Recipe titles/descriptions are user-facing content, so we ask the model to
+ * write them in `language`; the JSON keys / enum values stay English (those
+ * are wire-format and parsed by Zod).
+ */
+function buildSystemPrompt(language: string): string {
+  return `You are a nutritionist generating personalised weekly meal plans.
 Output STRICT JSON matching this schema (no prose, no markdown):
 
 {
@@ -81,12 +106,27 @@ Rules:
 - Exactly 7 day objects, dayOfWeek 0..6.
 - Each day must contain breakfast, lunch, dinner. Snack is optional.
 - Respect all dietary constraints strictly.
-- Vary cuisines and avoid repeating the same recipe twice in the week.`;
+- Vary cuisines and avoid repeating the same recipe twice in the week.
+
+Language:
+- Write all human-readable text — recipe \`title\`, \`description\`, ingredient
+  \`name\` — in ${language}.
+- Keep JSON keys, the \`mealType\` enum (breakfast/lunch/dinner/snack), the
+  \`cuisine\` slug, the \`tags\` slugs, and the \`unit\` string ("g", "ml",
+  "cup", "tbsp", "piece") in English exactly as listed above.`;
+}
 
 export interface GenerateInput {
   userId: string;
   profile: UserProfile | null;
   weekStart: string;
+  /**
+   * BCP-47 language code (en, ru, uk, de, it, es, fr). Controls the language of
+   * generated recipe `title` / `description` / ingredient names. `null` or
+   * unknown codes fall back to English. JSON keys, enum slugs and units stay
+   * English regardless — those are wire-format.
+   */
+  locale?: string | null;
 }
 
 export interface GenerateResult {
@@ -104,9 +144,13 @@ export async function generateWeeklyPlan(
   const provider = getAiProvider();
   const userPrompt = buildUserPrompt(input);
 
+  // Resolve language label for the system prompt. Unknown / null locale → English.
+  const langCode = input.locale ?? DEFAULT_AI_LOCALE;
+  const language = LANGUAGE_NAMES[langCode] ?? LANGUAGE_NAMES[DEFAULT_AI_LOCALE]!;
+
   const t0 = Date.now();
   const completion = await provider.generate({
-    systemPrompt: SYSTEM_PROMPT,
+    systemPrompt: buildSystemPrompt(language),
     userPrompt,
     maxTokens: 4096,
     responseFormat: 'json',

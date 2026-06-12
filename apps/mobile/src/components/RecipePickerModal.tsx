@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { pickLocalized } from '@dishday/utils';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -13,6 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { MealType, Recipe } from '@dishday/types';
 import { getApi } from '../lib/api';
+import { apiErrorMessage } from '../lib/apiError';
 import { useTheme, useThemedStyles, type Theme } from '../theme';
 import { Text } from './ui';
 
@@ -82,7 +84,7 @@ export function RecipePickerModal({
 
         {recipes.error && (
           <Text variant="bodyMd" color="danger" style={styles.error}>
-            {t('loadError', { error: (recipes.error as Error).message })}
+            {t('loadError', { error: apiErrorMessage(recipes.error, t) })}
           </Text>
         )}
 

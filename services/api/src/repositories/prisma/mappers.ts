@@ -45,6 +45,7 @@ export function userFromPrisma(u: PUser): User {
     plan: u.plan,
     planExpiresAt: u.planExpiresAt?.toISOString() ?? null,
     onboardingDone: u.onboardingDone,
+    locale: u.locale ?? null,
     createdAt: u.createdAt.toISOString(),
     updatedAt: u.updatedAt.toISOString(),
   };
@@ -64,11 +65,27 @@ export function userProfileFromPrisma(p: PUserProfile): UserProfile {
   };
 }
 
+/**
+ * Coerce Prisma JSON (`Prisma.JsonValue | null`) into our `LocalizedText` shape.
+ * Only accepts plain `Record<string, string>` — anything else (array, scalar,
+ * nested object) is treated as "no translations". This keeps callers from
+ * having to defensively typecheck JSONB content.
+ */
+function localizedFromJson(v: unknown): Record<string, string> | null {
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return null;
+  const out: Record<string, string> = {};
+  for (const [k, val] of Object.entries(v as Record<string, unknown>)) {
+    if (typeof val === 'string') out[k] = val;
+  }
+  return Object.keys(out).length ? out : null;
+}
+
 export function ingredientFromPrisma(i: PRecipeIngredient): RecipeIngredient {
   return {
     id: i.id,
     recipeId: i.recipeId,
     name: i.name,
+    nameI18n: localizedFromJson(i.nameI18n),
     quantity: Number(i.quantity.toString()),
     unit: i.unit,
     notes: i.notes,
@@ -82,8 +99,10 @@ export function recipeFromPrisma(
   return {
     id: r.id,
     title: r.title,
+    titleI18n: localizedFromJson(r.titleI18n),
     slug: r.slug,
     description: r.description,
+    descriptionI18n: localizedFromJson(r.descriptionI18n),
     authorId: r.authorId,
     source: r.source,
     prepTimeMin: r.prepTimeMin,

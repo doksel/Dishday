@@ -18,6 +18,7 @@ import { Fab } from '../../src/components/Fab';
 import { MealCard } from '../../src/components/MealCard';
 import { Text } from '../../src/components/ui';
 import { getApi } from '../../src/lib/api';
+import { apiErrorMessage } from '../../src/lib/apiError';
 import { useTheme, useThemedStyles, type Theme } from '../../src/theme';
 
 export default function HomeScreen() {
@@ -116,7 +117,7 @@ export default function HomeScreen() {
 
         {plans.error && (
           <Text variant="bodyMd" color="danger">
-            {t('loadError', { error: (plans.error as Error).message })}
+            {t('loadError', { error: apiErrorMessage(plans.error, t) })}
           </Text>
         )}
 

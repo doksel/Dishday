@@ -11,6 +11,7 @@ import enRecipes from './locales/en/recipes.json';
 import enMeal from './locales/en/meal.json';
 import enRecipe from './locales/en/recipe.json';
 import enScan from './locales/en/scan.json';
+import enErrors from './locales/en/errors.json';
 // ─── Russian ──────────────────────────────────────────────
 import ruCommon from './locales/ru/common.json';
 import ruProfile from './locales/ru/profile.json';
@@ -22,6 +23,7 @@ import ruRecipes from './locales/ru/recipes.json';
 import ruMeal from './locales/ru/meal.json';
 import ruRecipe from './locales/ru/recipe.json';
 import ruScan from './locales/ru/scan.json';
+import ruErrors from './locales/ru/errors.json';
 // ─── Ukrainian ────────────────────────────────────────────
 import ukCommon from './locales/uk/common.json';
 import ukProfile from './locales/uk/profile.json';
@@ -33,6 +35,7 @@ import ukRecipes from './locales/uk/recipes.json';
 import ukMeal from './locales/uk/meal.json';
 import ukRecipe from './locales/uk/recipe.json';
 import ukScan from './locales/uk/scan.json';
+import ukErrors from './locales/uk/errors.json';
 // ─── German ───────────────────────────────────────────────
 import deCommon from './locales/de/common.json';
 import deProfile from './locales/de/profile.json';
@@ -44,6 +47,7 @@ import deRecipes from './locales/de/recipes.json';
 import deMeal from './locales/de/meal.json';
 import deRecipe from './locales/de/recipe.json';
 import deScan from './locales/de/scan.json';
+import deErrors from './locales/de/errors.json';
 // ─── Italian ──────────────────────────────────────────────
 import itCommon from './locales/it/common.json';
 import itProfile from './locales/it/profile.json';
@@ -55,6 +59,7 @@ import itRecipes from './locales/it/recipes.json';
 import itMeal from './locales/it/meal.json';
 import itRecipe from './locales/it/recipe.json';
 import itScan from './locales/it/scan.json';
+import itErrors from './locales/it/errors.json';
 // ─── Spanish ──────────────────────────────────────────────
 import esCommon from './locales/es/common.json';
 import esProfile from './locales/es/profile.json';
@@ -66,6 +71,7 @@ import esRecipes from './locales/es/recipes.json';
 import esMeal from './locales/es/meal.json';
 import esRecipe from './locales/es/recipe.json';
 import esScan from './locales/es/scan.json';
+import esErrors from './locales/es/errors.json';
 // ─── French ───────────────────────────────────────────────
 import frCommon from './locales/fr/common.json';
 import frProfile from './locales/fr/profile.json';
@@ -77,43 +83,44 @@ import frRecipes from './locales/fr/recipes.json';
 import frMeal from './locales/fr/meal.json';
 import frRecipe from './locales/fr/recipe.json';
 import frScan from './locales/fr/scan.json';
+import frErrors from './locales/fr/errors.json';
 
 const bundle = <T extends Record<string, unknown>>(t: T) => t;
 
 export const en = bundle({
   common: enCommon, profile: enProfile, home: enHome, auth: enAuth,
   mealTypes: enMealTypes, planner: enPlanner, recipes: enRecipes,
-  meal: enMeal, recipe: enRecipe, scan: enScan,
+  meal: enMeal, recipe: enRecipe, scan: enScan, errors: enErrors,
 });
 export const ru = bundle({
   common: ruCommon, profile: ruProfile, home: ruHome, auth: ruAuth,
   mealTypes: ruMealTypes, planner: ruPlanner, recipes: ruRecipes,
-  meal: ruMeal, recipe: ruRecipe, scan: ruScan,
+  meal: ruMeal, recipe: ruRecipe, scan: ruScan, errors: ruErrors,
 });
 export const uk = bundle({
   common: ukCommon, profile: ukProfile, home: ukHome, auth: ukAuth,
   mealTypes: ukMealTypes, planner: ukPlanner, recipes: ukRecipes,
-  meal: ukMeal, recipe: ukRecipe, scan: ukScan,
+  meal: ukMeal, recipe: ukRecipe, scan: ukScan, errors: ukErrors,
 });
 export const de = bundle({
   common: deCommon, profile: deProfile, home: deHome, auth: deAuth,
   mealTypes: deMealTypes, planner: dePlanner, recipes: deRecipes,
-  meal: deMeal, recipe: deRecipe, scan: deScan,
+  meal: deMeal, recipe: deRecipe, scan: deScan, errors: deErrors,
 });
 export const it = bundle({
   common: itCommon, profile: itProfile, home: itHome, auth: itAuth,
   mealTypes: itMealTypes, planner: itPlanner, recipes: itRecipes,
-  meal: itMeal, recipe: itRecipe, scan: itScan,
+  meal: itMeal, recipe: itRecipe, scan: itScan, errors: itErrors,
 });
 export const es = bundle({
   common: esCommon, profile: esProfile, home: esHome, auth: esAuth,
   mealTypes: esMealTypes, planner: esPlanner, recipes: esRecipes,
-  meal: esMeal, recipe: esRecipe, scan: esScan,
+  meal: esMeal, recipe: esRecipe, scan: esScan, errors: esErrors,
 });
 export const fr = bundle({
   common: frCommon, profile: frProfile, home: frHome, auth: frAuth,
   mealTypes: frMealTypes, planner: frPlanner, recipes: frRecipes,
-  meal: frMeal, recipe: frRecipe, scan: frScan,
+  meal: frMeal, recipe: frRecipe, scan: frScan, errors: frErrors,
 });
 
 /** All locales bundled together — ready to feed into `i18next.init({ resources })`. */
@@ -123,5 +130,6 @@ export const resources = { en, ru, uk, de, it, es, fr } as const;
 export const NAMESPACES = [
   'common', 'profile', 'home', 'auth', 'mealTypes',
   'planner', 'recipes', 'meal', 'recipe', 'scan',
+  'errors',
 ] as const;
 export type Namespace = (typeof NAMESPACES)[number];

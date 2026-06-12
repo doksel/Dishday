@@ -28,6 +28,13 @@ export function createDishdayApi(client: ApiClient) {
       getProfile: () => client.get<UserProfile>('/users/profile'),
       updateProfile: (data: Partial<UserProfile>) =>
         client.put<UserProfile>('/users/profile', data),
+      /**
+       * Pin the user's UI/content language across devices.
+       * Pass `null` to clear the pin (clients fall back to device locale).
+       * Server validates against `@dishday/i18n` SUPPORTED_LOCALES.
+       */
+      setLocale: (locale: string | null) =>
+        client.put<User>('/users/profile', { locale }),
     },
     recipes: {
       list: (filter: RecipeFilter = {}) => {

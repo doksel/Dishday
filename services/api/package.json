@@ -22,9 +22,10 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.1",
+    "@dishday/i18n": "*",
     "@dishday/types": "*",
-    "@google/generative-ai": "^0.21.0",
     "@dishday/utils": "*",
+    "@google/generative-ai": "^0.21.0",
     "@prisma/client": "^6.1.0",
     "@supabase/supabase-js": "^2.47.10",
     "bull": "^4.16.5",

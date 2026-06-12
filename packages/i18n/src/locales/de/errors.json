@@ -1,0 +1,10 @@
+{
+  "NOT_FOUND": "Nicht gefunden.",
+  "UNAUTHORIZED": "Bitte melde dich an, um fortzufahren.",
+  "VALIDATION_ERROR": "Einige Felder sind ungültig. Bitte überprüfen und erneut versuchen.",
+  "INTERNAL_ERROR": "Auf unserer Seite ist etwas schiefgelaufen. Bitte versuche es erneut.",
+  "NO_SUBSCRIPTION": "Kein aktives Abonnement.",
+  "PLAN_REQUIRED": "Diese Funktion erfordert den Pro-Tarif.",
+  "NETWORK_ERROR": "Server nicht erreichbar. Verbindung prüfen und erneut versuchen.",
+  "UNKNOWN": "Etwas ist schiefgelaufen. Bitte versuche es erneut."
+}

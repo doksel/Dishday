@@ -11,6 +11,12 @@ export interface User {
   plan: UserPlan;
   planExpiresAt: ISODateString | null;
   onboardingDone: boolean;
+  /**
+   * Preferred UI/content language as a BCP-47 code (e.g. `en`, `ru`, `uk`,
+   * `de`, `it`, `es`, `fr`). `null` means "follow the device locale on each
+   * client". The list of accepted codes lives in `@dishday/i18n`.
+   */
+  locale: string | null;
   createdAt: ISODateString;
   updatedAt: ISODateString;
 }

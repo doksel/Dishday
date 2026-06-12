@@ -1,0 +1,10 @@
+{
+  "NOT_FOUND": "No encontrado.",
+  "UNAUTHORIZED": "Inicia sesión para continuar.",
+  "VALIDATION_ERROR": "Algunos campos no son válidos. Revísalos e inténtalo de nuevo.",
+  "INTERNAL_ERROR": "Algo salió mal por nuestra parte. Inténtalo de nuevo.",
+  "NO_SUBSCRIPTION": "No hay suscripción activa.",
+  "PLAN_REQUIRED": "Esta función requiere el plan Pro.",
+  "NETWORK_ERROR": "No podemos contactar con el servidor. Comprueba la conexión y reinténtalo.",
+  "UNKNOWN": "Algo salió mal. Inténtalo de nuevo."
+}

@@ -1,12 +1,23 @@
 import { Router } from 'express';
 import { z } from 'zod';
+import { isSupportedLocale } from '@dishday/i18n/locale-codes';
 import type { AppContainer } from '../container.js';
 import { requireAuth, type AuthedRequest } from '../middlewares/auth.js';
+
+/**
+ * BCP-47 locale validator — accepts only languages we ship translations for
+ * (see `@dishday/i18n` SUPPORTED_LOCALES) or `null` to clear the pin.
+ */
+const localeSchema = z
+  .string()
+  .refine((v) => isSupportedLocale(v), { message: 'Unsupported locale' });
 
 const updateProfileSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   avatarUrl: z.string().url().nullable().optional(),
   onboardingDone: z.boolean().optional(),
+  /** Persist user's language preference across devices. */
+  locale: localeSchema.nullable().optional(),
 });
 
 const updateDietarySchema = z.object({

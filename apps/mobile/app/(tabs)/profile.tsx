@@ -31,6 +31,20 @@ export default function ProfileScreen() {
     { value: 'dark', label: t('theme.dark') },
   ];
 
+  /**
+   * Switch UI language locally AND persist it to the user's account, so other
+   * devices (web, second phone) pick the same preference and AI prompts use
+   * the right language. We don't `await` the API call — if it fails (offline,
+   * unauthenticated, server hiccup) the UI change still sticks via i18n
+   * storage; the next successful settings save will re-sync.
+   */
+  const handleLocaleChange = (code: LocaleCode) => {
+    void setLocale(code);
+    api.users.setLocale(code).catch(() => {
+      // best-effort sync — local AsyncStorage is the source of truth here
+    });
+  };
+
   return (
     <Screen gap="lg">
       <View>
@@ -97,7 +111,7 @@ export default function ProfileScreen() {
             return (
               <Pressable
                 key={loc.code}
-                onPress={() => setLocale(loc.code as LocaleCode)}
+                onPress={() => handleLocaleChange(loc.code as LocaleCode)}
                 style={({ pressed }) => [
                   styles.langTile,
                   active && styles.langTileActive,

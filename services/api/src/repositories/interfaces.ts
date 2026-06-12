@@ -41,6 +41,8 @@ export interface CreateUserInput {
   passwordHash?: string | null;
   avatarUrl?: string | null;
   plan?: UserPlan;
+  /** BCP-47 code (en, ru, uk…). `null` = follow device locale. */
+  locale?: string | null;
 }
 
 export interface UpdateUserInput {
@@ -49,6 +51,8 @@ export interface UpdateUserInput {
   plan?: UserPlan;
   planExpiresAt?: string | null;
   onboardingDone?: boolean;
+  /** BCP-47 code (en, ru, uk…). `null` clears the pin → follow device locale. */
+  locale?: string | null;
 }
 
 export interface UserRepository {
@@ -69,8 +73,12 @@ export interface UserRepository {
 
 export interface CreateRecipeInput {
   title: string;
+  /** Optional translations of title, BCP-47 keyed. */
+  titleI18n?: Partial<Record<string, string>> | null;
   slug: string;
   description?: string | null;
+  /** Optional translations of description, BCP-47 keyed. */
+  descriptionI18n?: Partial<Record<string, string>> | null;
   authorId?: string | null;
   source: Recipe['source'];
   prepTimeMin?: number | null;

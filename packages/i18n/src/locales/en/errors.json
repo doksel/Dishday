@@ -1,0 +1,10 @@
+{
+  "NOT_FOUND": "Not found.",
+  "UNAUTHORIZED": "Please sign in to continue.",
+  "VALIDATION_ERROR": "Some fields are invalid. Please check and try again.",
+  "INTERNAL_ERROR": "Something went wrong on our side. Please try again.",
+  "NO_SUBSCRIPTION": "No active subscription.",
+  "PLAN_REQUIRED": "This feature requires the Pro plan.",
+  "NETWORK_ERROR": "We can't reach the server. Check your connection and retry.",
+  "UNKNOWN": "Something went wrong. Please try again."
+}

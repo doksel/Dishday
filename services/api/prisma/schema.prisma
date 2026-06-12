@@ -79,6 +79,9 @@ model User {
   plan            UserPlan  @default(free)
   planExpiresAt   DateTime? @map("plan_expires_at") @db.Timestamptz()
   onboardingDone  Boolean   @default(false) @map("onboarding_done")
+  // BCP-47 language code (en, ru, uk, de, it, es, fr). Used for AI prompt
+  // language and API error messages. NULL = "follow device locale".
+  locale          String?   @db.VarChar(8)
   createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
 
@@ -116,9 +119,15 @@ model UserProfile {
 
 model Recipe {
   id                  String       @id @default(uuid()) @db.Uuid
+  // `title` / `description` remain the canonical/fallback text (always populated,
+  // typically English for AI-generated recipes). `*_i18n` JSONB columns hold
+  // optional translations keyed by BCP-47 code (`{ "ru": "...", "uk": "..." }`).
+  // Clients prefer `*_i18n[user.locale]` and fall back to `title`/`description`.
   title               String       @db.VarChar(255)
+  titleI18n           Json?        @map("title_i18n")
   slug                String       @unique @db.VarChar(255)
   description         String?      @db.Text
+  descriptionI18n     Json?        @map("description_i18n")
   authorId            String?      @map("author_id") @db.Uuid
   source              RecipeSource
   prepTimeMin         Int?         @map("prep_time_min") @db.SmallInt
@@ -152,6 +161,9 @@ model RecipeIngredient {
   id          String   @id @default(uuid()) @db.Uuid
   recipeId    String   @map("recipe_id") @db.Uuid
   name        String   @db.VarChar(150)
+  // Optional translations of the ingredient name; same convention as
+  // `Recipe.title_i18n` (BCP-47 keyed). `name` is the canonical fallback.
+  nameI18n    Json?    @map("name_i18n")
   quantity    Decimal  @db.Decimal(10, 3)
   unit        String   @db.VarChar(50)
   notes       String?  @db.VarChar(200)
