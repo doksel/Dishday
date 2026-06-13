@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Recipe } from '@dishday/types';
-import { PaywallModal } from '../../src/components/PaywallModal';
+import { PaywallModal, type PaywallContext } from '../../src/components/PaywallModal';
 import { Button, Checkbox, Chip, Icon, Text } from '../../src/components/ui';
 import { getApi } from '../../src/lib/api';
 import { useTheme, useThemedStyles, type Theme } from '../../src/theme';
@@ -56,7 +56,12 @@ export default function RecipeDetailScreen() {
 
   const [saved, setSaved] = useState(false);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<string>>(new Set());
-  const [paywallOpen, setPaywallOpen] = useState(false);
+  /** null = closed; otherwise the framing for the upsell screen. */
+  const [paywallContext, setPaywallContext] = useState<PaywallContext | null>(null);
+  const paywallOpen = paywallContext !== null;
+  function setPaywallOpen(open: boolean, context: PaywallContext = 'aiGenerate') {
+    setPaywallContext(open ? context : null);
+  }
 
   const recipe = useQuery<Recipe>({
     queryKey: ['recipe', id],
@@ -93,9 +98,18 @@ export default function RecipeDetailScreen() {
     try {
       if (next) await api.recipes.bookmark(id);
       else await api.recipes.unbookmark(id);
-    } catch {
-      // revert on failure
+    } catch (err) {
+      // Revert optimistic toggle.
       setSaved(!next);
+      // Free users hit the bookmark cap → server returns 402 LIMIT_REACHED.
+      // Open the paywall with bookmark-specific framing instead of a silent failure.
+      if (
+        err instanceof ApiClientError &&
+        err.status === 402 &&
+        err.body?.code === 'LIMIT_REACHED'
+      ) {
+        setPaywallOpen(true, 'bookmarks');
+      }
     }
   }
 
@@ -309,7 +323,11 @@ export default function RecipeDetailScreen() {
         </View>
       )}
 
-      <PaywallModal visible={paywallOpen} onClose={() => setPaywallOpen(false)} />
+      <PaywallModal
+        visible={paywallOpen}
+        context={paywallContext ?? undefined}
+        onClose={() => setPaywallContext(null)}
+      />
     </View>
   );
 }

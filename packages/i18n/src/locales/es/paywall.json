@@ -23,6 +23,12 @@
     "currentPro": "Estás en Pro",
     "manageBody": "Actualiza el pago, cambia de plan o cancela."
   },
+  "context": {
+    "history": "Mira semanas pasadas — Pro desbloquea todo tu historial de planes.",
+    "bookmarks": "Has llegado al límite de 10 favoritos. Pro elimina el límite.",
+    "quickDishes": "Has llegado al límite de 10 platos propios. Pro elimina el límite.",
+    "aiGenerate": "Los planes con IA son una función Pro. Semanas equilibradas en segundos."
+  },
   "errors": {
     "checkoutFailed": "No se pudo iniciar el pago: {{error}}",
     "portalFailed": "No se pudo abrir el portal: {{error}}",

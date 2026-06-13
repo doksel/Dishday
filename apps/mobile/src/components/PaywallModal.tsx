@@ -27,14 +27,30 @@ import { getApi } from '../lib/api';
 import { apiErrorMessage } from '../lib/apiError';
 import { useTheme, useThemedStyles, type Theme } from '../theme';
 
+/**
+ * Context-specific framing for the paywall.
+ *
+ *   - `history`      — Free user tried to navigate to a past week
+ *   - `bookmarks`    — Free user hit the bookmark cap (10)
+ *   - `quickDishes`  — Free user hit the quick-dish cap (10)
+ *   - `aiGenerate`   — Free user tapped AI generate (default fallback)
+ *   - undefined      — generic "Unlock Pro" framing
+ *
+ * The visible difference is just a single subtitle string above the
+ * features list — same Stripe checkout flow underneath.
+ */
+export type PaywallContext = 'history' | 'bookmarks' | 'quickDishes' | 'aiGenerate';
+
 export interface PaywallModalProps {
   visible: boolean;
   onClose: () => void;
   /** Optional override for where Stripe redirects after success. */
   returnUrl?: string;
+  /** Render context-specific framing (subtitle + maybe future CTAs). */
+  context?: PaywallContext;
 }
 
-export function PaywallModal({ visible, onClose, returnUrl }: PaywallModalProps) {
+export function PaywallModal({ visible, onClose, returnUrl, context }: PaywallModalProps) {
   const theme = useTheme();
   const styles = useThemedStyles(makeStyles);
   const { t } = useTranslation('paywall');
@@ -93,7 +109,7 @@ export function PaywallModal({ visible, onClose, returnUrl }: PaywallModalProps)
             {t('title')}
           </Text>
           <Text variant="bodyLg" color="textSecondary" align="center" style={styles.subtitle}>
-            {t('subtitle')}
+            {context ? t(`context.${context}`) : t('subtitle')}
           </Text>
 
           <View style={styles.featureList}>

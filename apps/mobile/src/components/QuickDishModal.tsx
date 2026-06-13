@@ -15,6 +15,7 @@
  */
 
 import { useMutation } from '@tanstack/react-query';
+import { ApiClientError } from '@dishday/api-client';
 import type { Recipe } from '@dishday/types';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -31,6 +32,7 @@ import { Button, Input, Text } from './ui';
 import { getApi } from '../lib/api';
 import { apiErrorMessage } from '../lib/apiError';
 import { useThemedStyles, type Theme } from '../theme';
+import { PaywallModal } from './PaywallModal';
 
 export interface QuickDishModalProps {
   visible: boolean;
@@ -47,12 +49,14 @@ export function QuickDishModal({ visible, onClose, onCreated }: QuickDishModalPr
 
   const [title, setTitle] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [paywallOpen, setPaywallOpen] = useState(false);
 
   // Reset form whenever the modal is re-opened (matches AddShoppingItemModal pattern).
   useEffect(() => {
     if (visible) {
       setTitle('');
       setError(null);
+      setPaywallOpen(false);
     }
   }, [visible]);
 
@@ -62,7 +66,20 @@ export function QuickDishModal({ visible, onClose, onCreated }: QuickDishModalPr
       onCreated?.(recipe);
       onClose();
     },
-    onError: (err) => setError(apiErrorMessage(err, t)),
+    onError: (err) => {
+      // Free users hit the quick-dish cap → server returns 402 LIMIT_REACHED.
+      // Surface the paywall with the right framing instead of a generic
+      // inline error.
+      if (
+        err instanceof ApiClientError &&
+        err.status === 402 &&
+        err.body?.code === 'LIMIT_REACHED'
+      ) {
+        setPaywallOpen(true);
+        return;
+      }
+      setError(apiErrorMessage(err, t));
+    },
   });
 
   const canSave = title.trim().length > 0 && !create.isPending;
@@ -127,6 +144,15 @@ export function QuickDishModal({ visible, onClose, onCreated }: QuickDishModalPr
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
+
+      <PaywallModal
+        visible={paywallOpen}
+        context="quickDishes"
+        onClose={() => {
+          setPaywallOpen(false);
+          onClose();
+        }}
+      />
     </Modal>
   );
 }

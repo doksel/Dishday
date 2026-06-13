@@ -145,4 +145,14 @@ export class InMemoryRecipeRepository implements RecipeRepository {
       return r ? [r] : [];
     });
   }
+
+  async countBookmarks(userId: string): Promise<number> {
+    return [...this.bookmarks].filter((k) => k.startsWith(`${userId}:`)).length;
+  }
+
+  async countUserRecipes(userId: string): Promise<number> {
+    return [...this.recipes.values()].filter(
+      (r) => r.authorId === userId && r.source === 'user',
+    ).length;
+  }
 }

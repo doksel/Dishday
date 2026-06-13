@@ -192,4 +192,12 @@ export class PrismaRecipeRepository implements RecipeRepository {
     });
     return rows.map((r) => recipeFromPrisma(r.recipe));
   }
+
+  countBookmarks(userId: string): Promise<number> {
+    return this.prisma.recipeBookmark.count({ where: { userId } });
+  }
+
+  countUserRecipes(userId: string): Promise<number> {
+    return this.prisma.recipe.count({ where: { authorId: userId, source: 'user' } });
+  }
 }

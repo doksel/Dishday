@@ -3,7 +3,18 @@ import { z } from 'zod';
 import { isSupportedLocale } from '@dishday/i18n';
 import type { AppContainer } from '../container.js';
 import { requireAuth, type AuthedRequest } from '../middlewares/auth.js';
-import { NotFoundError, PlanRequiredError } from '../repositories/interfaces.js';
+import { LimitReachedError, NotFoundError, PlanRequiredError } from '../repositories/interfaces.js';
+
+/** Map a LimitReachedError to a 402 response with structured body. */
+function send402Limit(res: import('express').Response, err: LimitReachedError) {
+  return res.status(402).json({
+    code: 'LIMIT_REACHED',
+    message: err.message,
+    kind: err.kind,
+    limit: err.limit,
+    current: err.current,
+  });
+}
 
 /**
  * BCP-47 → string map (`{ en: 'Pasta', ru: 'Паста' }`). Only known locale
@@ -113,6 +124,7 @@ export function recipesRouter(container: AppContainer): Router {
       const data = createRecipeSchema.parse(req.body);
       res.status(201).json(await recipes.create(req.userId!, data));
     } catch (e) {
+      if (e instanceof LimitReachedError) return send402Limit(res, e);
       next(e);
     }
   });
@@ -142,6 +154,7 @@ export function recipesRouter(container: AppContainer): Router {
       await recipes.bookmark(req.userId!, req.params.id);
       res.status(204).end();
     } catch (e) {
+      if (e instanceof LimitReachedError) return send402Limit(res, e);
       next(e);
     }
   });

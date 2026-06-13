@@ -23,6 +23,12 @@
     "currentPro": "You're on Pro",
     "manageBody": "Update payment, change plan, or cancel."
   },
+  "context": {
+    "history": "Browse past weeks of meal plans — Pro unlocks your full history.",
+    "bookmarks": "You've reached the 10-bookmark limit. Pro lets you save unlimited recipes.",
+    "quickDishes": "You've reached the 10 personal dishes limit. Pro unlocks unlimited.",
+    "aiGenerate": "AI meal plans are a Pro feature. Generate balanced weeks in seconds."
+  },
   "errors": {
     "checkoutFailed": "Couldn't start checkout: {{error}}",
     "portalFailed": "Couldn't open subscription portal: {{error}}",

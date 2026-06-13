@@ -1,12 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiClientError } from '@dishday/api-client';
 import type { DayOfWeek, MealPlan, MealType, Recipe, ShoppingList, User } from '@dishday/types';
-import { pickLocalized, planWeekDates, weekStartIso } from '@dishday/utils';
+import { addWeeksIso, pickLocalized, planWeekDates, weekStartIso } from '@dishday/utils';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-native';
-import { PaywallModal } from '../../src/components/PaywallModal';
+import { PaywallModal, type PaywallContext } from '../../src/components/PaywallModal';
 import { RecipePickerModal } from '../../src/components/RecipePickerModal';
 import { Screen } from '../../src/components/Screen';
 import { getApi } from '../../src/lib/api';
@@ -32,12 +32,23 @@ export default function PlannerScreen() {
   const tShop = useTranslation('shoppingList').t;
   const api = getApi();
   const qc = useQueryClient();
-  const week = weekStartIso();
+  /**
+   * Currently displayed week — state so prev/next navigation can shift it.
+   * Free users can move forward (future) freely; moving backwards into past
+   * weeks (history) is a Pro feature — the gate is enforced both in UI
+   * (paywall instead of state change) and in backend (`listMine` filters
+   * Free's response to `weekStart >= currentWeek`).
+   */
+  const todayWeek = weekStartIso();
+  const [week, setWeek] = useState(todayWeek);
   const weekDates = planWeekDates(week);
 
   const [pendingJobId, setPendingJobId] = useState<string | null>(null);
   const [picker, setPicker] = useState<PickerTarget | null>(null);
-  const [paywallOpen, setPaywallOpen] = useState(false);
+  /** Paywall state — null = closed, otherwise the context to render. */
+  const [paywallContext, setPaywallContext] = useState<PaywallContext | null>(null);
+  const paywallOpen = paywallContext !== null;
+  const setPaywallOpen = (open: boolean) => setPaywallContext(open ? 'aiGenerate' : null);
 
   const me = useQuery<User>({
     queryKey: ['auth', 'me'],
@@ -175,6 +186,23 @@ export default function PlannerScreen() {
     setPicker({ planId: currentPlan.id, dayOfWeek, mealType });
   }
 
+  /**
+   * Week navigation. Forward is unrestricted (planning future weeks is fine
+   * for both tiers). Backward into past weeks is a Pro feature — Free users
+   * get a paywall with `context='history'` instead of state change.
+   */
+  function handlePrevWeek() {
+    const target = addWeeksIso(week, -1);
+    if (!isPro && target < todayWeek) {
+      setPaywallContext('history');
+      return;
+    }
+    setWeek(target);
+  }
+  function handleNextWeek() {
+    setWeek(addWeeksIso(week, 1));
+  }
+
   function handlePickRecipe(recipe: Recipe) {
     if (!picker) return;
     addEntry.mutate({
@@ -188,7 +216,21 @@ export default function PlannerScreen() {
 
   return (
     <Screen variant="scroll" gap="md">
-      <Text variant="displayLg">{t('title', { week })}</Text>
+      <View style={styles.weekNav}>
+        <Pressable onPress={handlePrevWeek} hitSlop={8} style={styles.weekNavBtn}>
+          <Icon
+            name={!isPro && addWeeksIso(week, -1) < todayWeek ? 'lock-closed' : 'chevron-back'}
+            color={!isPro && addWeeksIso(week, -1) < todayWeek ? 'textMuted' : 'text'}
+            size={22}
+          />
+        </Pressable>
+        <Text variant="displayLg" style={styles.weekTitle} numberOfLines={1}>
+          {t('title', { week })}
+        </Text>
+        <Pressable onPress={handleNextWeek} hitSlop={8} style={styles.weekNavBtn}>
+          <Icon name="chevron-forward" color="text" size={22} />
+        </Pressable>
+      </View>
 
       {plans.isLoading && (
         <View style={styles.loaderRow}>
@@ -311,7 +353,11 @@ export default function PlannerScreen() {
         onSelect={handlePickRecipe}
       />
 
-      <PaywallModal visible={paywallOpen} onClose={() => setPaywallOpen(false)} />
+      <PaywallModal
+        visible={paywallOpen}
+        context={paywallContext ?? undefined}
+        onClose={() => setPaywallContext(null)}
+      />
     </Screen>
   );
 }
@@ -319,6 +365,19 @@ export default function PlannerScreen() {
 function makeStyles(theme: Theme) {
   return StyleSheet.create({
     loaderRow: { paddingVertical: theme.spacing.xl, alignItems: 'center' },
+    weekNav: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.sm,
+    },
+    weekNavBtn: {
+      width: 36,
+      height: 36,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 18,
+    },
+    weekTitle: { flex: 1, textAlign: 'center' },
     banner: {
       flexDirection: 'row',
       alignItems: 'center',

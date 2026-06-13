@@ -10,8 +10,22 @@ import { NotFoundError } from '../repositories/interfaces.js';
 export class MealPlanService {
   constructor(private readonly repos: Repositories) {}
 
-  listMine(userId: string): Promise<MealPlan[]> {
-    return this.repos.mealPlans.listByUser(userId);
+  /**
+   * Free users see only the current and future weeks — viewing history is a
+   * Pro feature. We filter in-memory after the repo returns because the
+   * repo interface is plan-agnostic and the typical list per user is
+   * tiny (≤ 1 row per week × a few months). If users ever accumulate
+   * hundreds of plans, push this filter into the repo as a query param.
+   */
+  async listMine(userId: string): Promise<MealPlan[]> {
+    const [plans, user] = await Promise.all([
+      this.repos.mealPlans.listByUser(userId),
+      this.repos.users.findById(userId),
+    ]);
+    const isPro = user?.plan === 'pro' || user?.plan === 'admin';
+    if (isPro) return plans;
+    const currentWeek = weekStartIso();
+    return plans.filter((p) => p.weekStart >= currentWeek);
   }
 
   async get(id: string, userId: string): Promise<MealPlan> {

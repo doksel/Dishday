@@ -126,6 +126,10 @@ export interface RecipeRepository {
   bookmark(userId: string, recipeId: string): Promise<void>;
   unbookmark(userId: string, recipeId: string): Promise<void>;
   listBookmarks(userId: string): Promise<Recipe[]>;
+  /** Count current bookmarks — used to enforce Free-tier caps. */
+  countBookmarks(userId: string): Promise<number>;
+  /** Count recipes authored by user with source='user' — used for the quick-dish cap. */
+  countUserRecipes(userId: string): Promise<number>;
 }
 
 // ─── Meal Plans ───────────────────────────────────────────
@@ -244,5 +248,24 @@ export class PlanRequiredError extends Error {
   constructor(message = 'Pro plan required') {
     super(message);
     this.name = 'PlanRequiredError';
+  }
+}
+
+/**
+ * Thrown when a Free-tier user has hit a per-resource cap (bookmarks, quick
+ * dishes, etc.). The HTTP layer maps this to `402 LIMIT_REACHED` and includes
+ * `{ kind, limit, current }` in the body so the client can render a
+ * context-specific paywall ("you've reached 10/10 bookmarks").
+ */
+export type LimitKind = 'bookmarks' | 'quickDishes';
+
+export class LimitReachedError extends Error {
+  constructor(
+    public readonly kind: LimitKind,
+    public readonly limit: number,
+    public readonly current: number,
+  ) {
+    super(`Free-tier limit reached for ${kind}: ${current}/${limit}`);
+    this.name = 'LimitReachedError';
   }
 }

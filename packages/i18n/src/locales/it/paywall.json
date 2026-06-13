@@ -23,6 +23,12 @@
     "currentPro": "Sei su Pro",
     "manageBody": "Aggiorna pagamento, cambia piano o annulla."
   },
+  "context": {
+    "history": "Guarda le settimane passate — Pro sblocca tutta la cronologia dei piani.",
+    "bookmarks": "Hai raggiunto il limite di 10 preferiti. Pro lo rimuove.",
+    "quickDishes": "Hai raggiunto il limite di 10 piatti personali. Pro lo rimuove.",
+    "aiGenerate": "I piani con IA sono una funzione Pro. Settimane bilanciate in pochi secondi."
+  },
   "errors": {
     "checkoutFailed": "Impossibile avviare il pagamento: {{error}}",
     "portalFailed": "Impossibile aprire il portale: {{error}}",

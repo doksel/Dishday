@@ -9,7 +9,11 @@
 import type { Paginated, Recipe, RecipeFilter } from '@dishday/types';
 import { slugify } from '@dishday/utils';
 import type { CreateRecipeInput, Repositories, UpdateRecipeInput } from '../repositories/interfaces.js';
-import { NotFoundError, PlanRequiredError } from '../repositories/interfaces.js';
+import { LimitReachedError, NotFoundError, PlanRequiredError } from '../repositories/interfaces.js';
+
+/** Free-tier caps. Pro / admin are uncapped. */
+const FREE_BOOKMARK_LIMIT = 10;
+const FREE_QUICK_DISH_LIMIT = 10;
 
 export class RecipeService {
   constructor(private readonly repos: Repositories) {}
@@ -59,9 +63,17 @@ export class RecipeService {
     authorId: string,
     input: Omit<CreateRecipeInput, 'slug' | 'authorId' | 'source' | 'previewOnly'>,
   ): Promise<Recipe> {
-    const slug = await this.uniqueSlug(input.title);
     const author = await this.repos.users.findById(authorId);
     const isFree = !author || author.plan === 'free';
+
+    if (isFree) {
+      const current = await this.repos.recipes.countUserRecipes(authorId);
+      if (current >= FREE_QUICK_DISH_LIMIT) {
+        throw new LimitReachedError('quickDishes', FREE_QUICK_DISH_LIMIT, current);
+      }
+    }
+
+    const slug = await this.uniqueSlug(input.title);
     return this.repos.recipes.create({
       ...input,
       authorId,
@@ -90,8 +102,24 @@ export class RecipeService {
     await this.repos.recipes.delete(id);
   }
 
-  bookmark(userId: string, recipeId: string) {
-    return this.repos.recipes.bookmark(userId, recipeId);
+  /**
+   * Free users may bookmark up to FREE_BOOKMARK_LIMIT recipes — beyond that,
+   * the upgrade flow is the only path. Pro / admin are uncapped.
+   *
+   * We check on the *add* side only, not on toggle — so existing bookmarks
+   * survive a Pro → Free downgrade. The user simply can't add more until
+   * they prune below the cap or upgrade again.
+   */
+  async bookmark(userId: string, recipeId: string): Promise<void> {
+    const user = await this.repos.users.findById(userId);
+    const isFree = !user || user.plan === 'free';
+    if (isFree) {
+      const current = await this.repos.recipes.countBookmarks(userId);
+      if (current >= FREE_BOOKMARK_LIMIT) {
+        throw new LimitReachedError('bookmarks', FREE_BOOKMARK_LIMIT, current);
+      }
+    }
+    await this.repos.recipes.bookmark(userId, recipeId);
   }
   unbookmark(userId: string, recipeId: string) {
     return this.repos.recipes.unbookmark(userId, recipeId);

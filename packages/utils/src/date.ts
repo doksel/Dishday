@@ -16,3 +16,13 @@ export function planWeekDates(weekStart: string): Date[] {
   const start = new Date(`${weekStart}T00:00:00.000Z`);
   return Array.from({ length: 7 }, (_, i) => addDays(start, i));
 }
+
+/**
+ * Shift a Monday-ISO week by N weeks (negative = past). Result is the same
+ * YYYY-MM-DD format returned by `weekStartIso()`. Used by the planner's
+ * prev/next week navigation.
+ */
+export function addWeeksIso(weekStart: string, weeks: number): string {
+  const start = new Date(`${weekStart}T00:00:00.000Z`);
+  return format(addDays(start, weeks * 7), 'yyyy-MM-dd');
+}

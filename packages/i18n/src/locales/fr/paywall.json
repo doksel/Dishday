@@ -23,6 +23,12 @@
     "currentPro": "Vous êtes en Pro",
     "manageBody": "Mettez à jour le paiement, changez ou annulez."
   },
+  "context": {
+    "history": "Consultez les semaines passées — Pro déverrouille tout votre historique.",
+    "bookmarks": "Vous avez atteint la limite de 10 favoris. Pro la supprime.",
+    "quickDishes": "Vous avez atteint la limite de 10 plats perso. Pro la supprime.",
+    "aiGenerate": "Les plans IA sont une fonctionnalité Pro. Des semaines équilibrées en quelques secondes."
+  },
   "errors": {
     "checkoutFailed": "Impossible d'ouvrir le paiement : {{error}}",
     "portalFailed": "Impossible d'ouvrir le portail : {{error}}",

@@ -23,6 +23,12 @@
     "currentPro": "Du nutzt Pro",
     "manageBody": "Zahlung aktualisieren, Tarif ändern oder kündigen."
   },
+  "context": {
+    "history": "Vergangene Wochen ansehen — Pro schaltet deine gesamte Plan-Historie frei.",
+    "bookmarks": "Du hast das Limit von 10 Lesezeichen erreicht. Pro hebt es auf.",
+    "quickDishes": "Du hast das Limit von 10 eigenen Gerichten erreicht. Pro hebt es auf.",
+    "aiGenerate": "KI-Wochenpläne sind ein Pro-Feature. Ausgewogene Wochen in Sekunden."
+  },
   "errors": {
     "checkoutFailed": "Kasse konnte nicht geöffnet werden: {{error}}",
     "portalFailed": "Abo-Portal konnte nicht geöffnet werden: {{error}}",
