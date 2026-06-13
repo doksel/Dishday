@@ -1,8 +1,26 @@
 import { Router } from 'express';
 import { z } from 'zod';
+import { isSupportedLocale } from '@dishday/i18n';
 import type { AppContainer } from '../container.js';
 import { requireAuth, type AuthedRequest } from '../middlewares/auth.js';
-import { NotFoundError } from '../repositories/interfaces.js';
+import { NotFoundError, PlanRequiredError } from '../repositories/interfaces.js';
+
+/**
+ * BCP-47 → string map (`{ en: 'Pasta', ru: 'Паста' }`). Only known locale
+ * codes from `@dishday/i18n` SUPPORTED_LOCALES are accepted; unknown codes
+ * are dropped. Empty objects are normalised to `null`.
+ */
+const localizedTextSchema = z
+  .record(z.string(), z.string().min(1))
+  .transform((raw) => {
+    const out: Record<string, string> = {};
+    for (const [k, v] of Object.entries(raw)) {
+      if (isSupportedLocale(k)) out[k] = v;
+    }
+    return Object.keys(out).length > 0 ? out : null;
+  })
+  .nullable()
+  .optional();
 
 const listQuerySchema = z.object({
   q: z.string().optional(),
@@ -20,6 +38,7 @@ const listQuerySchema = z.object({
 
 const ingredientSchema = z.object({
   name: z.string().min(1),
+  nameI18n: localizedTextSchema,
   quantity: z.number().positive(),
   unit: z.string().min(1),
   notes: z.string().nullable().optional(),
@@ -28,7 +47,9 @@ const ingredientSchema = z.object({
 
 const createRecipeSchema = z.object({
   title: z.string().min(1).max(255),
+  titleI18n: localizedTextSchema,
   description: z.string().nullable().optional(),
+  descriptionI18n: localizedTextSchema,
   prepTimeMin: z.number().int().nonnegative().nullable().optional(),
   cookTimeMin: z.number().int().nonnegative().nullable().optional(),
   servings: z.number().int().positive().optional(),
@@ -65,11 +86,24 @@ export function recipesRouter(container: AppContainer): Router {
     }
   });
 
-  router.get('/:id', async (req, res, next) => {
+  router.get('/:id', requireAuth, async (req: AuthedRequest, res, next) => {
     try {
-      res.json(await recipes.get(req.params.id));
+      res.json(await recipes.get(req.params.id, req.userId));
     } catch (e) {
-      if (e instanceof NotFoundError) return res.status(404).json({ code: 'NOT_FOUND', message: e.message });
+      if (e instanceof NotFoundError) {
+        return res.status(404).json({ code: 'NOT_FOUND', message: e.message });
+      }
+      if (e instanceof PlanRequiredError) {
+        // Include the title as a "teaser" so the client can show a paywall
+        // overlay over the real recipe name. We re-fetch the row directly
+        // from the repo to bypass the gate (we know it exists).
+        const r = await container.repos.recipes.findById(req.params.id);
+        return res.status(402).json({
+          code: 'PLAN_REQUIRED',
+          message: e.message,
+          teaser: r ? { id: r.id, title: r.title, titleI18n: r.titleI18n } : null,
+        });
+      }
       next(e);
     }
   });

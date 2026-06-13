@@ -127,6 +127,13 @@ export interface GenerateInput {
    * English regardless — those are wire-format.
    */
   locale?: string | null;
+  /**
+   * When true, ask the model for titles-only — no ingredients, no macros, no
+   * cook/prep times. Drives the Free-tier "menu preview" experience: the user
+   * sees what their week would look like, but unlocking each recipe's full
+   * body requires Pro. Saves ~70% of the output tokens we'd otherwise burn.
+   */
+  titlesOnly?: boolean;
 }
 
 export interface GenerateResult {
@@ -148,11 +155,16 @@ export async function generateWeeklyPlan(
   const langCode = input.locale ?? DEFAULT_AI_LOCALE;
   const language = LANGUAGE_NAMES[langCode] ?? LANGUAGE_NAMES[DEFAULT_AI_LOCALE]!;
 
+  const systemPrompt = input.titlesOnly
+    ? buildTitlesOnlyPrompt(language)
+    : buildSystemPrompt(language);
+
   const t0 = Date.now();
   const completion = await provider.generate({
-    systemPrompt: buildSystemPrompt(language),
+    systemPrompt,
     userPrompt,
-    maxTokens: 4096,
+    // Titles-only fits comfortably under 1k output tokens; full plan needs ~3-4k.
+    maxTokens: input.titlesOnly ? 1024 : 4096,
     responseFormat: 'json',
   });
   const latencyMs = Date.now() - t0;
@@ -163,7 +175,12 @@ export async function generateWeeklyPlan(
     .replace(/```\s*$/i, '')
     .trim();
 
-  const parsed = planSchema.parse(JSON.parse(jsonText));
+  // Titles-only output is parsed with a permissive schema; the full schema would
+  // reject empty ingredients arrays etc. We normalize back to the full shape so
+  // downstream code (worker → recipe persistence) stays uniform.
+  const parsed = input.titlesOnly
+    ? normalizeTitlesOnly(titlesOnlySchema.parse(JSON.parse(jsonText)))
+    : planSchema.parse(JSON.parse(jsonText));
 
   const tokensUsed = completion.inputTokens + completion.outputTokens;
 
@@ -182,6 +199,83 @@ export async function generateWeeklyPlan(
     costUsd: completion.costUsd,
     latencyMs,
   };
+}
+
+// ─── Titles-only mode (Free tier) ───────────────────────────
+
+const titlesOnlySchema = z.object({
+  days: z
+    .array(
+      z.object({
+        dayOfWeek: z.number().int().min(0).max(6),
+        meals: z.array(
+          z.object({
+            mealType: z.enum(mealTypes),
+            title: z.string(),
+            description: z.string().optional(),
+            cuisine: z.string().optional(),
+          }),
+        ),
+      }),
+    )
+    .length(7),
+});
+
+type TitlesOnlyPlan = z.infer<typeof titlesOnlySchema>;
+
+/**
+ * Promote a titles-only payload into the full plan shape. Ingredients are
+ * empty (which is what makes it `previewOnly` in the DB); macros and times
+ * are zeroed-out so downstream consumers (mappers, mealPlanEntry) don't choke
+ * on missing fields.
+ */
+function normalizeTitlesOnly(p: TitlesOnlyPlan): GeneratedPlan {
+  return {
+    days: p.days.map((d) => ({
+      dayOfWeek: d.dayOfWeek,
+      meals: d.meals.map((m) => ({
+        mealType: m.mealType,
+        title: m.title,
+        description: m.description ?? '',
+        calories: 0,
+        proteinG: 0,
+        carbsG: 0,
+        fatG: 0,
+        cuisine: m.cuisine,
+        tags: [],
+        ingredients: [],
+      })),
+    })),
+  };
+}
+
+function buildTitlesOnlyPrompt(language: string): string {
+  return `You are a nutritionist sketching out a weekly menu preview.
+Output STRICT JSON (no prose, no markdown):
+
+{
+  "days": [
+    {
+      "dayOfWeek": 0,
+      "meals": [
+        { "mealType": "breakfast"|"lunch"|"dinner"|"snack",
+          "title": "string",
+          "description": "one short sentence",
+          "cuisine": "italian|asian|american|mediterranean|..." }
+      ]
+    }
+  ]
+}
+
+Rules:
+- Exactly 7 day objects, dayOfWeek 0..6.
+- Each day must contain breakfast, lunch, dinner. Snack is optional.
+- Respect dietary constraints strictly.
+- Vary cuisines; do not repeat the same dish twice in the week.
+- DO NOT include ingredients, macros, or cooking times — those are paywalled.
+
+Language: write \`title\` and \`description\` in ${language}. Keep \`mealType\` /
+\`cuisine\` slugs in English.`;
 }
 
 function buildUserPrompt({ profile, weekStart }: GenerateInput): string {

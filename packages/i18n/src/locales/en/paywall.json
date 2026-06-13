@@ -1,0 +1,31 @@
+{
+  "title": "Unlock Dishday Pro",
+  "subtitle": "AI-powered meal planning, every week.",
+  "features": {
+    "aiPlan": "AI meal plan generation",
+    "pantry": "Pantry-aware suggestions",
+    "support": "Priority support"
+  },
+  "price": {
+    "monthly": "${{amount}} / month",
+    "perMonth": "per month"
+  },
+  "cta": {
+    "upgrade": "Upgrade to Pro",
+    "upgrading": "Opening checkout…",
+    "later": "Maybe later",
+    "manage": "Manage subscription",
+    "opening": "Opening…"
+  },
+  "section": {
+    "title": "Subscription",
+    "currentFree": "You're on the Free plan",
+    "currentPro": "You're on Pro",
+    "manageBody": "Update payment, change plan, or cancel."
+  },
+  "errors": {
+    "checkoutFailed": "Couldn't start checkout: {{error}}",
+    "portalFailed": "Couldn't open subscription portal: {{error}}",
+    "noStripe": "Payments are not configured."
+  }
+}

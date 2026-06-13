@@ -1,11 +1,14 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { SUPPORTED_LOCALES, type LocaleCode } from '@dishday/i18n';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { PaywallModal } from '../../src/components/PaywallModal';
 import { Screen } from '../../src/components/Screen';
-import { Button, Text } from '../../src/components/ui';
+import { Button, Icon, Text } from '../../src/components/ui';
 import { setLocale } from '../../src/i18n';
 import { getApi } from '../../src/lib/api';
+import { apiErrorMessage } from '../../src/lib/apiError';
 import { supabase } from '../../src/lib/supabase';
 import {
   useThemePreference,
@@ -19,10 +22,25 @@ export default function ProfileScreen() {
   const api = getApi();
   const { preference, setPreference } = useThemePreference();
   const { t, i18n } = useTranslation('profile');
+  const tPaywall = useTranslation('paywall').t;
+  const [paywallOpen, setPaywallOpen] = useState(false);
 
   const me = useQuery({
     queryKey: ['auth', 'me'],
     queryFn: () => api.auth.me(),
+  });
+  const isPro = me.data?.plan === 'pro' || me.data?.plan === 'admin';
+
+  /**
+   * Open Stripe Billing Portal in the system browser. Pro users only —
+   * Free users hit the upgrade flow instead.
+   */
+  const openPortal = useMutation({
+    mutationFn: () => api.subscriptions.createPortal({}),
+    onSuccess: async ({ url }) => {
+      const canOpen = await Linking.canOpenURL(url);
+      if (canOpen) await Linking.openURL(url);
+    },
   });
 
   const themeOptions: { value: ThemePreference; label: string }[] = [
@@ -68,6 +86,60 @@ export default function ProfileScreen() {
           </Text>
         )}
       </View>
+
+      {/* Subscription */}
+      {me.data && (
+        <View style={styles.section}>
+          <Text variant="labelLg" color="textSecondary">
+            {tPaywall('section.title')}
+          </Text>
+          {isPro ? (
+            <Pressable
+              onPress={() => openPortal.mutate()}
+              disabled={openPortal.isPending}
+              style={({ pressed }) => [
+                styles.subRow,
+                pressed && styles.subRowPressed,
+                openPortal.isPending && styles.subRowDisabled,
+              ]}
+            >
+              <View style={styles.subRowIcon}>
+                <Icon name="card-outline" color="primary" size={22} />
+              </View>
+              <View style={styles.subRowText}>
+                <Text variant="bodyLg">
+                  {openPortal.isPending ? tPaywall('cta.opening') : tPaywall('cta.manage')}
+                </Text>
+                <Text variant="labelSm" color="textSecondary">
+                  {tPaywall('section.manageBody')}
+                </Text>
+              </View>
+              <Icon name="chevron-forward" color="textMuted" size={20} />
+            </Pressable>
+          ) : (
+            <Pressable
+              onPress={() => setPaywallOpen(true)}
+              style={({ pressed }) => [styles.subRow, pressed && styles.subRowPressed]}
+            >
+              <View style={styles.subRowIcon}>
+                <Icon name="sparkles" color="primary" size={22} />
+              </View>
+              <View style={styles.subRowText}>
+                <Text variant="bodyLg">{tPaywall('cta.upgrade')}</Text>
+                <Text variant="labelSm" color="textSecondary">
+                  {tPaywall('section.currentFree')}
+                </Text>
+              </View>
+              <Icon name="chevron-forward" color="textMuted" size={20} />
+            </Pressable>
+          )}
+          {openPortal.error && (
+            <Text variant="bodyMd" color="danger">
+              {tPaywall('errors.portalFailed', { error: apiErrorMessage(openPortal.error, tPaywall) })}
+            </Text>
+          )}
+        </View>
+      )}
 
       {/* Appearance */}
       <View style={styles.section}>
@@ -138,6 +210,8 @@ export default function ProfileScreen() {
         fullWidth
         onPress={() => supabase.auth.signOut()}
       />
+
+      <PaywallModal visible={paywallOpen} onClose={() => setPaywallOpen(false)} />
     </Screen>
   );
 }
@@ -200,5 +274,28 @@ function makeStyles(theme: Theme) {
     },
     langTilePressed: { opacity: 0.7 },
     langName: {},
+
+    // Subscription row
+    subRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.md,
+      padding: theme.spacing.md,
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.radius.md,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+    },
+    subRowPressed: { opacity: 0.85 },
+    subRowDisabled: { opacity: 0.6 },
+    subRowIcon: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: theme.colors.primaryTint,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    subRowText: { flex: 1, gap: 2 },
   });
 }

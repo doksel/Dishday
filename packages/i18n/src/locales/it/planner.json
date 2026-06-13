@@ -11,5 +11,11 @@
   "tapToAdd": "Tocca per aggiungere…",
   "removeTitle": "Rimuovere questo pasto?",
   "removeBody": "Lo slot verrà svuotato.",
-  "remove": "Rimuovi"
+  "remove": "Rimuovi",
+  "slotActions": {
+    "title": "Questo slot è occupato",
+    "body": "Sostituisci il piatto con un altro o rimuovilo.",
+    "replace": "Sostituisci",
+    "remove": "Rimuovi"
+  }
 }

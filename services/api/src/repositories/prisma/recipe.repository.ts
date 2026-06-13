@@ -2,6 +2,7 @@ import type { Prisma, PrismaClient } from '@prisma/client';
 import type { Paginated, Recipe, RecipeFilter } from '@dishday/types';
 import type {
   CreateRecipeInput,
+  ModerationFilter,
   RecipeRepository,
   UpdateRecipeInput,
 } from '../interfaces.js';
@@ -59,6 +60,41 @@ export class PrismaRecipeRepository implements RecipeRepository {
     return { items: items.map((r) => recipeFromPrisma(r)), total, page, pageSize };
   }
 
+  async listForModeration(filter: ModerationFilter): Promise<Paginated<Recipe>> {
+    const page = Math.max(1, filter.page ?? 1);
+    const pageSize = Math.min(100, Math.max(1, filter.pageSize ?? 20));
+    const status = filter.status ?? 'pending';
+
+    let where: Prisma.RecipeWhereInput;
+    switch (status) {
+      case 'pending':
+        where = { isPublic: true, isApproved: false };
+        break;
+      case 'approved':
+        where = { isApproved: true };
+        break;
+      case 'rejected':
+        where = { isPublic: false };
+        break;
+      case 'all':
+      default:
+        where = {};
+    }
+
+    const [items, total] = await Promise.all([
+      this.prisma.recipe.findMany({
+        where,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        orderBy: { createdAt: 'desc' },
+        include: { ingredients: { orderBy: { orderIndex: 'asc' } } },
+      }),
+      this.prisma.recipe.count({ where }),
+    ]);
+
+    return { items: items.map((r) => recipeFromPrisma(r)), total, page, pageSize };
+  }
+
   async create(data: CreateRecipeInput): Promise<Recipe> {
     const created = await this.prisma.recipe.create({
       data: {
@@ -81,6 +117,7 @@ export class PrismaRecipeRepository implements RecipeRepository {
         imageUrl: data.imageUrl ?? null,
         isPublic: data.isPublic ?? true,
         isApproved: data.isApproved ?? false,
+        previewOnly: data.previewOnly ?? false,
         tags: data.tags ?? [],
         cuisine: data.cuisine ?? null,
         mealType: data.mealType ?? [],
@@ -119,6 +156,7 @@ export class PrismaRecipeRepository implements RecipeRepository {
         ...(data.imageUrl !== undefined && { imageUrl: data.imageUrl }),
         ...(data.isPublic !== undefined && { isPublic: data.isPublic }),
         ...(data.isApproved !== undefined && { isApproved: data.isApproved }),
+        ...(data.previewOnly !== undefined && { previewOnly: data.previewOnly }),
         ...(data.tags !== undefined && { tags: data.tags }),
         ...(data.cuisine !== undefined && { cuisine: data.cuisine }),
         ...(data.mealType !== undefined && { mealType: data.mealType }),

@@ -91,6 +91,7 @@ export interface CreateRecipeInput {
   imageUrl?: string | null;
   isPublic?: boolean;
   isApproved?: boolean;
+  previewOnly?: boolean;
   tags?: string[];
   cuisine?: string | null;
   mealType?: MealType[];
@@ -99,10 +100,25 @@ export interface CreateRecipeInput {
 
 export type UpdateRecipeInput = Partial<CreateRecipeInput>;
 
+/**
+ * Admin moderation filter — orthogonal to the user-facing RecipeFilter.
+ *   - `pending`  → publicly-submitted recipes awaiting approval (isPublic=true, isApproved=false)
+ *   - `approved` → recipes already visible in the catalog (isApproved=true)
+ *   - `rejected` → soft-deleted recipes (isPublic=false)
+ *   - `all`      → no filter on visibility/approval
+ */
+export interface ModerationFilter {
+  status?: 'pending' | 'approved' | 'rejected' | 'all';
+  page?: number;
+  pageSize?: number;
+}
+
 export interface RecipeRepository {
   findById(id: string): Promise<Recipe | null>;
   findBySlug(slug: string): Promise<Recipe | null>;
   list(filter: RecipeFilter): Promise<Paginated<Recipe>>;
+  /** Admin-only — bypasses the public+approved visibility filter. */
+  listForModeration(filter: ModerationFilter): Promise<Paginated<Recipe>>;
   create(data: CreateRecipeInput): Promise<Recipe>;
   update(id: string, data: UpdateRecipeInput): Promise<Recipe>;
   delete(id: string): Promise<void>;
@@ -217,5 +233,16 @@ export class ConflictError extends Error {
   constructor(message: string) {
     super(message);
     this.name = 'ConflictError';
+  }
+}
+
+/**
+ * Thrown when a Free-tier user tries to access content that requires Pro.
+ * The HTTP layer maps this to `402 PLAN_REQUIRED`.
+ */
+export class PlanRequiredError extends Error {
+  constructor(message = 'Pro plan required') {
+    super(message);
+    this.name = 'PlanRequiredError';
   }
 }

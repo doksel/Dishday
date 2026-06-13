@@ -8,11 +8,12 @@ import {
   WorkSans_500Medium,
   WorkSans_600SemiBold,
 } from '@expo-google-fonts/work-sans';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
+import { AppState } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { initI18n } from '../src/i18n';
 import { supabase } from '../src/lib/supabase';
@@ -25,6 +26,7 @@ SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
 function AppShell() {
   const theme = useTheme();
+  const qc = useQueryClient();
   const [ready, setReady] = useState(false);
   const [authed, setAuthed] = useState(false);
   const router = useRouter();
@@ -40,6 +42,23 @@ function AppShell() {
     });
     return () => sub.subscription.unsubscribe();
   }, []);
+
+  /**
+   * Refetch user identity (plan, subscription) whenever the app comes back
+   * to foreground. Catches the case where the user just upgraded via
+   * Stripe Checkout in the system browser — the webhook fires, user.plan
+   * flips to `pro`, and on next focus the mobile UI picks it up without
+   * needing a manual restart. Also invalidates meal-plans because plan
+   * changes can unlock previously-hidden AI-generated content.
+   */
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        qc.invalidateQueries({ queryKey: ['auth', 'me'] });
+      }
+    });
+    return () => sub.remove();
+  }, [qc]);
 
   useEffect(() => {
     if (!ready) return;

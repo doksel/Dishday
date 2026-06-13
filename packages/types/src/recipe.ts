@@ -51,6 +51,12 @@ export interface Recipe {
   imageUrl: string | null;
   isPublic: boolean;
   isApproved: boolean;
+  /**
+   * AI-generated recipe owned by a Free-tier user — only the title is exposed
+   * by the API. `GET /recipes/:id` returns 402 PLAN_REQUIRED for Free users
+   * viewing a preview-only row. Pro users see the full body.
+   */
+  previewOnly: boolean;
   tags: string[];
   cuisine: string | null;
   mealType: MealType[];

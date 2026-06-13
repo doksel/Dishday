@@ -1,0 +1,52 @@
+{
+  "title": "Shopping list",
+  "progress": "{{checked}} / {{total}}",
+  "loadError": "Could not load list: {{error}}",
+  "empty": {
+    "noPlanTitle": "No plan for this week",
+    "noPlanBody": "Create a meal plan first — your shopping list is built from its recipes.",
+    "noPlanCta": "Go to planner",
+    "noItemsTitle": "Your list is empty",
+    "noItemsBody": "Add items manually or regenerate the list from your plan.",
+    "noItemsCta": "Regenerate from plan"
+  },
+  "sections": {
+    "vegetables": "Vegetables",
+    "fruit": "Fruit",
+    "dairy": "Dairy",
+    "meat": "Meat & fish",
+    "grains": "Grains & bakery",
+    "spices": "Spices & sauces",
+    "frozen": "Frozen",
+    "drinks": "Drinks",
+    "other": "Other"
+  },
+  "actions": {
+    "regenerate": "Regenerate list",
+    "add": "Add item",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "confirms": {
+    "regenerateTitle": "Regenerate list?",
+    "regenerateBody": "The current list will be replaced. Unchecked items you added manually will be lost.",
+    "regenerate": "Regenerate",
+    "deleteItemTitle": "Remove item?",
+    "deleteItemBody": "This item will be removed from the list.",
+    "remove": "Remove"
+  },
+  "openButton": "Shopping list",
+  "openButton_one": "Shopping list · {{count}} item",
+  "openButton_other": "Shopping list · {{count}} items",
+  "addModal": {
+    "title": "Add item",
+    "name": "Item",
+    "namePlaceholder": "e.g. Olive oil",
+    "quantity": "Quantity",
+    "unit": "Unit",
+    "unitPlaceholder": "g, ml, pcs…",
+    "category": "Category (optional)",
+    "save": "Add"
+  },
+  "regenerating": "Regenerating…"
+}

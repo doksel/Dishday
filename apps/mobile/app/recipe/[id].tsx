@@ -1,4 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
+import { ApiClientError } from '@dishday/api-client';
+import { pickLocalized } from '@dishday/utils';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Recipe } from '@dishday/types';
+import { PaywallModal } from '../../src/components/PaywallModal';
 import { Button, Checkbox, Chip, Icon, Text } from '../../src/components/ui';
 import { getApi } from '../../src/lib/api';
 import { useTheme, useThemedStyles, type Theme } from '../../src/theme';
@@ -49,16 +52,31 @@ export default function RecipeDetailScreen() {
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const api = getApi();
-  const { t } = useTranslation('recipe');
+  const { t, i18n } = useTranslation('recipe');
 
   const [saved, setSaved] = useState(false);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<string>>(new Set());
+  const [paywallOpen, setPaywallOpen] = useState(false);
 
   const recipe = useQuery<Recipe>({
     queryKey: ['recipe', id],
     queryFn: () => api.recipes.get(id),
     enabled: !!id,
+    // Don't retry on 402 — it's a deterministic gate, not a transient failure.
+    retry: (count, err) => !(err instanceof ApiClientError && err.status === 402) && count < 2,
   });
+
+  /**
+   * 402 PLAN_REQUIRED → server attaches a `teaser` with the recipe title so we
+   * can still render a header and meaningful paywall ("Unlock 'Avocado toast'").
+   */
+  const planRequired =
+    recipe.error instanceof ApiClientError && recipe.error.status === 402
+      ? recipe.error
+      : null;
+  const teaser =
+    (planRequired?.body as { teaser?: { id: string; title: string } } | null)?.teaser ??
+    null;
 
   function toggleIngredient(ingId: string) {
     setCheckedIngredients((prev) => {
@@ -112,11 +130,37 @@ export default function RecipeDetailScreen() {
           </View>
         )}
 
-        {recipe.error && (
+        {recipe.error && !planRequired && (
           <View style={styles.body}>
             <Text variant="bodyMd" color="danger">
               {t('loadError', { error: (recipe.error as Error).message })}
             </Text>
+          </View>
+        )}
+
+        {planRequired && (
+          <View style={styles.lockedWrap}>
+            {/* Blurred placeholder hero with lock badge */}
+            <View style={[styles.hero, styles.heroFallback, styles.heroLocked]}>
+              <Icon name="lock-closed" color="onPrimary" size={48} />
+            </View>
+            <View style={styles.body}>
+              <Text variant="headlineLg">{teaser?.title ?? '—'}</Text>
+              <Text variant="bodyMd" color="textSecondary" style={styles.lockedBody}>
+                {t('lockedBody', {
+                  defaultValue:
+                    'This recipe is part of your Pro menu preview. Upgrade to see full ingredients and instructions.',
+                })}
+              </Text>
+              <Button
+                label={t('lockedCta', { defaultValue: 'Upgrade to Pro' })}
+                variant="primary"
+                size="lg"
+                fullWidth
+                onPress={() => setPaywallOpen(true)}
+                style={styles.lockedCta}
+              />
+            </View>
           </View>
         )}
 
@@ -162,11 +206,15 @@ export default function RecipeDetailScreen() {
 
               {/* Title + description */}
               <Text variant="headlineLg" style={styles.title}>
-                {recipe.data.title}
+                {pickLocalized(recipe.data.title, recipe.data.titleI18n, i18n.language)}
               </Text>
               {recipe.data.description && (
                 <Text variant="bodyMd" color="textSecondary">
-                  {recipe.data.description}
+                  {pickLocalized(
+                    recipe.data.description,
+                    recipe.data.descriptionI18n,
+                    i18n.language,
+                  )}
                 </Text>
               )}
 
@@ -209,7 +257,8 @@ export default function RecipeDetailScreen() {
                   <View style={styles.ingredientsList}>
                     {recipe.data.ingredients.map((ing) => {
                       const checked = checkedIngredients.has(ing.id);
-                      const label = `${formatQuantity(ing.quantity)}${ing.unit ? ' ' + ing.unit : ''} ${ing.name}${ing.notes ? `, ${ing.notes}` : ''}`;
+                      const name = pickLocalized(ing.name, ing.nameI18n, i18n.language);
+                      const label = `${formatQuantity(ing.quantity)}${ing.unit ? ' ' + ing.unit : ''} ${name}${ing.notes ? `, ${ing.notes}` : ''}`;
                       return (
                         <Checkbox
                           key={ing.id}
@@ -231,7 +280,11 @@ export default function RecipeDetailScreen() {
                     {t('process')}
                   </Text>
                   <Text variant="bodyMd" color="textSecondary" style={styles.processBody}>
-                    {recipe.data.description}
+                    {pickLocalized(
+                      recipe.data.description,
+                      recipe.data.descriptionI18n,
+                      i18n.language,
+                    )}
                   </Text>
                 </View>
               )}
@@ -255,6 +308,8 @@ export default function RecipeDetailScreen() {
           />
         </View>
       )}
+
+      <PaywallModal visible={paywallOpen} onClose={() => setPaywallOpen(false)} />
     </View>
   );
 }
@@ -407,5 +462,11 @@ function makeStyles(theme: Theme) {
     },
 
     loaderRow: { paddingVertical: theme.spacing.xl, alignItems: 'center' },
+
+    // Locked (402 PLAN_REQUIRED) preview-only state
+    lockedWrap: { gap: theme.spacing.md },
+    heroLocked: { backgroundColor: theme.colors.primary },
+    lockedBody: { marginTop: theme.spacing.sm },
+    lockedCta: { marginTop: theme.spacing.lg },
   });
 }

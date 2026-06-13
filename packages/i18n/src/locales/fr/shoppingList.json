@@ -1,0 +1,52 @@
+{
+  "title": "Liste de courses",
+  "progress": "{{checked}} / {{total}}",
+  "loadError": "Impossible de charger la liste : {{error}}",
+  "empty": {
+    "noPlanTitle": "Pas encore de plan pour cette semaine",
+    "noPlanBody": "Créez d'abord un planning hebdomadaire — la liste de courses est générée à partir de ses recettes.",
+    "noPlanCta": "Aller au planificateur",
+    "noItemsTitle": "Votre liste est vide",
+    "noItemsBody": "Ajoutez des articles manuellement ou régénérez la liste depuis le plan.",
+    "noItemsCta": "Régénérer depuis le plan"
+  },
+  "sections": {
+    "vegetables": "Légumes",
+    "fruit": "Fruits",
+    "dairy": "Produits laitiers",
+    "meat": "Viande et poisson",
+    "grains": "Céréales et boulangerie",
+    "spices": "Épices et sauces",
+    "frozen": "Surgelés",
+    "drinks": "Boissons",
+    "other": "Autres"
+  },
+  "actions": {
+    "regenerate": "Régénérer la liste",
+    "add": "Ajouter un article",
+    "edit": "Modifier",
+    "delete": "Supprimer"
+  },
+  "confirms": {
+    "regenerateTitle": "Régénérer la liste ?",
+    "regenerateBody": "La liste actuelle sera remplacée. Les articles ajoutés manuellement et non cochés seront perdus.",
+    "regenerate": "Régénérer",
+    "deleteItemTitle": "Supprimer l'article ?",
+    "deleteItemBody": "Cet article sera retiré de la liste.",
+    "remove": "Supprimer"
+  },
+  "openButton": "Liste de courses",
+  "openButton_one": "Liste de courses · {{count}} article",
+  "openButton_other": "Liste de courses · {{count}} articles",
+  "addModal": {
+    "title": "Ajouter un article",
+    "name": "Article",
+    "namePlaceholder": "ex. Huile d'olive",
+    "quantity": "Quantité",
+    "unit": "Unité",
+    "unitPlaceholder": "g, ml, pcs…",
+    "category": "Catégorie (facultatif)",
+    "save": "Ajouter"
+  },
+  "regenerating": "Régénération…"
+}

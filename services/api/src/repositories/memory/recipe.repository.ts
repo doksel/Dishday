@@ -10,6 +10,7 @@ import { randomUUID } from 'node:crypto';
 import type { Paginated, Recipe, RecipeFilter } from '@dishday/types';
 import type {
   CreateRecipeInput,
+  ModerationFilter,
   RecipeRepository,
   UpdateRecipeInput,
 } from '../interfaces.js';
@@ -60,6 +61,23 @@ export class InMemoryRecipeRepository implements RecipeRepository {
     return { items: slice, total, page, pageSize };
   }
 
+  async listForModeration(filter: ModerationFilter): Promise<Paginated<Recipe>> {
+    const page = Math.max(1, filter.page ?? 1);
+    const pageSize = Math.min(100, Math.max(1, filter.pageSize ?? 20));
+    const status = filter.status ?? 'pending';
+
+    let items = [...this.recipes.values()];
+    if (status === 'pending') items = items.filter((r) => r.isPublic && !r.isApproved);
+    else if (status === 'approved') items = items.filter((r) => r.isApproved);
+    else if (status === 'rejected') items = items.filter((r) => !r.isPublic);
+    // 'all' → no filtering
+
+    items.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+    const total = items.length;
+    const slice = items.slice((page - 1) * pageSize, page * pageSize);
+    return { items: slice, total, page, pageSize };
+  }
+
   async create(data: CreateRecipeInput): Promise<Recipe> {
     const id = randomUUID();
     const recipe: Recipe = {
@@ -79,6 +97,7 @@ export class InMemoryRecipeRepository implements RecipeRepository {
       imageUrl: data.imageUrl ?? null,
       isPublic: data.isPublic ?? true,
       isApproved: data.isApproved ?? false,
+      previewOnly: data.previewOnly ?? false,
       tags: data.tags ?? [],
       cuisine: data.cuisine ?? null,
       mealType: data.mealType ?? [],

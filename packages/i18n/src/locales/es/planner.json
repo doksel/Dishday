@@ -11,5 +11,11 @@
   "tapToAdd": "Toca para añadir…",
   "removeTitle": "¿Eliminar esta comida?",
   "removeBody": "El espacio quedará vacío.",
-  "remove": "Eliminar"
+  "remove": "Eliminar",
+  "slotActions": {
+    "title": "Este espacio está ocupado",
+    "body": "Reemplaza el plato por otro o elimínalo.",
+    "replace": "Reemplazar",
+    "remove": "Eliminar"
+  }
 }

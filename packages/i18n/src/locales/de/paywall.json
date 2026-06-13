@@ -1,0 +1,31 @@
+{
+  "title": "Dishday Pro freischalten",
+  "subtitle": "KI-gestützte Essensplanung — jede Woche.",
+  "features": {
+    "aiPlan": "KI-Essensplan-Generierung",
+    "pantry": "Vorratsbewusste Vorschläge",
+    "support": "Priorisierter Support"
+  },
+  "price": {
+    "monthly": "{{amount}} $ / Monat",
+    "perMonth": "pro Monat"
+  },
+  "cta": {
+    "upgrade": "Auf Pro upgraden",
+    "upgrading": "Kasse wird geöffnet…",
+    "later": "Vielleicht später",
+    "manage": "Abonnement verwalten",
+    "opening": "Wird geöffnet…"
+  },
+  "section": {
+    "title": "Abonnement",
+    "currentFree": "Du nutzt den Free-Tarif",
+    "currentPro": "Du nutzt Pro",
+    "manageBody": "Zahlung aktualisieren, Tarif ändern oder kündigen."
+  },
+  "errors": {
+    "checkoutFailed": "Kasse konnte nicht geöffnet werden: {{error}}",
+    "portalFailed": "Abo-Portal konnte nicht geöffnet werden: {{error}}",
+    "noStripe": "Zahlungen sind nicht konfiguriert."
+  }
+}

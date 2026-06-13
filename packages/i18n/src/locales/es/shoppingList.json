@@ -1,0 +1,52 @@
+{
+  "title": "Lista de la compra",
+  "progress": "{{checked}} / {{total}}",
+  "loadError": "No se pudo cargar la lista: {{error}}",
+  "empty": {
+    "noPlanTitle": "Aún no hay plan para esta semana",
+    "noPlanBody": "Primero crea un plan semanal — la lista se genera a partir de sus recetas.",
+    "noPlanCta": "Ir al planificador",
+    "noItemsTitle": "Tu lista está vacía",
+    "noItemsBody": "Añade elementos manualmente o regenera la lista desde el plan.",
+    "noItemsCta": "Regenerar desde el plan"
+  },
+  "sections": {
+    "vegetables": "Verduras",
+    "fruit": "Fruta",
+    "dairy": "Lácteos",
+    "meat": "Carne y pescado",
+    "grains": "Cereales y panadería",
+    "spices": "Especias y salsas",
+    "frozen": "Congelados",
+    "drinks": "Bebidas",
+    "other": "Otros"
+  },
+  "actions": {
+    "regenerate": "Regenerar lista",
+    "add": "Añadir artículo",
+    "edit": "Editar",
+    "delete": "Eliminar"
+  },
+  "confirms": {
+    "regenerateTitle": "¿Regenerar la lista?",
+    "regenerateBody": "La lista actual se reemplazará. Los artículos manuales sin marcar se perderán.",
+    "regenerate": "Regenerar",
+    "deleteItemTitle": "¿Eliminar artículo?",
+    "deleteItemBody": "Este artículo se eliminará de la lista.",
+    "remove": "Eliminar"
+  },
+  "openButton": "Lista de la compra",
+  "openButton_one": "Lista · {{count}} artículo",
+  "openButton_other": "Lista · {{count}} artículos",
+  "addModal": {
+    "title": "Añadir artículo",
+    "name": "Artículo",
+    "namePlaceholder": "p. ej. Aceite de oliva",
+    "quantity": "Cantidad",
+    "unit": "Unidad",
+    "unitPlaceholder": "g, ml, ud…",
+    "category": "Categoría (opcional)",
+    "save": "Añadir"
+  },
+  "regenerating": "Regenerando…"
+}

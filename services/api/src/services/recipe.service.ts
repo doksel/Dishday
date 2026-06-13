@@ -9,7 +9,7 @@
 import type { Paginated, Recipe, RecipeFilter } from '@dishday/types';
 import { slugify } from '@dishday/utils';
 import type { CreateRecipeInput, Repositories, UpdateRecipeInput } from '../repositories/interfaces.js';
-import { NotFoundError } from '../repositories/interfaces.js';
+import { NotFoundError, PlanRequiredError } from '../repositories/interfaces.js';
 
 export class RecipeService {
   constructor(private readonly repos: Repositories) {}
@@ -18,19 +18,57 @@ export class RecipeService {
     return this.repos.recipes.list(filter);
   }
 
-  async get(id: string): Promise<Recipe> {
+  /**
+   * Fetch a recipe with tier-aware visibility.
+   *
+   *   - `requesterId === undefined` → anonymous request; previewOnly rows
+   *     are treated as paywalled (the caller can decide how to render).
+   *   - Author of the recipe always sees their own row in full (they made
+   *     it; no point hiding it from them).
+   *   - Otherwise: if the row is `previewOnly` and the requester is Free,
+   *     throw `PlanRequiredError`. The HTTP layer maps it to a 402 with the
+   *     row's title attached (so the client can keep a teaser visible).
+   */
+  async get(id: string, requesterId?: string): Promise<Recipe> {
     const r = await this.repos.recipes.findById(id);
     if (!r) throw new NotFoundError('Recipe', id);
+    if (!r.previewOnly) return r;
+
+    // previewOnly path — author always sees full content
+    if (requesterId && r.authorId === requesterId) return r;
+
+    const requester = requesterId ? await this.repos.users.findById(requesterId) : null;
+    if (!requester || requester.plan === 'free') {
+      throw new PlanRequiredError('This recipe is preview-only — upgrade to view full content');
+    }
     return r;
   }
 
-  async create(authorId: string, input: Omit<CreateRecipeInput, 'slug' | 'authorId' | 'source'>): Promise<Recipe> {
+  /**
+   * Tier policy for user-created recipes:
+   *   - Free authors are forced to `isPublic=false` — recipe is visible only
+   *     to themselves. Upgrading later doesn't retroactively flip it; the user
+   *     can edit and re-submit.
+   *   - Pro / admin authors keep whatever the request says (default true).
+   *     Even when public, `isApproved` stays false so the recipe queues for
+   *     moderator approval before joining the public catalog.
+   *
+   * Always strips `previewOnly` — only the AI worker may set that flag.
+   */
+  async create(
+    authorId: string,
+    input: Omit<CreateRecipeInput, 'slug' | 'authorId' | 'source' | 'previewOnly'>,
+  ): Promise<Recipe> {
     const slug = await this.uniqueSlug(input.title);
+    const author = await this.repos.users.findById(authorId);
+    const isFree = !author || author.plan === 'free';
     return this.repos.recipes.create({
       ...input,
       authorId,
       slug,
       source: 'user',
+      isPublic: isFree ? false : input.isPublic,
+      previewOnly: false,
     });
   }
 

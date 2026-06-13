@@ -11,5 +11,11 @@
   "tapToAdd": "Appuyez pour ajouter…",
   "removeTitle": "Supprimer ce repas ?",
   "removeBody": "L'emplacement sera vidé.",
-  "remove": "Supprimer"
+  "remove": "Supprimer",
+  "slotActions": {
+    "title": "Cet emplacement est occupé",
+    "body": "Remplace le plat par un autre ou supprime-le.",
+    "replace": "Remplacer",
+    "remove": "Supprimer"
+  }
 }

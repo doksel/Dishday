@@ -1,0 +1,31 @@
+{
+  "title": "Débloquez Dishday Pro",
+  "subtitle": "Planification de repas par IA, chaque semaine.",
+  "features": {
+    "aiPlan": "Génération de plan repas par IA",
+    "pantry": "Suggestions selon votre garde-manger",
+    "support": "Support prioritaire"
+  },
+  "price": {
+    "monthly": "{{amount}} $ / mois",
+    "perMonth": "par mois"
+  },
+  "cta": {
+    "upgrade": "Passer à Pro",
+    "upgrading": "Ouverture du paiement…",
+    "later": "Plus tard",
+    "manage": "Gérer l'abonnement",
+    "opening": "Ouverture…"
+  },
+  "section": {
+    "title": "Abonnement",
+    "currentFree": "Vous êtes au plan Free",
+    "currentPro": "Vous êtes en Pro",
+    "manageBody": "Mettez à jour le paiement, changez ou annulez."
+  },
+  "errors": {
+    "checkoutFailed": "Impossible d'ouvrir le paiement : {{error}}",
+    "portalFailed": "Impossible d'ouvrir le portail : {{error}}",
+    "noStripe": "Les paiements ne sont pas configurés."
+  }
+}

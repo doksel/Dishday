@@ -115,6 +115,7 @@ export function recipeFromPrisma(
     imageUrl: r.imageUrl,
     isPublic: r.isPublic,
     isApproved: r.isApproved,
+    previewOnly: r.previewOnly,
     tags: r.tags,
     cuisine: r.cuisine,
     mealType: r.mealType,

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import type { DayOfWeek, MealPlan, MealPlanEntry } from '@dishday/types';
-import { dayOfWeekMondayFirst, planWeekDates, weekStartIso } from '@dishday/utils';
+import { dayOfWeekMondayFirst, pickLocalized, planWeekDates, weekStartIso } from '@dishday/utils';
 import { useRouter } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -45,17 +45,38 @@ export default function HomeScreen() {
 
   const plan = plans.data?.find((p) => p.weekStart === week);
   const entries = plan?.entries ?? [];
-  const totalMeals = entries.length;
 
+  /**
+   * Group entries by day, **de-duped by mealType** — defense against legacy
+   * data from before the unique-slot constraint landed (see migration
+   * 20260612190000_unique_meal_plan_slot). One slot = one dish.
+   *
+   * If two rows exist for the same slot, the later one wins (we iterate in
+   * order; later entries overwrite earlier ones in the inner map).
+   */
   const entriesByDay = useMemo(() => {
     const map = new Map<number, MealPlanEntry[]>();
+    const slotIndex = new Map<string, number>(); // `${dow}|${mealType}` → index in arr
     for (const e of entries) {
       const arr = map.get(e.dayOfWeek) ?? [];
-      arr.push(e);
+      const key = `${e.dayOfWeek}|${e.mealType}`;
+      const prev = slotIndex.get(key);
+      if (prev !== undefined) {
+        arr[prev] = e; // overwrite — later wins
+      } else {
+        slotIndex.set(key, arr.length);
+        arr.push(e);
+      }
       map.set(e.dayOfWeek, arr);
     }
     return map;
   }, [entries]);
+
+  // Total meals = unique slot count (not raw entry count, which could be inflated).
+  const totalMeals = useMemo(
+    () => Array.from(entriesByDay.values()).reduce((sum, arr) => sum + arr.length, 0),
+    [entriesByDay],
+  );
 
   function handleDatePress(dow: DayOfWeek) {
     setSelectedDow(dow);
@@ -153,7 +174,11 @@ export default function HomeScreen() {
                       key={entry.id}
                       imageUrl={entry.recipe?.imageUrl}
                       mealType={entry.mealType}
-                      title={entry.recipe?.title ?? '—'}
+                      title={
+                        entry.recipe
+                          ? pickLocalized(entry.recipe.title, entry.recipe.titleI18n, i18n.language)
+                          : '—'
+                      }
                       onPress={() =>
                         plan &&
                         router.push({

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import type { AppContainer } from '../container.js';
 import { requireAuth, type AuthedRequest } from '../middlewares/auth.js';
+import { aiGenerateRateLimit } from '../middlewares/rateLimit.js';
 import { NotFoundError } from '../repositories/interfaces.js';
 import { aiQueue } from '../queue/ai-queue.js';
 
@@ -86,24 +87,32 @@ export function mealPlansRouter(container: AppContainer): Router {
     }
   });
 
-  // Pro-only: queue a Claude meal-plan generation job
-  router.post('/ai/generate', async (req: AuthedRequest, res, next) => {
-    try {
-      const user = await container.repos.users.findById(req.userId!);
-      if (!user || (user.plan !== 'pro' && user.plan !== 'admin')) {
-        return res.status(402).json({ code: 'PLAN_REQUIRED', message: 'Pro plan required' });
+  /**
+   * Queue a Claude meal-plan generation job. Available to ALL plans:
+   *   - Free users get a titles-only menu preview (the worker picks the mode
+   *     based on user.plan; see services/ai/meal-plan-generator.ts).
+   *   - Pro users get full recipes with ingredients, macros, etc.
+   *
+   * Rate-limited via `aiGenerateRateLimit` — Free is throttled aggressively
+   * (1 generation per week) to keep Claude costs in check.
+   */
+  router.post(
+    '/ai/generate',
+    aiGenerateRateLimit(container),
+    async (req: AuthedRequest, res, next) => {
+      try {
+        const data = aiGenerateSchema.parse(req.body);
+        const job = await aiQueue.add('meal_plan', {
+          userId: req.userId!,
+          type: 'meal_plan',
+          input: { weekStart: data.weekStart },
+        });
+        res.status(202).json({ jobId: job.id, status: 'queued' });
+      } catch (e) {
+        next(e);
       }
-      const data = aiGenerateSchema.parse(req.body);
-      const job = await aiQueue.add('meal_plan', {
-        userId: req.userId!,
-        type: 'meal_plan',
-        input: { weekStart: data.weekStart },
-      });
-      res.status(202).json({ jobId: job.id, status: 'queued' });
-    } catch (e) {
-      next(e);
-    }
-  });
+    },
+  );
 
   router.get('/ai/jobs/:jobId', async (req, res, next) => {
     try {

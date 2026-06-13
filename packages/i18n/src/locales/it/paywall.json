@@ -1,0 +1,31 @@
+{
+  "title": "Sblocca Dishday Pro",
+  "subtitle": "Pianificazione pasti con IA, ogni settimana.",
+  "features": {
+    "aiPlan": "Generazione piano pasti con IA",
+    "pantry": "Suggerimenti in base alla dispensa",
+    "support": "Supporto prioritario"
+  },
+  "price": {
+    "monthly": "{{amount}} $ / mese",
+    "perMonth": "al mese"
+  },
+  "cta": {
+    "upgrade": "Passa a Pro",
+    "upgrading": "Apertura del pagamento…",
+    "later": "Più tardi",
+    "manage": "Gestisci abbonamento",
+    "opening": "Apertura…"
+  },
+  "section": {
+    "title": "Abbonamento",
+    "currentFree": "Sei sul piano Free",
+    "currentPro": "Sei su Pro",
+    "manageBody": "Aggiorna pagamento, cambia piano o annulla."
+  },
+  "errors": {
+    "checkoutFailed": "Impossibile avviare il pagamento: {{error}}",
+    "portalFailed": "Impossibile aprire il portale: {{error}}",
+    "noStripe": "I pagamenti non sono configurati."
+  }
+}

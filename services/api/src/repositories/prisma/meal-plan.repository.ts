@@ -79,16 +79,31 @@ export class PrismaMealPlanRepository implements MealPlanRepository {
     await this.prisma.mealPlan.delete({ where: { id } });
   }
 
+  /**
+   * Replace whatever dish currently occupies the (planId, dayOfWeek, mealType)
+   * slot with `entry.recipeId`. Idempotent — calling twice with the same args
+   * lands the same final state. Runs inside a transaction so a partial write
+   * can't leave the slot empty.
+   *
+   * The DB-level unique constraint on (plan_id, day_of_week, meal_type) is
+   * the ultimate safety net (see migration 20260612190000_unique_meal_plan_slot);
+   * this method's job is to make the API ergonomic for "set this slot to X".
+   */
   async addEntry(planId: string, entry: AddEntryInput): Promise<MealPlanEntry> {
-    const e = await this.prisma.mealPlanEntry.create({
-      data: {
-        planId,
-        recipeId: entry.recipeId,
-        dayOfWeek: entry.dayOfWeek,
-        mealType: entry.mealType,
-        servings: entry.servings ?? 1,
-      },
-      include: { recipe: { include: { ingredients: { orderBy: { orderIndex: 'asc' } } } } },
+    const e = await this.prisma.$transaction(async (tx) => {
+      await tx.mealPlanEntry.deleteMany({
+        where: { planId, dayOfWeek: entry.dayOfWeek, mealType: entry.mealType },
+      });
+      return tx.mealPlanEntry.create({
+        data: {
+          planId,
+          recipeId: entry.recipeId,
+          dayOfWeek: entry.dayOfWeek,
+          mealType: entry.mealType,
+          servings: entry.servings ?? 1,
+        },
+        include: { recipe: { include: { ingredients: { orderBy: { orderIndex: 'asc' } } } } },
+      });
     });
     return mealPlanEntryFromPrisma(e);
   }

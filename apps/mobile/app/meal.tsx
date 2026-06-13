@@ -11,7 +11,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { planWeekDates, weekStartIso } from '@dishday/utils';
+import { pickLocalized, planWeekDates, weekStartIso } from '@dishday/utils';
 import type { MealPlan, MealPlanEntry, MealType, Recipe } from '@dishday/types';
 import { RecipePickerModal } from '../src/components/RecipePickerModal';
 import { Button, Chip, Icon, Text } from '../src/components/ui';
@@ -65,27 +65,25 @@ export default function MealSlotScreen() {
     [bookmarks.data],
   );
 
-  const entries = useMemo(
-    () => plan.data?.entries?.filter((e) => e.dayOfWeek === dow && e.mealType === mealType) ?? [],
+  /**
+   * One dish per slot — picks the first match. Even if old data has duplicates
+   * (pre-migration 20260612190000_unique_meal_plan_slot) we render only one.
+   */
+  const entry = useMemo(
+    () => plan.data?.entries?.find((e) => e.dayOfWeek === dow && e.mealType === mealType) ?? null,
     [plan.data, dow, mealType],
   );
 
-  // Aggregate macros across all dishes in this slot
   const macros = useMemo(() => {
-    let kcal = 0,
-      proteinG = 0,
-      carbsG = 0,
-      fatG = 0;
-    for (const e of entries) {
-      if (!e.recipe) continue;
-      const f = e.servings;
-      kcal += (e.recipe.caloriesPerServing ?? 0) * f;
-      proteinG += (e.recipe.proteinG ?? 0) * f;
-      carbsG += (e.recipe.carbsG ?? 0) * f;
-      fatG += (e.recipe.fatG ?? 0) * f;
-    }
-    return { kcal, proteinG, carbsG, fatG };
-  }, [entries]);
+    if (!entry?.recipe) return { kcal: 0, proteinG: 0, carbsG: 0, fatG: 0 };
+    const f = entry.servings;
+    return {
+      kcal: (entry.recipe.caloriesPerServing ?? 0) * f,
+      proteinG: (entry.recipe.proteinG ?? 0) * f,
+      carbsG: (entry.recipe.carbsG ?? 0) * f,
+      fatG: (entry.recipe.fatG ?? 0) * f,
+    };
+  }, [entry]);
 
   const kcalTarget = KCAL_TARGET[mealType];
   const fatTarget = FAT_TARGET[mealType];
@@ -215,14 +213,11 @@ export default function MealSlotScreen() {
             {/* Section header */}
             <View style={styles.sectionHeader}>
               <Text variant="headlineLg">{t('yourMeal')}</Text>
-              <Text variant="labelLg" color="primary">
-                {t('items', { count: entries.length })}
-              </Text>
             </View>
 
-            {/* Dish cards */}
+            {/* Dish card — exactly one per slot */}
             <View style={styles.dishList}>
-              {entries.length === 0 && (
+              {!entry && (
                 <View style={styles.empty}>
                   <Text variant="bodyMd" color="textSecondary" align="center">
                     {t('empty')}
@@ -230,24 +225,21 @@ export default function MealSlotScreen() {
                 </View>
               )}
 
-              {entries.map((entry) =>
-                entry.recipe ? (
-                  <DishCard
-                    key={entry.id}
-                    entry={entry}
-                    recipe={entry.recipe}
-                    bookmarked={bookmarkedIds.has(entry.recipe.id)}
-                    onPress={() =>
-                      router.push({ pathname: '/recipe/[id]', params: { id: entry.recipe!.id } })
-                    }
-                    onToggleBookmark={() =>
-                      toggleBookmark.mutate({
-                        recipeId: entry.recipe!.id,
-                        save: !bookmarkedIds.has(entry.recipe!.id),
-                      })
-                    }
-                  />
-                ) : null,
+              {entry?.recipe && (
+                <DishCard
+                  entry={entry}
+                  recipe={entry.recipe}
+                  bookmarked={bookmarkedIds.has(entry.recipe.id)}
+                  onPress={() =>
+                    router.push({ pathname: '/recipe/[id]', params: { id: entry.recipe!.id } })
+                  }
+                  onToggleBookmark={() =>
+                    toggleBookmark.mutate({
+                      recipeId: entry.recipe!.id,
+                      save: !bookmarkedIds.has(entry.recipe!.id),
+                    })
+                  }
+                />
               )}
             </View>
           </>
@@ -295,6 +287,7 @@ interface DishCardProps {
 function DishCard({ recipe, bookmarked, onPress, onToggleBookmark }: DishCardProps) {
   const theme = useTheme();
   const styles = useThemedStyles(makeStyles);
+  const { i18n } = useTranslation('meal');
 
   const totalMin = (recipe.prepTimeMin ?? 0) + (recipe.cookTimeMin ?? 0);
   const firstTag = recipe.tags[0];
@@ -326,7 +319,7 @@ function DishCard({ recipe, bookmarked, onPress, onToggleBookmark }: DishCardPro
       <View style={styles.dishBody}>
         <View>
           <Text variant="headlineMd" numberOfLines={1}>
-            {recipe.title}
+            {pickLocalized(recipe.title, recipe.titleI18n, i18n.language)}
           </Text>
           <View style={styles.dishMetaRow}>
             {totalMin > 0 && (

@@ -34,7 +34,7 @@ export function RecipePickerModal({
   const theme = useTheme();
   const styles = useThemedStyles(makeStyles);
   const api = getApi();
-  const { t } = useTranslation('recipes');
+  const { t, i18n } = useTranslation('recipes');
   const tMealTypes = useTranslation('mealTypes').t;
   const tCommon = useTranslation('common').t;
   const [q, setQ] = useState('');
@@ -106,11 +106,11 @@ export function RecipePickerModal({
               >
                 <View style={styles.rowMain}>
                   <Text variant="bodyLg" numberOfLines={1} style={styles.rowTitle}>
-                    {item.title}
+                    {pickLocalized(item.title, item.titleI18n, i18n.language)}
                   </Text>
                   {item.description && (
                     <Text variant="bodyMd" color="textSecondary" numberOfLines={2}>
-                      {item.description}
+                      {pickLocalized(item.description, item.descriptionI18n, i18n.language)}
                     </Text>
                   )}
                   <View style={styles.metaRow}>

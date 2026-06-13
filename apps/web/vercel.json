@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "cd ../.. && pnpm --filter @dishday/web build",
+  "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
+  "outputDirectory": ".next",
+  "framework": "nextjs",
+  "ignoreCommand": "node -e \"process.exit(require('child_process').execSync('git diff --name-only HEAD^ HEAD').toString().split('\\n').some(f => f.startsWith('apps/web/') || f.startsWith('packages/')) ? 0 : 1)\""
+}

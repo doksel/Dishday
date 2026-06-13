@@ -11,5 +11,11 @@
   "tapToAdd": "Tippen zum Hinzufügen…",
   "removeTitle": "Diese Mahlzeit entfernen?",
   "removeBody": "Der Slot wird geleert.",
-  "remove": "Entfernen"
+  "remove": "Entfernen",
+  "slotActions": {
+    "title": "Dieser Slot ist belegt",
+    "body": "Tausche das Gericht aus oder entferne es.",
+    "replace": "Tauschen",
+    "remove": "Entfernen"
+  }
 }

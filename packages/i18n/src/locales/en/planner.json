@@ -11,5 +11,11 @@
   "tapToAdd": "Tap to add…",
   "removeTitle": "Remove this meal?",
   "removeBody": "It will be cleared from the slot.",
-  "remove": "Remove"
+  "remove": "Remove",
+  "slotActions": {
+    "title": "This slot is taken",
+    "body": "Replace the dish with another one, or remove it.",
+    "replace": "Replace",
+    "remove": "Remove"
+  }
 }

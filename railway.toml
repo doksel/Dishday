@@ -1,0 +1,51 @@
+# Railway deployment config for the Dishday API + AI worker.
+#
+# Multi-service setup — in the Railway dashboard create TWO services pointing
+# at this repo:
+#
+#   1. `dishday-api`     — long-running HTTP server (Express).
+#                          Default config below applies as-is.
+#
+#   2. `dishday-worker`  — Bull queue consumer for AI meal-plan jobs.
+#                          Override the start command in the Railway UI:
+#                            startCommand = "node services/api/dist/queue/worker.js"
+#                          Same Dockerfile, same image — just a different process.
+#
+# Both services need:
+#   - DATABASE_URL          → Supabase Postgres (pooler URL for runtime)
+#   - DIRECT_URL            → Supabase Postgres (direct URL, used by Prisma migrate)
+#   - SUPABASE_URL          → public Supabase URL
+#   - SUPABASE_SERVICE_ROLE → service-role key (server-side only)
+#   - REDIS_URL             → Railway Redis add-on connection string
+#   - ANTHROPIC_API_KEY     → Claude API key (worker only, but harmless on api)
+#   - STRIPE_SECRET_KEY     → Stripe secret (api only)
+#   - STRIPE_WEBHOOK_SECRET → Stripe webhook signing secret (api only)
+#   - STRIPE_PRICE_PRO_MONTHLY → Pro tier Stripe price ID
+#
+# Postgres lives outside Railway (we use Supabase). Redis is added as a Railway
+# plugin in the dashboard — the URL is wired automatically via REDIS_URL.
+
+[build]
+builder = "dockerfile"
+dockerfilePath = "services/api/Dockerfile"
+# Railway re-builds when any of these paths change in a commit. Pruning to the
+# actual API surface keeps Vercel/EAS-only changes from triggering a redeploy.
+watchPatterns = [
+  "services/api/**",
+  "packages/types/**",
+  "packages/utils/**",
+  "packages/i18n/**",
+  "pnpm-lock.yaml",
+  "pnpm-workspace.yaml",
+  "Dockerfile",
+]
+
+[deploy]
+# Apply pending Prisma migrations BEFORE the app starts. Safe to re-run on
+# every boot — `migrate deploy` is idempotent. Run inside the api directory
+# where prisma/schema.prisma lives.
+startCommand = "cd services/api && pnpm db:deploy && node dist/index.js"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 5
+healthcheckPath = "/health"
+healthcheckTimeout = 30

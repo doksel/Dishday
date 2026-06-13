@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import type { AppContainer } from '../container.js';
+import { adminRouter } from './admin.js';
 import { authRouter } from './auth.js';
 import { mealPlansRouter } from './meal-plans.js';
 import { recipesRouter } from './recipes.js';
@@ -15,6 +16,7 @@ export function createRouter(container: AppContainer): Router {
   router.use('/recipes', recipesRouter(container));
   router.use('/meal-plans', mealPlansRouter(container));
   router.use('/shopping-lists', shoppingListsRouter(container));
+  router.use('/admin', adminRouter(container));
 
   return router;
 }

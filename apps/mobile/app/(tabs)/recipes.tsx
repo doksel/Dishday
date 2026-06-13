@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import type { MealType } from '@dishday/types';
+import { pickLocalized } from '@dishday/utils';
 import { Screen } from '../../src/components/Screen';
 import { Text } from '../../src/components/ui';
 import { getApi } from '../../src/lib/api';
@@ -22,7 +23,7 @@ export default function RecipesScreen() {
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const api = getApi();
-  const { t } = useTranslation('recipes');
+  const { t, i18n } = useTranslation('recipes');
   const [q, setQ] = useState('');
   const [mealType, setMealType] = useState<MealType | undefined>(undefined);
 
@@ -100,10 +101,12 @@ export default function RecipesScreen() {
               onPress={() => router.push({ pathname: '/recipe/[id]', params: { id: item.id } })}
               style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
             >
-              <Text variant="headlineMd">{item.title}</Text>
+              <Text variant="headlineMd">
+                {pickLocalized(item.title, item.titleI18n, i18n.language)}
+              </Text>
               {item.description && (
                 <Text variant="bodyMd" color="textSecondary" numberOfLines={2}>
-                  {item.description}
+                  {pickLocalized(item.description, item.descriptionI18n, i18n.language)}
                 </Text>
               )}
               <View style={styles.metaRow}>

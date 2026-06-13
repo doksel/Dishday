@@ -1,0 +1,52 @@
+{
+  "title": "Einkaufsliste",
+  "progress": "{{checked}} / {{total}}",
+  "loadError": "Liste konnte nicht geladen werden: {{error}}",
+  "empty": {
+    "noPlanTitle": "Noch kein Plan für diese Woche",
+    "noPlanBody": "Erstelle zuerst einen Wochenplan — daraus wird deine Einkaufsliste gebildet.",
+    "noPlanCta": "Zum Planer",
+    "noItemsTitle": "Deine Liste ist leer",
+    "noItemsBody": "Füge Artikel manuell hinzu oder erstelle die Liste aus dem Plan neu.",
+    "noItemsCta": "Aus Plan erstellen"
+  },
+  "sections": {
+    "vegetables": "Gemüse",
+    "fruit": "Obst",
+    "dairy": "Milchprodukte",
+    "meat": "Fleisch & Fisch",
+    "grains": "Getreide & Backwaren",
+    "spices": "Gewürze & Saucen",
+    "frozen": "Tiefkühl",
+    "drinks": "Getränke",
+    "other": "Sonstiges"
+  },
+  "actions": {
+    "regenerate": "Liste neu erstellen",
+    "add": "Artikel hinzufügen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen"
+  },
+  "confirms": {
+    "regenerateTitle": "Liste neu erstellen?",
+    "regenerateBody": "Die aktuelle Liste wird ersetzt. Manuell hinzugefügte, unmarkierte Artikel gehen verloren.",
+    "regenerate": "Neu erstellen",
+    "deleteItemTitle": "Artikel entfernen?",
+    "deleteItemBody": "Dieser Artikel wird aus der Liste entfernt.",
+    "remove": "Entfernen"
+  },
+  "openButton": "Einkaufsliste",
+  "openButton_one": "Einkaufsliste · {{count}} Artikel",
+  "openButton_other": "Einkaufsliste · {{count}} Artikel",
+  "addModal": {
+    "title": "Artikel hinzufügen",
+    "name": "Artikel",
+    "namePlaceholder": "z. B. Olivenöl",
+    "quantity": "Menge",
+    "unit": "Einheit",
+    "unitPlaceholder": "g, ml, Stk…",
+    "category": "Kategorie (optional)",
+    "save": "Hinzufügen"
+  },
+  "regenerating": "Wird erstellt…"
+}
