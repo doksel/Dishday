@@ -17,99 +17,50 @@ import {
   IconPrinter,
   IconShare,
 } from '@/components/Icons';
-
-interface DemoIngredient {
-  id: string;
-  text: string;
-}
-
-interface DemoStep {
-  heading: string;
-  body: string;
-}
-
-interface DemoRecipe {
-  id: string;
-  title: string;
-  imageUrl: string;
-  tags: string[];
-  minutes: number;
-  kcal: number;
-  difficulty: 'Easy' | 'Medium' | 'Hard';
-  description: string;
-  servings: number;
-  nutrition: {
-    calories: number;
-    protein: number;
-    carbs: number;
-    fiber: number;
-  };
-  ingredients: DemoIngredient[];
-  steps: DemoStep[];
-  chefTip?: string;
-}
+import {
+  getDisplayTags,
+  getRecipeById,
+  recipeImage,
+} from '@/lib/demo-recipes';
 
 /**
- * Demo recipe — same shape we'll get back from `GET /v1/recipes/{id}` once
- * the page is wired to the API. For now everything lives here so the UI can
- * be reviewed without a server.
+ * Recipe detail.
+ *
+ *   Resolves the recipe from the shared demo catalogue via `useParams.id`.
+ *   When we wire to the real API this becomes:
+ *     `useQuery(['recipe', id], () => api.recipes.byId(id))`
+ *   with `notFound()` on a 404.
  */
-const DEMO_RECIPE: DemoRecipe = {
-  id: 'mediterranean-harvest-bowl',
-  title: 'Mediterranean Harvest Bowl',
-  imageUrl:
-    'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=1200&h=1500&fit=crop&q=80',
-  tags: ['Vegan', 'High Protein'],
-  minutes: 25,
-  kcal: 480,
-  difficulty: 'Easy',
-  description:
-    'A vibrant, nourishing bowl that captures the essence of the Mediterranean. This recipe combines the earthy tones of massaged kale and quinoa with the sweet depth of roasted potatoes and the satisfying crunch of spiced chickpeas. Finished with a velvety tahini dressing, it’s a high-protein plant-based powerhouse perfect for meal prep or a quick weeknight dinner.',
-  servings: 1,
-  nutrition: { calories: 480, protein: 18, carbs: 52, fiber: 12 },
-  ingredients: [
-    { id: 'ing-1', text: '1/2 cup Quinoa, cooked' },
-    { id: 'ing-2', text: '2 cups Fresh Kale, chopped' },
-    { id: 'ing-3', text: '1 large Sweet Potato, cubed' },
-    { id: 'ing-4', text: '1/2 cup Chickpeas, canned' },
-    { id: 'ing-5', text: '2 tbsp Tahini Dressing' },
-  ],
-  steps: [
-    {
-      heading: 'Preparation',
-      body: 'Preheat your oven to 400°F (200°C). Toss cubed sweet potatoes and chickpeas with olive oil, salt, and smoked paprika. Spread on a baking sheet and roast for 20–25 minutes until tender and slightly crisp.',
-    },
-    {
-      heading: 'Massage the Kale',
-      body: 'While the potatoes roast, place chopped kale in a large bowl. Add a squeeze of lemon juice and a pinch of salt. Massage with your hands for 2 minutes until the leaves become soft and dark green.',
-    },
-    {
-      heading: 'Assembly',
-      body: 'In a serving bowl, start with a base of cooked quinoa. Layer the massaged kale on top. Add the roasted sweet potatoes and chickpeas in distinct sections for a beautiful presentation.',
-    },
-    {
-      heading: 'The Finish',
-      body: 'Drizzle generously with tahini dressing. Top with sesame seeds or red pepper flakes if desired. Serve warm or at room temperature.',
-    },
-  ],
-  chefTip:
-    'For extra creaminess, add half a mashed avocado to your kale while massaging. It adds healthy fats and makes the bowl even more satisfying!',
-};
-
 export default function RecipeDetailPage() {
-  // `useParams` keeps this simple while we're a client component. When we
-  // need server-rendered metadata we can split this into a server wrapper +
-  // client interactive island.
   const params = useParams<{ id: string }>();
-  const id = params?.id ?? DEMO_RECIPE.id;
+  const id = params?.id ?? '';
+  const recipe = getRecipeById(id);
 
-  // For now, every requested id resolves to the demo recipe — once the API
-  // lands this is `useQuery(['recipe', id], () => api.recipes.byId(id))`.
-  const recipe = DEMO_RECIPE;
-
+  // Hooks must run before any early return, so set up state up front.
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const [bookmarked, setBookmarked] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
+
+  if (!recipe) {
+    return (
+      <AppShell title="Recipe" subtitle={id ? `#${id}` : undefined}>
+        <div className="rounded-xl border border-dashed border-zinc-300 bg-white p-12 text-center">
+          <h2 className="text-xl font-semibold text-zinc-900">Recipe not found</h2>
+          <p className="mx-auto mt-2 max-w-md text-sm text-zinc-500">
+            We couldn’t find a recipe with that id in the demo catalogue.
+          </p>
+          <div className="mt-6 flex justify-center gap-2">
+            <Link
+              href="/recipes"
+              className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800"
+            >
+              Browse all recipes
+            </Link>
+          </div>
+        </div>
+      </AppShell>
+    );
+  }
 
   function toggleIngredient(ingId: string) {
     setChecked((prev) => {
@@ -124,15 +75,18 @@ export default function RecipeDetailPage() {
     if (typeof window !== 'undefined') window.print();
   }
 
+  const displayTags = getDisplayTags(recipe);
+  const imageUrl = recipeImage(recipe.imagePhotoId, 1200, 1500);
+
   return (
-    <AppShell title="Recipe" subtitle={`#${id}`}>
+    <AppShell title="Recipe" subtitle={`#${recipe.id}`}>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
         {/* ─── Left column: media + nutrition ───────────────── */}
         <div className="flex flex-col gap-6 lg:col-span-5">
           {/* Hero image */}
           <div className="relative">
             <img
-              src={recipe.imageUrl}
+              src={imageUrl}
               alt={recipe.title}
               className="aspect-[4/5] w-full rounded-3xl object-cover shadow-md"
             />
@@ -197,12 +151,17 @@ export default function RecipeDetailPage() {
           {/* Header — tags + title */}
           <section>
             <div className="mb-2 flex flex-wrap gap-2">
-              {recipe.tags.map((t) => (
+              {displayTags.map((t) => (
                 <span
-                  key={t}
-                  className="rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-700"
+                  key={t.label}
+                  className={
+                    'rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ' +
+                    (t.tone === 'primary'
+                      ? 'bg-emerald-50 text-emerald-700'
+                      : 'bg-amber-50 text-amber-700')
+                  }
                 >
-                  {t}
+                  {t.label}
                 </span>
               ))}
             </div>
@@ -212,11 +171,20 @@ export default function RecipeDetailPage() {
 
             {/* Quick stats pill */}
             <div className="mt-4 inline-flex flex-wrap items-center gap-5 rounded-2xl border border-zinc-200 bg-white px-5 py-3">
-              <Stat icon={<IconClock width={18} height={18} className="text-emerald-700" />} label={`${recipe.minutes} mins`} />
+              <Stat
+                icon={<IconClock width={18} height={18} className="text-emerald-700" />}
+                label={`${recipe.minutes} mins`}
+              />
               <Divider />
-              <Stat icon={<IconFlame width={18} height={18} className="text-emerald-700" />} label={`${recipe.kcal} kcal`} />
+              <Stat
+                icon={<IconFlame width={18} height={18} className="text-emerald-700" />}
+                label={`${recipe.kcal} kcal`}
+              />
               <Divider />
-              <Stat icon={<IconBars width={18} height={18} className="text-emerald-700" />} label={recipe.difficulty} />
+              <Stat
+                icon={<IconBars width={18} height={18} className="text-emerald-700" />}
+                label={recipe.difficulty}
+              />
             </div>
 
             {/* CTA buttons */}
@@ -311,7 +279,11 @@ export default function RecipeDetailPage() {
                     <IconCheckCircle
                       width={18}
                       height={18}
-                      className={on ? 'text-emerald-600' : 'text-zinc-300 group-hover:text-emerald-500'}
+                      className={
+                        on
+                          ? 'text-emerald-600'
+                          : 'text-zinc-300 group-hover:text-emerald-500'
+                      }
                     />
                   </button>
                 );
@@ -360,13 +332,15 @@ export default function RecipeDetailPage() {
             </ol>
           </section>
 
-          {/* Chef's Tip */}
+          {/* Chef’s Tip */}
           {recipe.chefTip && (
             <div className="flex gap-3 rounded-3xl border border-emerald-100 bg-emerald-50/50 p-5">
               <IconBulb width={22} height={22} className="flex-shrink-0 text-emerald-700" />
               <div>
                 <p className="text-sm font-semibold text-emerald-700">Chef’s Tip</p>
-                <p className="mt-1 text-sm leading-relaxed text-emerald-900/80">{recipe.chefTip}</p>
+                <p className="mt-1 text-sm leading-relaxed text-emerald-900/80">
+                  {recipe.chefTip}
+                </p>
               </div>
             </div>
           )}

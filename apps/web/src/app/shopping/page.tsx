@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useMemo, useState, type ReactNode } from 'react';
 import { AppShell } from '@/components/AppShell';
 import {
@@ -14,6 +15,11 @@ import {
   IconPrinter,
   IconShare,
 } from '@/components/Icons';
+import {
+  getDisplayTags,
+  getRecipeById,
+  recipeImage,
+} from '@/lib/demo-recipes';
 
 /**
  * Shopping list — demo state.
@@ -93,43 +99,22 @@ const AISLES: DemoAisle[] = [
   },
 ];
 
-interface DemoMeal {
-  id: string;
-  title: string;
-  imageUrl: string;
+/**
+ * Plan-specific overrides — just (recipeId, slot, servings). All visual
+ * data (title, image, tags) is looked up from the shared catalogue. When
+ * the API lands, this comes from `meal_plan_entries` for the current week.
+ */
+interface PlanEntry {
+  recipeId: string;
   when: string;
+  /** Plan-specific serving count — may differ from the recipe's default. */
   servings: number;
-  tags: { label: string; tone: 'primary' | 'tertiary' }[];
 }
 
-const PLAN_MEALS: DemoMeal[] = [
-  {
-    id: 'summer-buddha-bowl',
-    title: 'Summer Buddha Bowl',
-    imageUrl: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=200&h=200&fit=crop&q=80',
-    when: 'Monday Lunch',
-    servings: 2,
-    tags: [{ label: 'VEGAN', tone: 'primary' }],
-  },
-  {
-    id: 'mediterranean-chickpea-salad',
-    title: 'Mediterranean Chickpea Salad',
-    imageUrl: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=200&h=200&fit=crop&q=80',
-    when: 'Tuesday Dinner',
-    servings: 4,
-    tags: [
-      { label: 'GF', tone: 'primary' },
-      { label: 'PROTEIN+', tone: 'tertiary' },
-    ],
-  },
-  {
-    id: 'avocado-sourdough-toast',
-    title: 'Avocado Sourdough Toast',
-    imageUrl: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=200&h=200&fit=crop&q=80',
-    when: 'Wednesday Breakfast',
-    servings: 1,
-    tags: [],
-  },
+const PLAN_ENTRIES: PlanEntry[] = [
+  { recipeId: 'mediterranean-harvest-bowl', when: 'Monday Lunch', servings: 2 },
+  { recipeId: 'moroccan-falafel-bowl', when: 'Tuesday Dinner', servings: 4 },
+  { recipeId: 'blueberry-almond-oats', when: 'Wednesday Breakfast', servings: 1 },
 ];
 
 /* ─── Page ────────────────────────────────────────────────────────── */
@@ -207,8 +192,8 @@ export default function ShoppingPage() {
               </button>
             </div>
             <div className="space-y-3">
-              {PLAN_MEALS.map((m) => (
-                <PlanMealCard key={m.id} meal={m} />
+              {PLAN_ENTRIES.map((entry) => (
+                <PlanMealCard key={`${entry.recipeId}-${entry.when}`} entry={entry} />
               ))}
             </div>
           </section>
@@ -345,22 +330,43 @@ function AisleSection({
 
 /* ─── Right rail bits ─────────────────────────────────────────────── */
 
-function PlanMealCard({ meal }: { meal: DemoMeal }) {
+function PlanMealCard({ entry }: { entry: PlanEntry }) {
+  // Look up the recipe metadata from the shared catalogue. If we don't
+  // know about this recipe (shouldn't happen in the demo) we render a
+  // muted placeholder rather than crashing.
+  const recipe = getRecipeById(entry.recipeId);
+  if (!recipe) {
+    return (
+      <div className="flex items-center gap-3 rounded-2xl bg-zinc-50 p-2.5 text-xs text-zinc-400">
+        <div className="h-16 w-16 rounded-xl bg-zinc-200" />
+        <span>Unknown recipe</span>
+      </div>
+    );
+  }
+
+  // First two display tags — Plan Overview cards are small, can't fit more.
+  const tags = getDisplayTags(recipe, 2);
+
   return (
-    <div className="flex cursor-pointer items-center gap-3 rounded-2xl border border-transparent bg-zinc-50 p-2.5 transition-colors hover:border-emerald-200">
+    <Link
+      href={`/recipes/${recipe.id}`}
+      className="group flex items-center gap-3 rounded-2xl border border-transparent bg-zinc-50 p-2.5 transition-colors hover:border-emerald-200 hover:bg-white"
+    >
       <img
-        src={meal.imageUrl}
+        src={recipeImage(recipe.imagePhotoId, 200, 200)}
         alt=""
         className="h-16 w-16 flex-shrink-0 rounded-xl object-cover"
       />
       <div className="min-w-0 flex-1">
-        <h4 className="truncate text-sm font-semibold text-zinc-900">{meal.title}</h4>
+        <h4 className="truncate text-sm font-semibold text-zinc-900 group-hover:text-emerald-700">
+          {recipe.title}
+        </h4>
         <p className="truncate text-xs text-zinc-500">
-          {meal.when} · {meal.servings} {meal.servings === 1 ? 'Serving' : 'Servings'}
+          {entry.when} · {entry.servings} {entry.servings === 1 ? 'Serving' : 'Servings'}
         </p>
-        {meal.tags.length > 0 && (
+        {tags.length > 0 && (
           <div className="mt-1 flex gap-1.5">
-            {meal.tags.map((t) => (
+            {tags.map((t) => (
               <span
                 key={t.label}
                 className={
@@ -376,7 +382,7 @@ function PlanMealCard({ meal }: { meal: DemoMeal }) {
           </div>
         )}
       </div>
-    </div>
+    </Link>
   );
 }
 

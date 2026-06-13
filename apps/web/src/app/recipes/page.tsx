@@ -5,16 +5,15 @@ import { AppShell } from '@/components/AppShell';
 import { FilterChips } from '@/components/recipes/FilterChips';
 import { RecipeCard } from '@/components/recipes/RecipeCard';
 import { SearchBar } from '@/components/recipes/SearchBar';
+import {
+  DEMO_RECIPES,
+  getDisplayTags,
+  getPrimaryTagLabel,
+  recipeImage,
+  type DemoTag,
+} from '@/lib/demo-recipes';
 
-type FilterKey =
-  | 'all'
-  | 'quick'
-  | 'vegan'
-  | 'high-protein'
-  | 'low-carb'
-  | 'gluten-free'
-  | 'breakfast'
-  | 'desserts';
+type FilterKey = 'all' | DemoTag;
 
 const FILTERS: { key: FilterKey; label: string }[] = [
   { key: 'all', label: 'All' },
@@ -27,92 +26,6 @@ const FILTERS: { key: FilterKey; label: string }[] = [
   { key: 'desserts', label: 'Desserts' },
 ];
 
-interface DemoRecipe {
-  id: string;
-  title: string;
-  imageUrl: string;
-  minutes: number;
-  kcal: number;
-  tags: FilterKey[];
-  /** Render as the bento hero card. Exactly one in the demo set. */
-  featured?: boolean;
-  rating?: number;
-  description?: string;
-  chips?: string[];
-  tag?: string;
-}
-
-const RECIPES: DemoRecipe[] = [
-  {
-    id: 'mediterranean-harvest-bowl',
-    title: 'Mediterranean Harvest Bowl',
-    imageUrl:
-      'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=1200&h=900&fit=crop',
-    minutes: 25,
-    kcal: 480,
-    tags: ['vegan', 'high-protein'],
-    featured: true,
-    rating: 4.9,
-    description:
-      'A nutritious blend of organic quinoa, maple-roasted sweet potato, and fresh heirloom greens topped with a zesty tahini dressing.',
-    chips: ['Vegan', 'High Protein'],
-  },
-  {
-    id: 'wild-basil-pesto-linguine',
-    title: 'Wild Basil Pesto Linguine',
-    imageUrl: 'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=600&h=400&fit=crop',
-    minutes: 15,
-    kcal: 320,
-    tags: ['quick'],
-    tag: 'Quick',
-  },
-  {
-    id: 'beet-goat-cheese-salad',
-    title: 'Beet & Goat Cheese Salad',
-    imageUrl: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600&h=400&fit=crop',
-    minutes: 10,
-    kcal: 210,
-    tags: ['gluten-free'],
-    tag: 'Vegetarian',
-  },
-  {
-    id: 'lemon-glazed-salmon',
-    title: 'Lemon Glazed Atlantic Salmon',
-    imageUrl: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=600&h=400&fit=crop',
-    minutes: 20,
-    kcal: 450,
-    tags: ['low-carb', 'high-protein'],
-    tag: 'Low Carb',
-  },
-  {
-    id: 'moroccan-falafel-bowl',
-    title: 'Moroccan Falafel Bowl',
-    imageUrl: 'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=600&h=400&fit=crop',
-    minutes: 15,
-    kcal: 510,
-    tags: ['vegan'],
-    tag: 'Vegan',
-  },
-  {
-    id: 'blueberry-almond-oats',
-    title: 'Blueberry Almond Oats',
-    imageUrl: 'https://images.unsplash.com/photo-1517673400267-0251440c45dc?w=600&h=400&fit=crop',
-    minutes: 5,
-    kcal: 280,
-    tags: ['quick', 'breakfast'],
-    tag: 'Quick',
-  },
-  {
-    id: 'golden-chickpea-curry',
-    title: 'Golden Chickpea Curry',
-    imageUrl: 'https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?w=600&h=400&fit=crop',
-    minutes: 35,
-    kcal: 420,
-    tags: ['vegan'],
-    tag: 'Vegan',
-  },
-];
-
 export default function RecipesPage() {
   const [filter, setFilter] = useState<FilterKey>('all');
   const [query, setQuery] = useState('');
@@ -123,7 +36,7 @@ export default function RecipesPage() {
    */
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return RECIPES.filter((r) => {
+    return DEMO_RECIPES.filter((r) => {
       if (filter !== 'all' && !r.tags.includes(filter)) return false;
       if (q && !r.title.toLowerCase().includes(q)) return false;
       return true;
@@ -131,7 +44,7 @@ export default function RecipesPage() {
   }, [filter, query]);
 
   return (
-    <AppShell title="Explore Recipes" subtitle="Discover dishes you'll love">
+    <AppShell title="Explore Recipes" subtitle="Discover dishes you’ll love">
       <div className="space-y-6">
         {/* Search */}
         <div className="max-w-md">
@@ -152,9 +65,32 @@ export default function RecipesPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            {filtered.map((r) => (
-              <RecipeCard key={r.id} {...r} />
-            ))}
+            {filtered.map((r) => {
+              // Featured card uses a larger source image + chips overlay;
+              // compact card gets a single corner pill.
+              const isFeatured = !!r.featured;
+              return (
+                <RecipeCard
+                  key={r.id}
+                  id={r.id}
+                  title={r.title}
+                  imageUrl={recipeImage(
+                    r.imagePhotoId,
+                    isFeatured ? 1200 : 600,
+                    isFeatured ? 900 : 400,
+                  )}
+                  minutes={r.minutes}
+                  kcal={r.kcal}
+                  featured={isFeatured}
+                  rating={r.rating}
+                  description={isFeatured ? r.description : undefined}
+                  chips={
+                    isFeatured ? getDisplayTags(r, 2).map((t) => t.label) : undefined
+                  }
+                  tag={!isFeatured ? getPrimaryTagLabel(r) : undefined}
+                />
+              );
+            })}
           </div>
         )}
       </div>
