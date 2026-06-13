@@ -13,13 +13,17 @@ export interface DayCardProps {
   /** Render the "TODAY" pill instead of the kcal counter. */
   isToday?: boolean;
   meals: DayCardMeal[];
-  /** Highlight border + scale for the focused day (typically today). */
+  /** Highlight border for the focused day (clicked or today). */
   active?: boolean;
+  /** Click handler — wraps the card in a button so the whole card is hittable. */
+  onClick?: () => void;
 }
 
 /**
  * Single day in the horizontal weekly calendar. Designed to be 280px wide
- * and stack three meals (Breakfast / Lunch / Dinner) inside.
+ * and stack three meals (Breakfast / Lunch / Dinner) inside. The whole card
+ * is clickable; the parent uses that to swap which day's meals are shown
+ * in the detail row below.
  */
 export function DayCard({
   weekday,
@@ -28,14 +32,17 @@ export function DayCard({
   isToday,
   meals,
   active,
+  onClick,
 }: DayCardProps) {
   return (
-    <article
+    <button
+      type="button"
+      onClick={onClick}
       className={
-        'flex w-[280px] shrink-0 flex-col overflow-hidden rounded-xl bg-white border transition-shadow ' +
+        'flex w-[280px] shrink-0 flex-col overflow-hidden rounded-xl bg-white border text-left transition-all ' +
         (active
           ? 'border-2 border-emerald-700 shadow-lg'
-          : 'border-zinc-200 hover:shadow-md')
+          : 'border-zinc-200 hover:border-zinc-300 hover:shadow-md')
       }
     >
       <header className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50/50 px-4 py-3">
@@ -59,7 +66,7 @@ export function DayCard({
 
       <ul className="space-y-3 p-4">
         {meals.map((m) => (
-          <li key={m.type} className="group flex cursor-pointer gap-3">
+          <li key={m.type} className="flex gap-3">
             <img
               src={m.imageUrl}
               alt=""
@@ -69,14 +76,12 @@ export function DayCard({
               <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
                 {m.type}
               </p>
-              <p className="truncate text-sm leading-snug text-zinc-900 group-hover:text-emerald-700">
-                {m.title}
-              </p>
+              <p className="truncate text-sm leading-snug text-zinc-900">{m.title}</p>
             </div>
           </li>
         ))}
       </ul>
-    </article>
+    </button>
   );
 }
 

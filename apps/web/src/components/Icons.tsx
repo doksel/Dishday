@@ -94,3 +94,41 @@ export const IconPlus = (p: Props) => (
     <path d="M12 5v14M5 12h14" />
   </svg>
 );
+
+export const IconSearch = (p: Props) => (
+  <svg {...base} {...p}>
+    <circle cx="11" cy="11" r="7" />
+    <path d="m20 20-3.5-3.5" />
+  </svg>
+);
+
+export const IconHeart = (p: Props) => (
+  <svg {...base} {...p}>
+    <path d="M12 21s-7-4.5-9.3-9.3C1.3 8.9 3 6 6 6c2 0 3.5 1 4 2.5C10.5 7 12 6 14 6c3 0 4.7 2.9 3.3 5.7C19 16.5 12 21 12 21Z" />
+  </svg>
+);
+
+export const IconHeartFilled = (p: Props) => (
+  <svg {...base} {...p} fill="currentColor" stroke="none">
+    <path d="M12 21s-7-4.5-9.3-9.3C1.3 8.9 3 6 6 6c2 0 3.5 1 4 2.5C10.5 7 12 6 14 6c3 0 4.7 2.9 3.3 5.7C19 16.5 12 21 12 21Z" />
+  </svg>
+);
+
+export const IconStar = (p: Props) => (
+  <svg {...base} {...p} fill="currentColor" stroke="none">
+    <path d="m12 3 2.7 5.5 6 .9-4.3 4.2 1 6L12 16.8 6.6 19.6l1-6L3.3 9.4l6-.9Z" />
+  </svg>
+);
+
+export const IconClock = (p: Props) => (
+  <svg {...base} {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7v5l3 2" />
+  </svg>
+);
+
+export const IconFlame = (p: Props) => (
+  <svg {...base} {...p}>
+    <path d="M12 3c0 4-4 5-4 9a4 4 0 0 0 8 0c0-2-1-3-1-5 0 0 3 1 3 5a6 6 0 1 1-12 0c0-5 6-5 6-9Z" />
+  </svg>
+);
