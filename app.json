@@ -1,0 +1,8 @@
+{
+  "android": {
+    "package": "com.anonymous.dishday"
+  },
+  "ios": {
+    "bundleIdentifier": "com.anonymous.dishday"
+  }
+}
