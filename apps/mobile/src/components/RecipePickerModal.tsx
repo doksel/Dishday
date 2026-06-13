@@ -16,7 +16,8 @@ import type { MealType, Recipe } from '@dishday/types';
 import { getApi } from '../lib/api';
 import { apiErrorMessage } from '../lib/apiError';
 import { useTheme, useThemedStyles, type Theme } from '../theme';
-import { Text } from './ui';
+import { Icon, Text } from './ui';
+import { QuickDishModal } from './QuickDishModal';
 
 export interface RecipePickerModalProps {
   visible: boolean;
@@ -38,6 +39,18 @@ export function RecipePickerModal({
   const tMealTypes = useTranslation('mealTypes').t;
   const tCommon = useTranslation('common').t;
   const [q, setQ] = useState('');
+  const [quickOpen, setQuickOpen] = useState(false);
+
+  /**
+   * When the user creates a quick dish from inside the picker, we want to
+   * (a) immediately drop it into the slot they were trying to fill and
+   * (b) close the picker — no point making them re-find their own new dish
+   * in the list they just searched. Both modals close in one motion.
+   */
+  function handleQuickCreated(recipe: Recipe) {
+    setQuickOpen(false);
+    onSelect(recipe);
+  }
 
   const recipes = useQuery({
     queryKey: ['recipes', { q, mealType }],
@@ -75,6 +88,19 @@ export function RecipePickerModal({
             autoCorrect={false}
           />
         </View>
+
+        {/* Quick-dish entry point — always visible at the top so users notice
+         * they CAN add a personal dish, not only pick from the catalog. */}
+        <Pressable
+          onPress={() => setQuickOpen(true)}
+          style={({ pressed }) => [styles.addBtn, pressed && styles.addBtnPressed]}
+        >
+          <View style={styles.addIcon}>
+            <Icon name="add" color="onPrimary" size={20} />
+          </View>
+          <Text variant="bodyLg" style={styles.addLabel}>{t('quickDish.addNewButton')}</Text>
+          <Icon name="chevron-forward" color="textMuted" size={18} />
+        </Pressable>
 
         {recipes.isLoading && (
           <View style={styles.loaderRow}>
@@ -134,6 +160,12 @@ export function RecipePickerModal({
           />
         )}
       </SafeAreaView>
+
+      <QuickDishModal
+        visible={quickOpen}
+        onClose={() => setQuickOpen(false)}
+        onCreated={handleQuickCreated}
+      />
     </Modal>
   );
 }
@@ -170,5 +202,28 @@ function makeStyles(theme: Theme) {
     rowMain: { gap: 4 },
     rowTitle: { fontWeight: '600' },
     metaRow: { flexDirection: 'row', gap: 12, marginTop: 4 },
+
+    // Quick-dish CTA row above the catalog list.
+    addBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.sm,
+      marginHorizontal: theme.spacing.md,
+      marginBottom: theme.spacing.sm,
+      paddingVertical: 10,
+      paddingHorizontal: theme.spacing.sm,
+      backgroundColor: theme.colors.surfaceVariant,
+      borderRadius: theme.radius.md,
+    },
+    addBtnPressed: { opacity: 0.85 },
+    addIcon: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: theme.colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    addLabel: { flex: 1, fontWeight: '600' },
   });
 }

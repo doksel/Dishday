@@ -19,5 +19,14 @@
     "title": "Pick a recipe",
     "titleWithMeal": "Pick a recipe — {{meal}}",
     "noMatch": "No recipes match this search."
+  },
+  "quickDish": {
+    "addNewButton": "Add a quick dish…",
+    "title": "Quick dish",
+    "name": "Name",
+    "placeholder": "e.g. Mom's pancakes",
+    "hint": "Just a name — perfect for one-off ideas or leftovers. You can add ingredients later.",
+    "save": "Add to plan",
+    "saving": "Adding…"
   }
 }

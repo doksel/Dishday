@@ -19,5 +19,14 @@
     "title": "Rezept auswählen",
     "titleWithMeal": "Rezept auswählen — {{meal}}",
     "noMatch": "Keine Rezepte passen zu dieser Suche."
+  },
+  "quickDish": {
+    "addNewButton": "Eigenes Gericht hinzufügen…",
+    "title": "Schnelles Gericht",
+    "name": "Name",
+    "placeholder": "z. B. Omas Pfannkuchen",
+    "hint": "Nur ein Name — ideal für spontane Ideen oder Reste. Zutaten kannst du später ergänzen.",
+    "save": "Zum Plan hinzufügen",
+    "saving": "Wird hinzugefügt…"
   }
 }

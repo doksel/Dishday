@@ -19,5 +19,14 @@
     "title": "Choisir une recette",
     "titleWithMeal": "Choisir une recette — {{meal}}",
     "noMatch": "Aucune recette ne correspond."
+  },
+  "quickDish": {
+    "addNewButton": "Ajouter un plat perso…",
+    "title": "Plat rapide",
+    "name": "Nom",
+    "placeholder": "ex. Crêpes de maman",
+    "hint": "Juste un nom — parfait pour les idées ponctuelles ou les restes. Les ingrédients peuvent être ajoutés plus tard.",
+    "save": "Ajouter au plan",
+    "saving": "Ajout…"
   }
 }
