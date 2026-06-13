@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { isSupportedLocale } from '@dishday/i18n';
 import type { AppContainer } from '../container.js';
 import { requireAuth, type AuthedRequest } from '../middlewares/auth.js';
+import { aiRewriteRateLimit } from '../middlewares/rateLimit.js';
 import { LimitReachedError, NotFoundError, PlanRequiredError } from '../repositories/interfaces.js';
 
 /** Map a LimitReachedError to a 402 response with structured body. */
@@ -158,6 +159,36 @@ export function recipesRouter(container: AppContainer): Router {
       next(e);
     }
   });
+
+  /**
+   * Pro-only: rewrite a recipe via Claude ("make it vegan", "double the
+   * portions", "without nuts"). Returns the freshly-created child recipe
+   * — the source is never mutated. Rate-limited per `LIMITS['ai-rewrite']`
+   * in middlewares/rateLimit.ts.
+   */
+  const rewriteSchema = z.object({
+    prompt: z.string().min(3).max(500),
+  });
+  router.post(
+    '/:id/rewrite',
+    requireAuth,
+    aiRewriteRateLimit(container),
+    async (req: AuthedRequest, res, next) => {
+      try {
+        const { prompt } = rewriteSchema.parse(req.body);
+        const recipe = await recipes.rewrite(req.userId!, req.params.id, prompt);
+        res.status(201).json(recipe);
+      } catch (e) {
+        if (e instanceof NotFoundError) {
+          return res.status(404).json({ code: 'NOT_FOUND', message: e.message });
+        }
+        if (e instanceof PlanRequiredError) {
+          return res.status(402).json({ code: 'PLAN_REQUIRED', message: e.message });
+        }
+        next(e);
+      }
+    },
+  );
 
   router.delete('/:id/bookmark', requireAuth, async (req: AuthedRequest, res, next) => {
     try {

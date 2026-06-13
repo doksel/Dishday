@@ -8,5 +8,28 @@
   "min_one": "{{value}} Min.",
   "min_other": "{{value}} Min.",
   "hourMin": "{{h}} Std. {{m}} Min.",
-  "hour": "{{h}} Std."
+  "hour": "{{h}} Std.",
+  "rewrite": {
+    "button": "Mit KI ändern",
+    "buttonHint": "Vegan, doppelte Portion, ohne Nüsse…",
+    "title": "Mit KI ändern",
+    "subtitle": "Wähle eine Vorlage oder beschreibe die Änderung. Wir erstellen eine Kopie — das Original bleibt.",
+    "or": "ODER",
+    "customLabel": "Eigene Änderung",
+    "customPlaceholder": "z. B. schärfer machen, Hähnchen durch Tofu ersetzen…",
+    "apply": "Ändern",
+    "generating": "Wird erstellt…",
+    "presets": {
+      "vegan": "Vegan machen",
+      "double": "Portionen verdoppeln",
+      "healthier": "Gesünder machen",
+      "quicker": "Schneller machen",
+      "noNuts": "Ohne Nüsse"
+    },
+    "errors": {
+      "rateLimited": "Tageslimit erreicht. Versuche es morgen erneut."
+    },
+    "lockedBody": "Dieses Rezept gehört zu deiner Pro-Vorschau. Upgrade, um Zutaten und Anweisungen zu sehen.",
+    "lockedCta": "Auf Pro upgraden"
+  }
 }

@@ -10,6 +10,7 @@ import type { Paginated, Recipe, RecipeFilter } from '@dishday/types';
 import { slugify } from '@dishday/utils';
 import type { CreateRecipeInput, Repositories, UpdateRecipeInput } from '../repositories/interfaces.js';
 import { LimitReachedError, NotFoundError, PlanRequiredError } from '../repositories/interfaces.js';
+import { rewriteRecipe as aiRewrite } from './ai/recipe-rewriter.js';
 
 /** Free-tier caps. Pro / admin are uncapped. */
 const FREE_BOOKMARK_LIMIT = 10;
@@ -121,6 +122,67 @@ export class RecipeService {
     }
     await this.repos.recipes.bookmark(userId, recipeId);
   }
+
+  /**
+   * Transform any recipe via AI (Pro-only). The source recipe stays
+   * untouched; the result is saved as a NEW personal recipe owned by
+   * `userId` (`source='user', isPublic=false`) so it shows up in the
+   * user's own collection alongside quick dishes.
+   *
+   * Quick-dish cap is NOT applied here — AI rewrites are a paid Pro
+   * convenience, the limit only makes sense for the free-tier "scratchpad"
+   * dishes.
+   */
+  async rewrite(userId: string, recipeId: string, prompt: string): Promise<Recipe> {
+    const user = await this.repos.users.findById(userId);
+    const isPro = user?.plan === 'pro' || user?.plan === 'admin';
+    if (!isPro) throw new PlanRequiredError('AI recipe rewrite requires Pro');
+
+    const source = await this.repos.recipes.findById(recipeId);
+    if (!source) throw new NotFoundError('Recipe', recipeId);
+
+    const { rewrite } = await aiRewrite(this.repos, {
+      source,
+      prompt,
+      locale: user?.locale ?? null,
+      userId,
+    });
+
+    const slug = await this.uniqueSlug(rewrite.title);
+    const locale = user?.locale ?? null;
+    return this.repos.recipes.create({
+      title: rewrite.title,
+      titleI18n: locale ? { [locale]: rewrite.title } : null,
+      slug,
+      description: rewrite.description ?? null,
+      descriptionI18n:
+        locale && rewrite.description ? { [locale]: rewrite.description } : null,
+      authorId: userId,
+      source: 'user',
+      servings: rewrite.servings ?? source.servings,
+      caloriesPerServing: rewrite.calories,
+      proteinG: rewrite.proteinG,
+      carbsG: rewrite.carbsG,
+      fatG: rewrite.fatG,
+      prepTimeMin: rewrite.prepTimeMin ?? source.prepTimeMin,
+      cookTimeMin: rewrite.cookTimeMin ?? source.cookTimeMin,
+      tags: rewrite.tags ?? source.tags,
+      cuisine: rewrite.cuisine ?? source.cuisine,
+      mealType: rewrite.mealType ?? source.mealType,
+      isPublic: false,
+      isApproved: true,
+      previewOnly: false,
+      ingredients: rewrite.ingredients.map((ing, i) => ({
+        name: ing.name,
+        nameI18n: locale ? { [locale]: ing.name } : null,
+        quantity: ing.quantity,
+        unit: ing.unit,
+        notes: null,
+        orderIndex: i,
+      })),
+    });
+  }
+
   unbookmark(userId: string, recipeId: string) {
     return this.repos.recipes.unbookmark(userId, recipeId);
   }

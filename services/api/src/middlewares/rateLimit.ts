@@ -1,74 +1,111 @@
 /**
- * Tier-aware rate limit for the AI meal-plan generator.
+ * Tier-aware rate limits for the AI endpoints.
  *
- *   Free: 1 generation per rolling 7 days. The number is intentionally tiny —
- *         each Claude call costs us real money and the Free experience is a
- *         "menu preview" that doesn't need refreshing daily.
- *   Pro / admin: 10 per rolling 24 hours. Soft anti-abuse cap; legitimate
- *         users rarely cross 1-2/day.
+ *   Each action ("ai-generate", "ai-rewrite", …) keeps its own bucket so
+ *   limits don't bleed across features. Within an action, the per-tier
+ *   limit/window depends on the caller's plan.
  *
- *   Storage is an in-process `Map<userId, timestamp[]>`. Fine for single-node
- *   dev / a small Railway dyno. When we scale out we'll swap this for a Redis
- *   sorted-set keyed by userId.
+ *   Storage is an in-process `Map<bucketKey, timestamp[]>`. Fine for
+ *   single-node dev / a small Railway dyno. When we scale out we'll swap
+ *   this for a Redis sorted-set.
  */
 
 import type { NextFunction, Response } from 'express';
 import type { AppContainer } from '../container.js';
 import type { AuthedRequest } from './auth.js';
 
-const FREE_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
-const FREE_LIMIT = 1;
-const PRO_WINDOW_MS = 24 * 60 * 60 * 1000;
-const PRO_LIMIT = 10;
-
-/** userId → timestamps of recent successful enqueues (ms epoch). */
-const hits = new Map<string, number[]>();
-
-function record(userId: string, now: number) {
-  const arr = hits.get(userId) ?? [];
-  arr.push(now);
-  hits.set(userId, arr);
+interface ActionLimits {
+  /** Free tier: { limit, windowMs }. Use limit=0 if Free should be blocked entirely. */
+  free: { limit: number; windowMs: number };
+  /** Pro / admin tier. */
+  pro: { limit: number; windowMs: number };
 }
 
-function prune(userId: string, now: number, windowMs: number): number[] {
-  const arr = hits.get(userId) ?? [];
+/**
+ * Per-action limits. Tweaking these is the easiest knob if Claude bills get
+ * scary — bump down windows or limits without touching any route code.
+ */
+const LIMITS = {
+  'ai-generate': {
+    free: { limit: 1, windowMs: 7 * 24 * 60 * 60 * 1000 }, // 1 / week
+    pro: { limit: 10, windowMs: 24 * 60 * 60 * 1000 }, // 10 / day
+  },
+  'ai-rewrite': {
+    // Free is blocked at the service layer (Pro-only feature) — limit=0 here
+    // is defensive; the 402 should fire first.
+    free: { limit: 0, windowMs: 24 * 60 * 60 * 1000 },
+    pro: { limit: 20, windowMs: 24 * 60 * 60 * 1000 }, // 20 / day
+  },
+} satisfies Record<string, ActionLimits>;
+
+type Action = keyof typeof LIMITS;
+
+/** `${action}:${userId}` → timestamps of recent hits (ms epoch). */
+const hits = new Map<string, number[]>();
+
+function key(action: Action, userId: string) {
+  return `${action}:${userId}`;
+}
+
+function record(action: Action, userId: string, now: number) {
+  const k = key(action, userId);
+  const arr = hits.get(k) ?? [];
+  arr.push(now);
+  hits.set(k, arr);
+}
+
+function prune(action: Action, userId: string, now: number, windowMs: number): number[] {
+  const k = key(action, userId);
+  const arr = hits.get(k) ?? [];
   const kept = arr.filter((ts) => now - ts < windowMs);
-  hits.set(userId, kept);
+  hits.set(k, kept);
   return kept;
 }
 
-export function aiGenerateRateLimit(container: AppContainer) {
-  return async function (req: AuthedRequest, res: Response, next: NextFunction) {
-    if (!req.userId) {
-      return res.status(401).json({ code: 'UNAUTHORIZED', message: 'Missing user' });
-    }
-    try {
-      const user = await container.repos.users.findById(req.userId);
-      const plan = user?.plan ?? 'free';
-      const isPro = plan === 'pro' || plan === 'admin';
-      const windowMs = isPro ? PRO_WINDOW_MS : FREE_WINDOW_MS;
-      const limit = isPro ? PRO_LIMIT : FREE_LIMIT;
-
-      const now = Date.now();
-      const kept = prune(req.userId, now, windowMs);
-
-      if (kept.length >= limit) {
-        const oldest = kept[0]!;
-        const retryAfterSec = Math.max(1, Math.ceil((oldest + windowMs - now) / 1000));
-        res.setHeader('Retry-After', String(retryAfterSec));
-        return res.status(429).json({
-          code: 'RATE_LIMITED',
-          message: isPro
-            ? `Pro generation limit reached (${limit}/day). Try again later.`
-            : `Free generation limit reached (${limit}/week). Upgrade for more.`,
-          retryAfterSec,
-        });
+function makeRateLimit(action: Action) {
+  return function rateLimit(container: AppContainer) {
+    return async function (req: AuthedRequest, res: Response, next: NextFunction) {
+      if (!req.userId) {
+        return res.status(401).json({ code: 'UNAUTHORIZED', message: 'Missing user' });
       }
+      try {
+        const user = await container.repos.users.findById(req.userId);
+        const plan = user?.plan ?? 'free';
+        const isPro = plan === 'pro' || plan === 'admin';
+        const tier = isPro ? LIMITS[action].pro : LIMITS[action].free;
 
-      record(req.userId, now);
-      next();
-    } catch (err) {
-      next(err);
-    }
+        // limit=0 means "this tier is not allowed at all" — short-circuit.
+        if (tier.limit <= 0) {
+          return res.status(429).json({
+            code: 'RATE_LIMITED',
+            message: 'This action is not available on your plan.',
+          });
+        }
+
+        const now = Date.now();
+        const kept = prune(action, req.userId, now, tier.windowMs);
+
+        if (kept.length >= tier.limit) {
+          const oldest = kept[0]!;
+          const retryAfterSec = Math.max(1, Math.ceil((oldest + tier.windowMs - now) / 1000));
+          res.setHeader('Retry-After', String(retryAfterSec));
+          return res.status(429).json({
+            code: 'RATE_LIMITED',
+            message: isPro
+              ? `Pro limit reached (${tier.limit}/window). Try again later.`
+              : `Free limit reached (${tier.limit}/window). Upgrade for more.`,
+            retryAfterSec,
+          });
+        }
+
+        record(action, req.userId, now);
+        next();
+      } catch (err) {
+        next(err);
+      }
+    };
   };
 }
+
+export const aiGenerateRateLimit = makeRateLimit('ai-generate');
+export const aiRewriteRateLimit = makeRateLimit('ai-rewrite');

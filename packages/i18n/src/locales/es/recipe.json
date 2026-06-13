@@ -8,5 +8,28 @@
   "min_one": "{{value}} min",
   "min_other": "{{value}} min",
   "hourMin": "{{h}}h {{m}}m",
-  "hour": "{{h}}h"
+  "hour": "{{h}}h",
+  "rewrite": {
+    "button": "Modificar con IA",
+    "buttonHint": "Vegano, doble porción, sin frutos secos…",
+    "title": "Modificar con IA",
+    "subtitle": "Elige un preset o describe el cambio. Crearemos una copia — el original no se toca.",
+    "or": "O",
+    "customLabel": "Cambio personalizado",
+    "customPlaceholder": "p. ej. más picante, cambiar pollo por tofu…",
+    "apply": "Modificar",
+    "generating": "Generando…",
+    "presets": {
+      "vegan": "Hacerlo vegano",
+      "double": "Doblar las porciones",
+      "healthier": "Hacerlo más saludable",
+      "quicker": "Hacerlo más rápido",
+      "noNuts": "Sin frutos secos"
+    },
+    "errors": {
+      "rateLimited": "Límite diario alcanzado. Inténtalo mañana."
+    },
+    "lockedBody": "Esta receta es parte de tu vista previa Pro. Mejora para ver ingredientes e instrucciones.",
+    "lockedCta": "Pasar a Pro"
+  }
 }

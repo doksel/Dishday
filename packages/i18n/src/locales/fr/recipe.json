@@ -8,5 +8,28 @@
   "min_one": "{{value}} min",
   "min_other": "{{value}} min",
   "hourMin": "{{h}}h {{m}}min",
-  "hour": "{{h}}h"
+  "hour": "{{h}}h",
+  "rewrite": {
+    "button": "Modifier avec l'IA",
+    "buttonHint": "Vegan, doubler les portions, sans noix…",
+    "title": "Modifier avec l'IA",
+    "subtitle": "Choisis un préréglage ou décris le changement. Nous créons une copie — l'original reste intact.",
+    "or": "OU",
+    "customLabel": "Modification personnalisée",
+    "customPlaceholder": "ex. plus épicé, remplacer le poulet par du tofu…",
+    "apply": "Modifier",
+    "generating": "Génération…",
+    "presets": {
+      "vegan": "Rendre vegan",
+      "double": "Doubler les portions",
+      "healthier": "Plus sain",
+      "quicker": "Plus rapide",
+      "noNuts": "Sans noix"
+    },
+    "errors": {
+      "rateLimited": "Limite quotidienne atteinte. Réessaie demain."
+    },
+    "lockedBody": "Cette recette fait partie de votre aperçu Pro. Passez à Pro pour voir ingrédients et instructions.",
+    "lockedCta": "Passer à Pro"
+  }
 }

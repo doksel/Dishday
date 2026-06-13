@@ -8,5 +8,28 @@
   "min_one": "{{value}} min",
   "min_other": "{{value}} mins",
   "hourMin": "{{h}}h {{m}}m",
-  "hour": "{{h}}h"
+  "hour": "{{h}}h",
+  "rewrite": {
+    "button": "Modify with AI",
+    "buttonHint": "Vegan, double portions, no nuts…",
+    "title": "Modify with AI",
+    "subtitle": "Pick a preset or describe the change you want. We'll create a copy — the original stays put.",
+    "or": "OR",
+    "customLabel": "Custom change",
+    "customPlaceholder": "e.g. make it spicy, swap chicken for tofu…",
+    "apply": "Modify",
+    "generating": "Generating…",
+    "presets": {
+      "vegan": "Make it vegan",
+      "double": "Double portions",
+      "healthier": "Make it healthier",
+      "quicker": "Make it quicker",
+      "noNuts": "Without nuts"
+    },
+    "errors": {
+      "rateLimited": "Daily limit reached. Try again tomorrow."
+    },
+    "lockedBody": "This recipe is part of your Pro menu preview. Upgrade to see full ingredients and instructions.",
+    "lockedCta": "Upgrade to Pro"
+  }
 }

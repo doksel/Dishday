@@ -55,6 +55,13 @@ export function createDishdayApi(client: ApiClient) {
       create: (data: Partial<Recipe>) => client.post<Recipe>('/recipes', data),
       bookmark: (id: string) => client.post<void>(`/recipes/${id}/bookmark`),
       unbookmark: (id: string) => client.delete<void>(`/recipes/${id}/bookmark`),
+      /**
+       * Pro-only: AI-rewrite a recipe given a transformation prompt
+       * ("make it vegan", "double portions"). Returns the new recipe
+       * — the source row is never modified. Backend returns 402 for Free.
+       */
+      rewrite: (id: string, data: { prompt: string }) =>
+        client.post<Recipe>(`/recipes/${id}/rewrite`, data),
     },
     mealPlans: {
       list: () => client.get<MealPlan[]>('/meal-plans'),

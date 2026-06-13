@@ -15,6 +15,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Recipe } from '@dishday/types';
 import { PaywallModal, type PaywallContext } from '../../src/components/PaywallModal';
+import { RecipeRewriteModal } from '../../src/components/RecipeRewriteModal';
 import { Button, Checkbox, Chip, Icon, Text } from '../../src/components/ui';
 import { getApi } from '../../src/lib/api';
 import { useTheme, useThemedStyles, type Theme } from '../../src/theme';
@@ -61,6 +62,22 @@ export default function RecipeDetailScreen() {
   const paywallOpen = paywallContext !== null;
   function setPaywallOpen(open: boolean, context: PaywallContext = 'aiGenerate') {
     setPaywallContext(open ? context : null);
+  }
+  const [rewriteOpen, setRewriteOpen] = useState(false);
+
+  // Need plan to decide whether to open the rewrite modal or the paywall.
+  const me = useQuery({
+    queryKey: ['auth', 'me'],
+    queryFn: () => api.auth.me(),
+  });
+  const isPro = me.data?.plan === 'pro' || me.data?.plan === 'admin';
+
+  function handleRewritePress() {
+    if (!isPro) {
+      setPaywallOpen(true, 'aiGenerate');
+      return;
+    }
+    setRewriteOpen(true);
   }
 
   const recipe = useQuery<Recipe>({
@@ -302,6 +319,30 @@ export default function RecipeDetailScreen() {
                   </Text>
                 </View>
               )}
+
+              {/* AI rewrite — Pro feature. Free users see the button but
+                  tapping opens the paywall instead. */}
+              <Pressable
+                onPress={handleRewritePress}
+                style={({ pressed }) => [styles.rewriteBtn, pressed && styles.rewriteBtnPressed]}
+              >
+                <View style={styles.rewriteIcon}>
+                  <Icon
+                    name={isPro ? 'sparkles' : 'lock-closed'}
+                    color="onPrimary"
+                    size={20}
+                  />
+                </View>
+                <View style={styles.rewriteText}>
+                  <Text variant="bodyLg" style={styles.rewriteTitle}>
+                    {t('rewrite.button')}
+                  </Text>
+                  <Text variant="labelSm" color="textSecondary">
+                    {t('rewrite.buttonHint')}
+                  </Text>
+                </View>
+                <Icon name="chevron-forward" color="textMuted" size={18} />
+              </Pressable>
             </View>
           </>
         )}
@@ -322,6 +363,12 @@ export default function RecipeDetailScreen() {
           />
         </View>
       )}
+
+      <RecipeRewriteModal
+        visible={rewriteOpen}
+        recipeId={recipe.data?.id ?? null}
+        onClose={() => setRewriteOpen(false)}
+      />
 
       <PaywallModal
         visible={paywallOpen}
@@ -486,5 +533,29 @@ function makeStyles(theme: Theme) {
     heroLocked: { backgroundColor: theme.colors.primary },
     lockedBody: { marginTop: theme.spacing.sm },
     lockedCta: { marginTop: theme.spacing.lg },
+
+    // AI rewrite CTA row
+    rewriteBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.md,
+      padding: theme.spacing.md,
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.radius.md,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      marginTop: theme.spacing.md,
+    },
+    rewriteBtnPressed: { opacity: 0.85 },
+    rewriteIcon: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: theme.colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    rewriteText: { flex: 1, gap: 2 },
+    rewriteTitle: { fontWeight: '600' },
   });
 }
