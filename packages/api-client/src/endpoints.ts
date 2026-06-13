@@ -32,8 +32,25 @@ export function createDishdayApi(client: ApiClient) {
     },
     users: {
       getProfile: () => client.get<UserProfile>('/users/profile'),
+      /**
+       * @deprecated Misnomer — this endpoint updates fields on the User row
+       * (name, avatarUrl, locale, onboardingDone), not the UserProfile. Use
+       * `updateMe` for new code. Returns `User` despite the `UserProfile`
+       * generic that lingers for backward compatibility.
+       */
       updateProfile: (data: Partial<UserProfile>) =>
         client.put<UserProfile>('/users/profile', data),
+      /**
+       * Update the current user's identity fields.
+       *   - `name` — display name
+       *   - `avatarUrl` — public URL (typically Supabase Storage); `null` clears
+       *   - `onboardingDone` — flips once after the onboarding flow completes
+       */
+      updateMe: (data: {
+        name?: string;
+        avatarUrl?: string | null;
+        onboardingDone?: boolean;
+      }) => client.put<User>('/users/profile', data),
       /**
        * Pin the user's UI/content language across devices.
        * Pass `null` to clear the pin (clients fall back to device locale).

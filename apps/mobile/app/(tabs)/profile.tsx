@@ -1,14 +1,29 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { SUPPORTED_LOCALES, type LocaleCode } from '@dishday/i18n';
+import type { User } from '@dishday/types';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Image,
+  Linking,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  View,
+} from 'react-native';
 import { PaywallModal } from '../../src/components/PaywallModal';
 import { Screen } from '../../src/components/Screen';
 import { Button, Icon, Text } from '../../src/components/ui';
 import { setLocale } from '../../src/i18n';
 import { getApi } from '../../src/lib/api';
 import { apiErrorMessage } from '../../src/lib/apiError';
+import {
+  AvatarCancelled,
+  AvatarPermissionDenied,
+  pickAndUploadAvatar,
+} from '../../src/lib/avatar';
 import { supabase } from '../../src/lib/supabase';
 import {
   useThemePreference,
@@ -20,9 +35,11 @@ import {
 export default function ProfileScreen() {
   const styles = useThemedStyles(makeStyles);
   const api = getApi();
+  const qc = useQueryClient();
   const { preference, setPreference } = useThemePreference();
   const { t, i18n } = useTranslation('profile');
   const tPaywall = useTranslation('paywall').t;
+  const tCommon = useTranslation('common').t;
   const [paywallOpen, setPaywallOpen] = useState(false);
 
   const me = useQuery({
@@ -30,6 +47,78 @@ export default function ProfileScreen() {
     queryFn: () => api.auth.me(),
   });
   const isPro = me.data?.plan === 'pro' || me.data?.plan === 'admin';
+
+  // ─── Editable identity state ──────────────────────────────────────
+  // Name editing is inline: tap pencil → TextInput → Save commits, Cancel reverts.
+  const [editingName, setEditingName] = useState(false);
+  const [draftName, setDraftName] = useState('');
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const [nameError, setNameError] = useState<string | null>(null);
+
+  const saveName = useMutation({
+    mutationFn: (name: string) => api.users.updateMe({ name }),
+    onMutate: async (name) => {
+      // Optimistic — flip the cached User immediately so the header updates
+      // before the round-trip lands.
+      await qc.cancelQueries({ queryKey: ['auth', 'me'] });
+      const prev = qc.getQueryData<User>(['auth', 'me']);
+      if (prev) qc.setQueryData<User>(['auth', 'me'], { ...prev, name });
+      return { prev };
+    },
+    onError: (err, _name, ctx) => {
+      if (ctx?.prev) qc.setQueryData(['auth', 'me'], ctx.prev);
+      setNameError(apiErrorMessage(err, t));
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ['auth', 'me'] }),
+  });
+
+  /**
+   * Avatar upload — opens the OS picker, uploads to Supabase Storage, then
+   * persists the resulting URL on the User row. We update local state first
+   * with the new URL so the avatar swaps immediately without waiting on the
+   * DB round-trip.
+   */
+  const uploadAvatar = useMutation({
+    mutationFn: async () => {
+      if (!me.data) throw new Error('User not loaded');
+      const { publicUrl } = await pickAndUploadAvatar(me.data.id);
+      return api.users.updateMe({ avatarUrl: publicUrl });
+    },
+    onSuccess: (user) => {
+      qc.setQueryData(['auth', 'me'], user);
+      setAvatarError(null);
+    },
+    onError: (err) => {
+      if (err instanceof AvatarCancelled) return; // silent — user closed the picker
+      if (err instanceof AvatarPermissionDenied) {
+        setAvatarError(t('edit.avatar.errors.permission'));
+        return;
+      }
+      setAvatarError(t('edit.avatar.errors.upload', { error: apiErrorMessage(err, t) }));
+    },
+  });
+
+  function startEditingName() {
+    setDraftName(me.data?.name ?? '');
+    setNameError(null);
+    setEditingName(true);
+  }
+
+  function commitName() {
+    const trimmed = draftName.trim();
+    if (!trimmed || trimmed === me.data?.name) {
+      setEditingName(false);
+      return;
+    }
+    saveName.mutate(trimmed, {
+      onSuccess: () => setEditingName(false),
+    });
+  }
+
+  function cancelEditingName() {
+    setEditingName(false);
+    setNameError(null);
+  }
 
   /**
    * Open Stripe Billing Portal in the system browser. Pro users only —
@@ -67,9 +156,74 @@ export default function ProfileScreen() {
     <Screen gap="lg">
       <View>
         <Text variant="displayLg">{t('title')}</Text>
+
         {me.data && (
           <View style={styles.identity}>
-            <Text variant="headlineMd">{me.data.name}</Text>
+            {/* Avatar — tap to change */}
+            <Pressable
+              onPress={() => uploadAvatar.mutate()}
+              disabled={uploadAvatar.isPending}
+              style={({ pressed }) => [styles.avatarWrap, pressed && styles.avatarWrapPressed]}
+              hitSlop={4}
+            >
+              {me.data.avatarUrl ? (
+                <Image source={{ uri: me.data.avatarUrl }} style={styles.avatarImg} />
+              ) : (
+                <View style={[styles.avatarImg, styles.avatarFallback]}>
+                  <Text variant="headlineLg" color="onPrimary">
+                    {(me.data.name ?? '?').trim().charAt(0).toUpperCase()}
+                  </Text>
+                </View>
+              )}
+              <View style={styles.avatarBadge}>
+                {uploadAvatar.isPending ? (
+                  <ActivityIndicator color="white" size="small" />
+                ) : (
+                  <Icon name="camera" color="onPrimary" size={14} />
+                )}
+              </View>
+            </Pressable>
+
+            {/* Name — tap pencil to edit inline */}
+            {editingName ? (
+              <View style={styles.nameEditRow}>
+                <TextInput
+                  value={draftName}
+                  onChangeText={setDraftName}
+                  autoFocus
+                  maxLength={100}
+                  style={styles.nameInput}
+                  placeholder={t('edit.namePlaceholder')}
+                  onSubmitEditing={commitName}
+                  returnKeyType="done"
+                />
+                <Pressable onPress={cancelEditingName} hitSlop={8} style={styles.iconBtn}>
+                  <Icon name="close" color="textSecondary" size={20} />
+                </Pressable>
+                <Pressable
+                  onPress={commitName}
+                  hitSlop={8}
+                  style={styles.iconBtn}
+                  disabled={saveName.isPending}
+                >
+                  {saveName.isPending ? (
+                    <ActivityIndicator size="small" />
+                  ) : (
+                    <Icon name="checkmark" color="primary" size={22} />
+                  )}
+                </Pressable>
+              </View>
+            ) : (
+              <Pressable
+                onPress={startEditingName}
+                hitSlop={6}
+                style={({ pressed }) => [styles.nameRow, pressed && styles.nameRowPressed]}
+              >
+                <Text variant="headlineMd">{me.data.name}</Text>
+                <Icon name="pencil" color="textMuted" size={16} />
+              </Pressable>
+            )}
+
             <Text variant="bodyMd" color="textSecondary">
               {me.data.email}
             </Text>
@@ -78,8 +232,16 @@ export default function ProfileScreen() {
                 {t(`common:plan.${me.data.plan}`)}
               </Text>
             </View>
+
+            {avatarError && (
+              <Text variant="labelSm" color="danger">{avatarError}</Text>
+            )}
+            {nameError && (
+              <Text variant="labelSm" color="danger">{nameError}</Text>
+            )}
           </View>
         )}
+
         {me.isError && (
           <Text variant="bodyMd" color="danger">
             {t('errors.loadFailed')}
@@ -218,7 +380,60 @@ export default function ProfileScreen() {
 
 function makeStyles(theme: Theme) {
   return StyleSheet.create({
-    identity: { marginTop: theme.spacing.sm, gap: theme.spacing.base },
+    identity: { marginTop: theme.spacing.sm, gap: theme.spacing.base, alignItems: 'flex-start' },
+
+    // Avatar
+    avatarWrap: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      backgroundColor: theme.colors.surfaceContainerHigh,
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'visible',
+      marginBottom: theme.spacing.xs,
+    },
+    avatarWrapPressed: { opacity: 0.85 },
+    avatarImg: { width: 80, height: 80, borderRadius: 40 },
+    avatarFallback: {
+      backgroundColor: theme.colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    avatarBadge: {
+      position: 'absolute',
+      bottom: -2,
+      right: -2,
+      width: 26,
+      height: 26,
+      borderRadius: 13,
+      backgroundColor: theme.colors.primary,
+      borderWidth: 2,
+      borderColor: theme.colors.background,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+
+    // Name edit
+    nameRow: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.xs },
+    nameRowPressed: { opacity: 0.7 },
+    nameEditRow: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.xs },
+    nameInput: {
+      ...theme.typography.headlineMd,
+      color: theme.colors.text,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.primary,
+      paddingVertical: 2,
+      minWidth: 180,
+    },
+    iconBtn: {
+      width: 32,
+      height: 32,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 16,
+    },
+
     planBadge: {
       alignSelf: 'flex-start',
       marginTop: theme.spacing.xs,

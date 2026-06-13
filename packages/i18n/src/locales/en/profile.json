@@ -9,5 +9,14 @@
   },
   "errors": {
     "loadFailed": "Could not load profile"
+  },
+  "edit": {
+    "namePlaceholder": "Your name",
+    "avatar": {
+      "errors": {
+        "permission": "Photo access denied. Enable it in Settings to upload an avatar.",
+        "upload": "Couldn't upload photo: {{error}}"
+      }
+    }
   }
 }

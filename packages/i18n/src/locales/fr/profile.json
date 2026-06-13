@@ -9,5 +9,14 @@
   },
   "errors": {
     "loadFailed": "Impossible de charger le profil"
+  },
+  "edit": {
+    "namePlaceholder": "Votre nom",
+    "avatar": {
+      "errors": {
+        "permission": "Accès aux photos refusé. Activez-le dans les Réglages pour uploader un avatar.",
+        "upload": "Impossible d'uploader la photo : {{error}}"
+      }
+    }
   }
 }

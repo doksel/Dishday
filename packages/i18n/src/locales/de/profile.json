@@ -9,5 +9,14 @@
   },
   "errors": {
     "loadFailed": "Profil konnte nicht geladen werden"
+  },
+  "edit": {
+    "namePlaceholder": "Dein Name",
+    "avatar": {
+      "errors": {
+        "permission": "Fotozugriff verweigert. Aktiviere ihn in den Einstellungen, um einen Avatar hochzuladen.",
+        "upload": "Foto-Upload fehlgeschlagen: {{error}}"
+      }
+    }
   }
 }

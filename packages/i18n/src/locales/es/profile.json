@@ -9,5 +9,14 @@
   },
   "errors": {
     "loadFailed": "No se pudo cargar el perfil"
+  },
+  "edit": {
+    "namePlaceholder": "Tu nombre",
+    "avatar": {
+      "errors": {
+        "permission": "Acceso a fotos denegado. Actívalo en Ajustes para subir un avatar.",
+        "upload": "No se pudo subir la foto: {{error}}"
+      }
+    }
   }
 }
