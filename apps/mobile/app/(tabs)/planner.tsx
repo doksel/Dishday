@@ -1,7 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiClientError } from '@dishday/api-client';
 import type { DayOfWeek, MealPlan, MealType, Recipe, ShoppingList, User } from '@dishday/types';
-import { addWeeksIso, pickLocalized, planWeekDates, weekStartIso } from '@dishday/utils';
+import {
+  addWeeksIso,
+  formatWeekRange,
+  pickLocalized,
+  planWeekDates,
+  weekStartIso,
+} from '@dishday/utils';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -215,8 +221,8 @@ export default function PlannerScreen() {
             size={22}
           />
         </Pressable>
-        <Text variant="displayLg" style={styles.weekTitle} numberOfLines={1}>
-          {t('title', { week })}
+        <Text variant="headlineMd" style={styles.weekTitle} numberOfLines={1}>
+          {t('title', { week: formatWeekRange(week, i18n.language) })}
         </Text>
         <Pressable onPress={handleNextWeek} hitSlop={8} style={styles.weekNavBtn}>
           <Icon name="chevron-forward" color="text" size={22} />
