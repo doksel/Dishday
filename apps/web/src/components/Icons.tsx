@@ -1,0 +1,96 @@
+/**
+ * Minimal SVG icon set — inline so we don't pull a whole icon library.
+ *
+ *   All icons accept the standard SVG props (className, onClick…) and use
+ *   `currentColor` for stroke, so colour them via Tailwind's text-*
+ *   utilities on the parent.
+ */
+
+import type { SVGProps } from 'react';
+
+type Props = SVGProps<SVGSVGElement>;
+
+const base = {
+  width: 24,
+  height: 24,
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 1.8,
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round',
+} as const;
+
+export const IconHome = (p: Props) => (
+  <svg {...base} {...p}>
+    <path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z" />
+  </svg>
+);
+
+export const IconRecipes = (p: Props) => (
+  <svg {...base} {...p}>
+    <path d="M4 4h12a4 4 0 0 1 4 4v12H8a4 4 0 0 1-4-4Z" />
+    <path d="M4 8h16" />
+    <path d="M8 12h8M8 16h5" />
+  </svg>
+);
+
+export const IconAiPlan = (p: Props) => (
+  <svg {...base} {...p}>
+    <path d="m12 3 1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8Z" />
+    <path d="M18 17l.9 2.1L21 20l-2.1.9L18 23l-.9-2.1L15 20l2.1-.9Z" />
+  </svg>
+);
+
+export const IconShopping = (p: Props) => (
+  <svg {...base} {...p}>
+    <path d="M6 7h12l-1.2 11a2 2 0 0 1-2 1.8H9.2a2 2 0 0 1-2-1.8Z" />
+    <path d="M9 7V5a3 3 0 0 1 6 0v2" />
+  </svg>
+);
+
+export const IconProfile = (p: Props) => (
+  <svg {...base} {...p}>
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 21a8 8 0 0 1 16 0" />
+  </svg>
+);
+
+export const IconMenu = (p: Props) => (
+  <svg {...base} {...p}>
+    <path d="M4 6h16M4 12h16M4 18h16" />
+  </svg>
+);
+
+export const IconClose = (p: Props) => (
+  <svg {...base} {...p}>
+    <path d="M6 6l12 12M6 18 18 6" />
+  </svg>
+);
+
+export const IconBell = (p: Props) => (
+  <svg {...base} {...p}>
+    <path d="M6 8a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z" />
+    <path d="M10 20a2 2 0 0 0 4 0" />
+  </svg>
+);
+
+export const IconCheck = (p: Props) => (
+  <svg {...base} {...p}>
+    <path d="m5 12 5 5L20 7" />
+  </svg>
+);
+
+export const IconBulb = (p: Props) => (
+  <svg {...base} {...p}>
+    <path d="M9 18h6" />
+    <path d="M10 21h4" />
+    <path d="M12 3a6 6 0 0 0-3.5 10.9V15h7v-1.1A6 6 0 0 0 12 3Z" />
+  </svg>
+);
+
+export const IconPlus = (p: Props) => (
+  <svg {...base} {...p}>
+    <path d="M12 5v14M5 12h14" />
+  </svg>
+);
