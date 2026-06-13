@@ -13,15 +13,15 @@ For first-time setup, start with the [root README](../README.md). Then bookmark 
 | [**Development**](./development.md) | Daily workflow · which terminal runs what · troubleshooting cheatsheet |
 | [**Architecture**](./architecture.md) | Monorepo layout · service boundaries · repository pattern · how to swap the database |
 | [**AI integration**](./ai.md) | Provider abstraction · Claude vs Gemini vs Mock · meal-plan generation pipeline · Bull queue + worker · cost and rate limits · debugging |
+| [**Auth**](./auth.md) | Supabase Auth · `/auth/me` lazy-mirror · admin promotion · why no RLS |
+| [**Payments**](./payments.md) | Stripe Checkout · webhook lifecycle · failure modes · App Store / Play Store roadmap |
+| [**Deployment**](./deployment.md) | Railway (api+worker+redis) · Vercel (web/admin) · EAS (mobile) · first-release checklist |
 
 ## Coming next (TODO)
 
 These docs are not written yet — placeholders for upcoming work:
 
-- `auth.md` — Supabase Auth, `/auth/me` lazy-mirror, RLS strategy
-- `payments.md` — Stripe checkout / portal / webhook lifecycle
 - `database.md` — Prisma + Supabase Postgres, migration workflow, pooler vs direct connection
-- `deployment.md` — Vercel (web/admin), Railway (api + redis), EAS (mobile)
 - `mobile.md` — Expo SDK 55 quirks, theming, Screen component, scanner
 
 ## Conventions

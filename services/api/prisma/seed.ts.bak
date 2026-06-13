@@ -5,12 +5,12 @@
  *   English is the canonical column; the *_i18n maps hold ru/uk/de/it/es/fr
  *   variants. Clients render via `pickLocalized(canonical, i18n, locale)`
  *   from `@dishday/utils` — falls back to canonical for any locale we
- *   don\'t have a translation for.
+ *   don't have a translation for.
  *
  *   Idempotent — runs safely on every deploy. New recipes are inserted;
  *   existing rows (matched by slug) are updated with the latest image,
  *   translations, and metadata. Ingredients on existing rows are NOT
- *   re-created (we\'d lose `id`s referenced from meal-plan entries).
+ *   re-created (we'd lose `id`s referenced from meal-plan entries).
  */
 
 import { PrismaClient } from '@prisma/client';
@@ -95,9 +95,9 @@ const RECIPES: SeedRecipe[] = [
       ru: 'Тост с авокадо и яйцом-пашот',
       uk: 'Тост з авокадо та яйцем-пашот',
       de: 'Avocado-Toast mit pochiertem Ei',
-      it: 'Toast all\'avocado con uovo in camicia',
+      it: 'Toast all'avocado con uovo in camicia',
       es: 'Tostada de aguacate con huevo poché',
-      fr: 'Toast à l\'avocat et œuf poché',
+      fr: 'Toast à l'avocat et œuf poché',
     },
     slug: 'avocado-toast-poached-egg',
     description: 'Sourdough toast topped with smashed avocado and a poached egg.',
@@ -107,7 +107,7 @@ const RECIPES: SeedRecipe[] = [
       de: 'Sauerteig-Toast mit zerdrücktem Avocado und pochiertem Ei.',
       it: 'Toast di pasta madre con avocado schiacciato e uovo in camicia.',
       es: 'Tostada de masa madre con aguacate machacado y huevo poché.',
-      fr: 'Toast au levain garni d\'avocat écrasé et d\'un œuf poché.',
+      fr: 'Toast au levain garni d'avocat écrasé et d'un œuf poché.',
     },
     imageUrl: img('photo-1525351484163-7529414344d8'),
     prepTimeMin: 5, cookTimeMin: 5, servings: 1,
@@ -131,7 +131,7 @@ const RECIPES: SeedRecipe[] = [
       de: 'Haferbrei mit Banane und Mandeln',
       it: 'Porridge di avena con banana e mandorle',
       es: 'Avena con plátano y almendras',
-      fr: 'Porridge d\'avoine, banane et amandes',
+      fr: 'Porridge d'avoine, banane et amandes',
     },
     slug: 'oatmeal-banana-almonds',
     description: 'Rolled oats cooked in milk, topped with banana slices and almonds.',
@@ -139,9 +139,9 @@ const RECIPES: SeedRecipe[] = [
       ru: 'Овсяные хлопья на молоке, сверху ломтики банана и миндаль.',
       uk: 'Вівсяні пластівці на молоці, зверху скибочки банана та мигдаль.',
       de: 'Haferflocken in Milch gekocht, garniert mit Bananenscheiben und Mandeln.',
-      it: 'Fiocchi d\'avena cotti nel latte, guarniti con fette di banana e mandorle.',
+      it: 'Fiocchi d'avena cotti nel latte, guarniti con fette di banana e mandorle.',
       es: 'Copos de avena cocidos en leche, con rodajas de plátano y almendras.',
-      fr: 'Flocons d\'avoine cuits au lait, garnis de tranches de banane et d\'amandes.',
+      fr: 'Flocons d'avoine cuits au lait, garnis de tranches de banane et d'amandes.',
     },
     imageUrl: img('photo-1517673400267-0251440c45dc'),
     prepTimeMin: 2, cookTimeMin: 8, servings: 1,
@@ -150,7 +150,7 @@ const RECIPES: SeedRecipe[] = [
     cuisine: 'international',
     mealType: ['breakfast'],
     ingredients: [
-      { name: 'Rolled oats', nameI18n: { ru: 'Овсяные хлопья', uk: 'Вівсяні пластівці', de: 'Haferflocken', it: 'Fiocchi d\'avena', es: 'Copos de avena', fr: 'Flocons d\'avoine' }, quantity: 60, unit: 'g', orderIndex: 0 },
+      { name: 'Rolled oats', nameI18n: { ru: 'Овсяные хлопья', uk: 'Вівсяні пластівці', de: 'Haferflocken', it: 'Fiocchi d'avena', es: 'Copos de avena', fr: 'Flocons d'avoine' }, quantity: 60, unit: 'g', orderIndex: 0 },
       { name: 'Milk', nameI18n: { ru: 'Молоко', uk: 'Молоко', de: 'Milch', it: 'Latte', es: 'Leche', fr: 'Lait' }, quantity: 200, unit: 'ml', orderIndex: 1 },
       { name: 'Banana', nameI18n: { ru: 'Банан', uk: 'Банан', de: 'Banane', it: 'Banana', es: 'Plátano', fr: 'Banane' }, quantity: 1, unit: 'piece', orderIndex: 2 },
       { name: 'Almonds', nameI18n: { ru: 'Миндаль', uk: 'Мигдаль', de: 'Mandeln', it: 'Mandorle', es: 'Almendras', fr: 'Amandes' }, quantity: 20, unit: 'g', orderIndex: 3 },
@@ -187,7 +187,7 @@ const RECIPES: SeedRecipe[] = [
       { name: 'Spinach', nameI18n: { ru: 'Шпинат', uk: 'Шпинат', de: 'Spinat', it: 'Spinaci', es: 'Espinacas', fr: 'Épinards' }, quantity: 50, unit: 'g', orderIndex: 1 },
       { name: 'Cherry tomatoes', nameI18n: { ru: 'Помидоры черри', uk: 'Помідори чері', de: 'Kirschtomaten', it: 'Pomodorini', es: 'Tomates cherry', fr: 'Tomates cerises' }, quantity: 80, unit: 'g', orderIndex: 2 },
       { name: 'Feta', nameI18n: { ru: 'Фета', uk: 'Фета', de: 'Feta', it: 'Feta', es: 'Feta', fr: 'Feta' }, quantity: 30, unit: 'g', orderIndex: 3 },
-      { name: 'Olive oil', nameI18n: { ru: 'Оливковое масло', uk: 'Оливкова олія', de: 'Olivenöl', it: 'Olio d\'oliva', es: 'Aceite de oliva', fr: 'Huile d\'olive' }, quantity: 1, unit: 'tsp', orderIndex: 4 },
+      { name: 'Olive oil', nameI18n: { ru: 'Оливковое масло', uk: 'Оливкова олія', de: 'Olivenöl', it: 'Olio d'oliva', es: 'Aceite de oliva', fr: 'Huile d'olive' }, quantity: 1, unit: 'tsp', orderIndex: 4 },
     ],
   },
   {
@@ -256,7 +256,7 @@ const RECIPES: SeedRecipe[] = [
       { name: 'Chickpeas', nameI18n: { ru: 'Нут', uk: 'Нут', de: 'Kichererbsen', it: 'Ceci', es: 'Garbanzos', fr: 'Pois chiches' }, quantity: 100, unit: 'g', orderIndex: 1 },
       { name: 'Cucumber', nameI18n: { ru: 'Огурец', uk: 'Огірок', de: 'Gurke', it: 'Cetriolo', es: 'Pepino', fr: 'Concombre' }, quantity: 100, unit: 'g', orderIndex: 2 },
       { name: 'Feta', nameI18n: { ru: 'Фета', uk: 'Фета', de: 'Feta', it: 'Feta', es: 'Feta', fr: 'Feta' }, quantity: 40, unit: 'g', orderIndex: 3 },
-      { name: 'Olive oil', nameI18n: { ru: 'Оливковое масло', uk: 'Оливкова олія', de: 'Olivenöl', it: 'Olio d\'oliva', es: 'Aceite de oliva', fr: 'Huile d\'olive' }, quantity: 1, unit: 'tbsp', orderIndex: 4 },
+      { name: 'Olive oil', nameI18n: { ru: 'Оливковое масло', uk: 'Оливкова олія', de: 'Olivenöl', it: 'Olio d'oliva', es: 'Aceite de oliva', fr: 'Huile d'olive' }, quantity: 1, unit: 'tbsp', orderIndex: 4 },
       { name: 'Lemon juice', nameI18n: { ru: 'Лимонный сок', uk: 'Лимонний сік', de: 'Zitronensaft', it: 'Succo di limone', es: 'Zumo de limón', fr: 'Jus de citron' }, quantity: 1, unit: 'tbsp', orderIndex: 5 },
     ],
   },
@@ -312,7 +312,7 @@ const RECIPES: SeedRecipe[] = [
       de: 'Cremige Tomatensuppe mit klassischem Cheddar-Sandwich.',
       it: 'Zuppa cremosa di pomodoro con classico toast al cheddar.',
       es: 'Sopa cremosa de tomate con sándwich clásico de cheddar.',
-      fr: 'Soupe crémeuse à la tomate accompagnée d\'un croque-monsieur au cheddar.',
+      fr: 'Soupe crémeuse à la tomate accompagnée d'un croque-monsieur au cheddar.',
     },
     imageUrl: img('photo-1547592180-85f173990554'),
     prepTimeMin: 10, cookTimeMin: 20, servings: 1,
@@ -389,7 +389,7 @@ const RECIPES: SeedRecipe[] = [
     cuisine: 'french',
     mealType: ['lunch'],
     ingredients: [
-      { name: 'Tuna in oil', nameI18n: { ru: 'Тунец в масле', uk: 'Тунець в олії', de: 'Thunfisch in Öl', it: 'Tonno sott\'olio', es: 'Atún en aceite', fr: 'Thon à l\'huile' }, quantity: 100, unit: 'g', orderIndex: 0 },
+      { name: 'Tuna in oil', nameI18n: { ru: 'Тунец в масле', uk: 'Тунець в олії', de: 'Thunfisch in Öl', it: 'Tonno sott'olio', es: 'Atún en aceite', fr: 'Thon à l'huile' }, quantity: 100, unit: 'g', orderIndex: 0 },
       { name: 'Green beans', nameI18n: { ru: 'Стручковая фасоль', uk: 'Стручкова квасоля', de: 'Grüne Bohnen', it: 'Fagiolini', es: 'Judías verdes', fr: 'Haricots verts' }, quantity: 80, unit: 'g', orderIndex: 1 },
       { name: 'Baby potatoes', nameI18n: { ru: 'Молодой картофель', uk: 'Молода картопля', de: 'Drillinge', it: 'Patate novelle', es: 'Patatas baby', fr: 'Pommes de terre nouvelles' }, quantity: 120, unit: 'g', orderIndex: 2 },
       { name: 'Black olives', nameI18n: { ru: 'Чёрные оливки', uk: 'Чорні оливки', de: 'Schwarze Oliven', it: 'Olive nere', es: 'Aceitunas negras', fr: 'Olives noires' }, quantity: 30, unit: 'g', orderIndex: 3 },
@@ -428,7 +428,7 @@ const RECIPES: SeedRecipe[] = [
       { name: 'Salmon fillet', nameI18n: { ru: 'Филе лосося', uk: 'Філе лосося', de: 'Lachsfilet', it: 'Filetto di salmone', es: 'Filete de salmón', fr: 'Filet de saumon' }, quantity: 150, unit: 'g', orderIndex: 0 },
       { name: 'Asparagus', nameI18n: { ru: 'Спаржа', uk: 'Спаржа', de: 'Spargel', it: 'Asparagi', es: 'Espárragos', fr: 'Asperges' }, quantity: 150, unit: 'g', orderIndex: 1 },
       { name: 'Baby potatoes', nameI18n: { ru: 'Молодой картофель', uk: 'Молода картопля', de: 'Drillinge', it: 'Patate novelle', es: 'Patatas baby', fr: 'Pommes de terre nouvelles' }, quantity: 200, unit: 'g', orderIndex: 2 },
-      { name: 'Olive oil', nameI18n: { ru: 'Оливковое масло', uk: 'Оливкова олія', de: 'Olivenöl', it: 'Olio d\'oliva', es: 'Aceite de oliva', fr: 'Huile d\'olive' }, quantity: 1, unit: 'tbsp', orderIndex: 3 },
+      { name: 'Olive oil', nameI18n: { ru: 'Оливковое масло', uk: 'Оливкова олія', de: 'Olivenöl', it: 'Olio d'oliva', es: 'Aceite de oliva', fr: 'Huile d'olive' }, quantity: 1, unit: 'tbsp', orderIndex: 3 },
       { name: 'Lemon', nameI18n: { ru: 'Лимон', uk: 'Лимон', de: 'Zitrone', it: 'Limone', es: 'Limón', fr: 'Citron' }, quantity: 0.5, unit: 'piece', orderIndex: 4 },
     ],
   },
@@ -575,7 +575,7 @@ const RECIPES: SeedRecipe[] = [
       ru: 'Яблоко с арахисовой пастой',
       uk: 'Яблуко з арахісовою пастою',
       de: 'Apfel mit Erdnussbutter',
-      it: 'Mela con burro d\'arachidi',
+      it: 'Mela con burro d'arachidi',
       es: 'Manzana con mantequilla de cacahuete',
       fr: 'Pomme au beurre de cacahuète',
     },
@@ -585,7 +585,7 @@ const RECIPES: SeedRecipe[] = [
       ru: 'Нарезанное яблоко со столовой ложкой натуральной арахисовой пасты.',
       uk: 'Нарізане яблуко зі столовою ложкою натуральної арахісової пасти.',
       de: 'Apfelscheiben mit einem Esslöffel naturreiner Erdnussbutter.',
-      it: 'Mela a fette con un cucchiaio di burro d\'arachidi naturale.',
+      it: 'Mela a fette con un cucchiaio di burro d'arachidi naturale.',
       es: 'Manzana en rodajas con una cucharada de mantequilla de cacahuete natural.',
       fr: 'Pomme en tranches avec une cuillère à soupe de beurre de cacahuète nature.',
     },
@@ -597,7 +597,7 @@ const RECIPES: SeedRecipe[] = [
     mealType: ['snack'],
     ingredients: [
       { name: 'Apple', nameI18n: { ru: 'Яблоко', uk: 'Яблуко', de: 'Apfel', it: 'Mela', es: 'Manzana', fr: 'Pomme' }, quantity: 1, unit: 'piece', orderIndex: 0 },
-      { name: 'Peanut butter', nameI18n: { ru: 'Арахисовая паста', uk: 'Арахісова паста', de: 'Erdnussbutter', it: 'Burro d\'arachidi', es: 'Mantequilla de cacahuete', fr: 'Beurre de cacahuète' }, quantity: 1, unit: 'tbsp', orderIndex: 1 },
+      { name: 'Peanut butter', nameI18n: { ru: 'Арахисовая паста', uk: 'Арахісова паста', de: 'Erdnussbutter', it: 'Burro d'arachidi', es: 'Mantequilla de cacahuete', fr: 'Beurre de cacahuète' }, quantity: 1, unit: 'tbsp', orderIndex: 1 },
     ],
   },
   {
