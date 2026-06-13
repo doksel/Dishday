@@ -28,10 +28,28 @@ export const IconHome = (p: Props) => (
 );
 
 export const IconRecipes = (p: Props) => (
-  <svg {...base} {...p}>
-    <path d="M4 4h12a4 4 0 0 1 4 4v12H8a4 4 0 0 1-4-4Z" />
-    <path d="M4 8h16" />
-    <path d="M8 12h8M8 16h5" />
+  // Ionicons `restaurant-outline` — same glyph the mobile Recipes tab uses.
+  // Path data copied from Ionicons 5 source so the web/mobile brand reads
+  // as a single icon family. Stroke width 32 on a 512 viewBox renders to
+  // ~1.5px at 24px tall, in line with the rest of the set.
+  <svg
+    width={24}
+    height={24}
+    viewBox="0 0 512 512"
+    fill="none"
+    stroke="currentColor"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth={32}
+    {...p}
+  >
+    <path d="M57.49 47.27a16.36 16.36 0 00-23.14 0L15.49 66.12a16.36 16.36 0 000 23.14L223.74 297.51l-22.66 22.66L73.17 192.26a16 16 0 00-22.61 0L19.32 223.5a48 48 0 000 67.88l101.3 101.3a48 48 0 0067.88 0l31.24-31.24a16 16 0 000-22.62L92.13 211.08l22.62-22.62L322.74 396.45a16.36 16.36 0 0023.14 0l18.86-18.86a16.36 16.36 0 000-23.14z" />
+    <path d="M403.07 64a64.74 64.74 0 00-46 19.1l-9.83 9.85a16 16 0 000 22.6l63.42 63.42a16 16 0 0022.6 0l9.85-9.83C497.78 95.65 469 64 432.3 64z" />
+    <path
+      fill="currentColor"
+      stroke="none"
+      d="M310.94 174.74l4.41-4.41a16.59 16.59 0 0123.46 0L341 173a16.59 16.59 0 010 23.46l-4.41 4.41a16.59 16.59 0 01-23.46 0L310.94 198.2a16.59 16.59 0 010-23.46zM382 246.07l4.41-4.41a16.59 16.59 0 0123.46 0L412 244a16.6 16.6 0 010 23.46l-4.41 4.41a16.59 16.59 0 01-23.46 0L382 269.53a16.59 16.59 0 010-23.46zM340.6 281.27a16.55 16.55 0 0123.43 0l52.85 52.84a48 48 0 010 67.88l-9.95 9.94a16 16 0 01-22.65 0L286.21 327.86a16 16 0 010-22.66z"
+    />
   </svg>
 );
 
@@ -43,9 +61,15 @@ export const IconAiPlan = (p: Props) => (
 );
 
 export const IconShopping = (p: Props) => (
+  // Material Symbols `shopping_basket`: trapezoidal basket body, triangular
+  // arched handle from rim to rim, two short vertical "ribs" for the weave.
   <svg {...base} {...p}>
-    <path d="M6 7h12l-1.2 11a2 2 0 0 1-2 1.8H9.2a2 2 0 0 1-2-1.8Z" />
-    <path d="M9 7V5a3 3 0 0 1 6 0v2" />
+    {/* Basket body */}
+    <path d="M3 9h18l-2 11a2 2 0 0 1-2 1H7a2 2 0 0 1-2-1L3 9Z" />
+    {/* Arched handle */}
+    <path d="M7 9l5-6 5 6" />
+    {/* Basket weave ribs */}
+    <path d="M10 13v4M14 13v4" />
   </svg>
 );
 
@@ -179,5 +203,61 @@ export const IconBars = (p: Props) => (
     <rect x="3" y="14" width="4" height="7" rx="1" />
     <rect x="10" y="9" width="4" height="12" rx="1" />
     <rect x="17" y="4" width="4" height="17" rx="1" opacity="0.4" />
+  </svg>
+);
+
+export const IconLeaf = (p: Props) => (
+  <svg {...base} {...p}>
+    <path d="M11 20A7 7 0 0 1 4 13c0-6 6-9 13-9 0 6-2 13-6 14a4 4 0 0 1-4-4" />
+    <path d="M4 20c2-6 6-9 11-11" />
+  </svg>
+);
+
+export const IconFridge = (p: Props) => (
+  <svg {...base} {...p}>
+    <rect x="5" y="3" width="14" height="18" rx="2" />
+    <path d="M5 11h14" />
+    <path d="M8 6.5v2M8 14v3" />
+  </svg>
+);
+
+export const IconBox = (p: Props) => (
+  <svg {...base} {...p}>
+    <path d="M3 7h18l-1 13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" />
+    <path d="M3 7l2-4h14l2 4" />
+    <path d="M9 11h6" />
+  </svg>
+);
+
+export const IconBread = (p: Props) => (
+  <svg {...base} {...p}>
+    <path d="M4 13a4 4 0 0 1 1.3-3A6 6 0 0 1 12 7a6 6 0 0 1 6.7 3 4 4 0 0 1 1.3 3c0 2-1.5 3-3 3v3a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1v-3c-1.5 0-3-1-3-3Z" />
+    <path d="M8 13h.01M12 13h.01M16 13h.01" />
+  </svg>
+);
+
+export const IconPiggy = (p: Props) => (
+  <svg {...base} {...p}>
+    <path d="M4 13a7 7 0 0 1 7-7h3l3-2v4a6 6 0 0 1 3 5v3l-2 1-1 2h-3v-2h-4v2H7v-2l-2-2a6 6 0 0 1-1-2Z" />
+    <circle cx="15" cy="11" r="1" fill="currentColor" />
+  </svg>
+);
+
+export const IconCart = (p: Props) => (
+  <svg {...base} {...p}>
+    <path d="M3 4h2l2.6 12.4a1 1 0 0 0 1 .8H19a1 1 0 0 0 1-.8L21.5 9H6" />
+    <circle cx="9" cy="20" r="1.5" />
+    <circle cx="18" cy="20" r="1.5" />
+  </svg>
+);
+
+export const IconDrag = (p: Props) => (
+  <svg {...base} {...p}>
+    <circle cx="9" cy="6" r="1" fill="currentColor" />
+    <circle cx="9" cy="12" r="1" fill="currentColor" />
+    <circle cx="9" cy="18" r="1" fill="currentColor" />
+    <circle cx="15" cy="6" r="1" fill="currentColor" />
+    <circle cx="15" cy="12" r="1" fill="currentColor" />
+    <circle cx="15" cy="18" r="1" fill="currentColor" />
   </svg>
 );

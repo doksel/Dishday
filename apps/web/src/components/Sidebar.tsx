@@ -43,14 +43,15 @@ export function Sidebar({ mobile, onClose }: SidebarProps) {
 
   return (
     <aside className="flex h-full w-64 flex-col bg-white border-r border-zinc-200">
-      {/* Brand */}
+      {/* Brand — restaurant_menu glyph inside a tonal-emerald container, to
+          match the design system's "primary container" treatment. */}
       <div className="flex items-center justify-between px-5 py-5">
         <Link href="/" className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-700 text-white">
-            <span className="text-lg font-bold leading-none">D</span>
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+            <IconRecipes width={22} height={22} />
           </div>
           <div className="leading-tight">
-            <div className="font-bold text-zinc-900">Dishday</div>
+            <div className="font-bold text-emerald-700">Dishday</div>
             <div className="text-[11px] text-zinc-500">Your kitchen companion</div>
           </div>
         </Link>
