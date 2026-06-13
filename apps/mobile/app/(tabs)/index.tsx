@@ -47,36 +47,21 @@ export default function HomeScreen() {
   const entries = plan?.entries ?? [];
 
   /**
-   * Group entries by day, **de-duped by mealType** — defense against legacy
-   * data from before the unique-slot constraint landed (see migration
-   * 20260612190000_unique_meal_plan_slot). One slot = one dish.
-   *
-   * If two rows exist for the same slot, the later one wins (we iterate in
-   * order; later entries overwrite earlier ones in the inner map).
+   * Group entries by day. Every entry is rendered as its own MealCard —
+   * a slot can contain multiple dishes (soup + main + side) and we want
+   * the user to see all of them on the Today screen.
    */
   const entriesByDay = useMemo(() => {
     const map = new Map<number, MealPlanEntry[]>();
-    const slotIndex = new Map<string, number>(); // `${dow}|${mealType}` → index in arr
     for (const e of entries) {
       const arr = map.get(e.dayOfWeek) ?? [];
-      const key = `${e.dayOfWeek}|${e.mealType}`;
-      const prev = slotIndex.get(key);
-      if (prev !== undefined) {
-        arr[prev] = e; // overwrite — later wins
-      } else {
-        slotIndex.set(key, arr.length);
-        arr.push(e);
-      }
+      arr.push(e);
       map.set(e.dayOfWeek, arr);
     }
     return map;
   }, [entries]);
 
-  // Total meals = unique slot count (not raw entry count, which could be inflated).
-  const totalMeals = useMemo(
-    () => Array.from(entriesByDay.values()).reduce((sum, arr) => sum + arr.length, 0),
-    [entriesByDay],
-  );
+  const totalMeals = entries.length;
 
   function handleDatePress(dow: DayOfWeek) {
     setSelectedDow(dow);

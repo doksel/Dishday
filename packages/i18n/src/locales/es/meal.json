@@ -9,5 +9,11 @@
   "items_other": "{{count}} elementos",
   "empty": "Aún no hay platos. Toca el botón para añadir uno.",
   "addAnother": "Añadir otro elemento a {{meal}}",
-  "loadError": "No se pudo cargar: {{error}}"
+  "loadError": "No se pudo cargar: {{error}}",
+  "removeDish": {
+    "title": "¿Quitar este plato?",
+    "body": "«{{dish}}» se quitará de esta comida. Los demás platos se mantienen.",
+    "confirm": "Quitar",
+    "cancel": "Cancelar"
+  }
 }

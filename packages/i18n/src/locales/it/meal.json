@@ -9,5 +9,11 @@
   "items_other": "{{count}} elementi",
   "empty": "Ancora nessun piatto. Tocca il pulsante in basso per aggiungerne uno.",
   "addAnother": "Aggiungi un altro elemento a {{meal}}",
-  "loadError": "Impossibile caricare: {{error}}"
+  "loadError": "Impossibile caricare: {{error}}",
+  "removeDish": {
+    "title": "Rimuovere questo piatto?",
+    "body": "«{{dish}}» sarà rimosso da questo pasto. Gli altri piatti restano.",
+    "confirm": "Rimuovi",
+    "cancel": "Annulla"
+  }
 }

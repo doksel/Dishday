@@ -9,5 +9,11 @@
   "items_other": "{{count}} Gerichte",
   "empty": "Noch keine Gerichte. Tippe unten, um eines hinzuzufügen.",
   "addAnother": "Weiteres Gericht zu {{meal}} hinzufügen",
-  "loadError": "Konnte nicht geladen werden: {{error}}"
+  "loadError": "Konnte nicht geladen werden: {{error}}",
+  "removeDish": {
+    "title": "Gericht entfernen?",
+    "body": "„{{dish}}“ wird aus dieser Mahlzeit entfernt. Andere Gerichte bleiben.",
+    "confirm": "Entfernen",
+    "cancel": "Abbrechen"
+  }
 }

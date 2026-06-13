@@ -9,5 +9,11 @@
   "items_other": "{{count}} Items",
   "empty": "No dishes yet. Tap the button below to add one.",
   "addAnother": "Add another item to {{meal}}",
-  "loadError": "Could not load: {{error}}"
+  "loadError": "Could not load: {{error}}",
+  "removeDish": {
+    "title": "Remove this dish?",
+    "body": "“{{dish}}” will be removed from this meal. Other dishes stay.",
+    "confirm": "Remove",
+    "cancel": "Cancel"
+  }
 }

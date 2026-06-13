@@ -156,31 +156,22 @@ export default function PlannerScreen() {
     (pendingJobId !== null && aiJob.data?.state !== 'completed' && aiJob.data?.state !== 'failed');
 
   /**
-   * Empty slot tap → open the picker.
-   * Occupied slot tap → 3-way action sheet: Replace (re-opens picker; backend
-   * is now idempotent and will overwrite the existing entry in the slot),
-   * Remove (deletes), Cancel.
+   * Empty slot tap     → open the picker right here.
+   * Occupied slot tap  → navigate to the meal-detail screen, which renders
+   *                       the full list of dishes in this slot, allows
+   *                       adding more, and per-dish delete.
    *
-   * "Replace" is the more common intent — the old single-action "Remove" was
-   * confusing because you couldn't change a dish without first emptying the
-   * slot. The DB-level unique constraint guarantees we can't end up with two
-   * dishes in the same slot no matter which path the user takes.
+   * The earlier "Replace / Remove" action sheet stopped making sense once a
+   * slot can hold multiple dishes — the detail screen is the natural home
+   * for those affordances.
    */
-  function handleSlotPress(dayOfWeek: DayOfWeek, mealType: MealType, occupiedEntryId?: string) {
+  function handleSlotPress(dayOfWeek: DayOfWeek, mealType: MealType, slotHasEntries: boolean) {
     if (!currentPlan) return;
-    if (occupiedEntryId) {
-      Alert.alert(t('slotActions.title'), t('slotActions.body'), [
-        { text: tCommon('cancel'), style: 'cancel' },
-        {
-          text: t('slotActions.remove'),
-          style: 'destructive',
-          onPress: () => removeEntry.mutate({ planId: currentPlan.id, entryId: occupiedEntryId }),
-        },
-        {
-          text: t('slotActions.replace'),
-          onPress: () => setPicker({ planId: currentPlan.id, dayOfWeek, mealType }),
-        },
-      ]);
+    if (slotHasEntries) {
+      router.push({
+        pathname: '/meal',
+        params: { planId: currentPlan.id, dow: String(dayOfWeek), mealType },
+      });
       return;
     }
     setPicker({ planId: currentPlan.id, dayOfWeek, mealType });
@@ -288,13 +279,25 @@ export default function PlannerScreen() {
             <View key={dayIdx} style={styles.card}>
               <Text variant="labelLg">{dayLabel.toUpperCase()}</Text>
               {SLOTS.map((slot) => {
-                const entry = currentPlan.entries?.find(
+                // A slot can hold multiple dishes — list them all (the user
+                // sees the full mix and can tap to expand to the detail view).
+                const slotEntries = currentPlan.entries?.filter(
                   (e) => e.dayOfWeek === dayIdx && e.mealType === slot,
-                );
+                ) ?? [];
+                const hasEntries = slotEntries.length > 0;
+                const slotSummary = hasEntries
+                  ? slotEntries
+                      .map((e) =>
+                        e.recipe
+                          ? pickLocalized(e.recipe.title, e.recipe.titleI18n, i18n.language)
+                          : '—',
+                      )
+                      .join(', ')
+                  : t('tapToAdd');
                 return (
                   <Pressable
                     key={slot}
-                    onPress={() => handleSlotPress(dayIdx as DayOfWeek, slot, entry?.id)}
+                    onPress={() => handleSlotPress(dayIdx as DayOfWeek, slot, hasEntries)}
                     style={({ pressed }) => [
                       styles.slotRow,
                       slot !== 'snack' && styles.slotRowDivider,
@@ -303,16 +306,15 @@ export default function PlannerScreen() {
                   >
                     <Text variant="labelSm" color="textMuted" style={styles.slotName}>
                       {tMealTypes(slot)}
+                      {slotEntries.length > 1 ? ` · ${slotEntries.length}` : ''}
                     </Text>
                     <Text
                       variant="bodyMd"
-                      color={entry ? 'text' : 'textMuted'}
+                      color={hasEntries ? 'text' : 'textMuted'}
                       style={styles.slotEntry}
                       numberOfLines={1}
                     >
-                      {entry?.recipe
-                        ? pickLocalized(entry.recipe.title, entry.recipe.titleI18n, i18n.language)
-                        : t('tapToAdd')}
+                      {slotSummary}
                     </Text>
                   </Pressable>
                 );

@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Pressable,
   ScrollView,
@@ -66,24 +67,33 @@ export default function MealSlotScreen() {
   );
 
   /**
-   * One dish per slot — picks the first match. Even if old data has duplicates
-   * (pre-migration 20260612190000_unique_meal_plan_slot) we render only one.
+   * All dishes in this slot. A single meal (e.g. lunch) can have multiple
+   * dishes — soup + main + side — and the user can add/remove individually.
+   * Migration 20260613140000_drop_meal_plan_slot_unique allows the multiple
+   * rows; the previous one-per-slot constraint was the wrong fit for real
+   * meal composition.
    */
-  const entry = useMemo(
-    () => plan.data?.entries?.find((e) => e.dayOfWeek === dow && e.mealType === mealType) ?? null,
+  const entries = useMemo(
+    () => plan.data?.entries?.filter((e) => e.dayOfWeek === dow && e.mealType === mealType) ?? [],
     [plan.data, dow, mealType],
   );
 
+  /** Sum macros across every dish in the slot (with serving multiplier). */
   const macros = useMemo(() => {
-    if (!entry?.recipe) return { kcal: 0, proteinG: 0, carbsG: 0, fatG: 0 };
-    const f = entry.servings;
-    return {
-      kcal: (entry.recipe.caloriesPerServing ?? 0) * f,
-      proteinG: (entry.recipe.proteinG ?? 0) * f,
-      carbsG: (entry.recipe.carbsG ?? 0) * f,
-      fatG: (entry.recipe.fatG ?? 0) * f,
-    };
-  }, [entry]);
+    let kcal = 0,
+      proteinG = 0,
+      carbsG = 0,
+      fatG = 0;
+    for (const e of entries) {
+      if (!e.recipe) continue;
+      const f = e.servings;
+      kcal += (e.recipe.caloriesPerServing ?? 0) * f;
+      proteinG += (e.recipe.proteinG ?? 0) * f;
+      carbsG += (e.recipe.carbsG ?? 0) * f;
+      fatG += (e.recipe.fatG ?? 0) * f;
+    }
+    return { kcal, proteinG, carbsG, fatG };
+  }, [entries]);
 
   const kcalTarget = KCAL_TARGET[mealType];
   const fatTarget = FAT_TARGET[mealType];
@@ -98,6 +108,26 @@ export default function MealSlotScreen() {
       qc.invalidateQueries({ queryKey: ['meal-plans'] });
     },
   });
+
+  /** Remove a single dish from the slot — keeps other dishes intact. */
+  const removeEntry = useMutation({
+    mutationFn: (entryId: string) => api.mealPlans.removeEntry(planId, entryId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['meal-plan', planId] });
+      qc.invalidateQueries({ queryKey: ['meal-plans'] });
+    },
+  });
+
+  function handleRemoveDish(entryId: string, dishName: string) {
+    Alert.alert(t('removeDish.title'), t('removeDish.body', { dish: dishName }), [
+      { text: t('removeDish.cancel'), style: 'cancel' },
+      {
+        text: t('removeDish.confirm'),
+        style: 'destructive',
+        onPress: () => removeEntry.mutate(entryId),
+      },
+    ]);
+  }
 
   const toggleBookmark = useMutation({
     mutationFn: async ({ recipeId, save }: { recipeId: string; save: boolean }) => {
@@ -215,9 +245,9 @@ export default function MealSlotScreen() {
               <Text variant="headlineLg">{t('yourMeal')}</Text>
             </View>
 
-            {/* Dish card — exactly one per slot */}
+            {/* Dish list — multiple dishes per slot, each removable. */}
             <View style={styles.dishList}>
-              {!entry && (
+              {entries.length === 0 && (
                 <View style={styles.empty}>
                   <Text variant="bodyMd" color="textSecondary" align="center">
                     {t('empty')}
@@ -225,21 +255,30 @@ export default function MealSlotScreen() {
                 </View>
               )}
 
-              {entry?.recipe && (
-                <DishCard
-                  entry={entry}
-                  recipe={entry.recipe}
-                  bookmarked={bookmarkedIds.has(entry.recipe.id)}
-                  onPress={() =>
-                    router.push({ pathname: '/recipe/[id]', params: { id: entry.recipe!.id } })
-                  }
-                  onToggleBookmark={() =>
-                    toggleBookmark.mutate({
-                      recipeId: entry.recipe!.id,
-                      save: !bookmarkedIds.has(entry.recipe!.id),
-                    })
-                  }
-                />
+              {entries.map((e) =>
+                e.recipe ? (
+                  <DishCard
+                    key={e.id}
+                    entry={e}
+                    recipe={e.recipe}
+                    bookmarked={bookmarkedIds.has(e.recipe.id)}
+                    onPress={() =>
+                      router.push({ pathname: '/recipe/[id]', params: { id: e.recipe!.id } })
+                    }
+                    onToggleBookmark={() =>
+                      toggleBookmark.mutate({
+                        recipeId: e.recipe!.id,
+                        save: !bookmarkedIds.has(e.recipe!.id),
+                      })
+                    }
+                    onRemove={() =>
+                      handleRemoveDish(
+                        e.id,
+                        pickLocalized(e.recipe!.title, e.recipe!.titleI18n, i18n.language),
+                      )
+                    }
+                  />
+                ) : null,
               )}
             </View>
           </>
@@ -282,9 +321,11 @@ interface DishCardProps {
   bookmarked: boolean;
   onPress: () => void;
   onToggleBookmark: () => void;
+  /** Optional — when set, renders a trash button that fires this callback. */
+  onRemove?: () => void;
 }
 
-function DishCard({ recipe, bookmarked, onPress, onToggleBookmark }: DishCardProps) {
+function DishCard({ recipe, bookmarked, onPress, onToggleBookmark, onRemove }: DishCardProps) {
   const theme = useTheme();
   const styles = useThemedStyles(makeStyles);
   const { i18n } = useTranslation('meal');
@@ -350,7 +391,18 @@ function DishCard({ recipe, bookmarked, onPress, onToggleBookmark }: DishCardPro
           ) : (
             <View />
           )}
-          <Icon name="chevron-forward" color="textMuted" size={20} />
+          <View style={styles.dishActions}>
+            {onRemove && (
+              <Pressable
+                onPress={onRemove}
+                hitSlop={8}
+                style={({ pressed }) => [styles.removeBtn, pressed && styles.removeBtnPressed]}
+              >
+                <Icon name="trash-outline" color="danger" size={18} />
+              </Pressable>
+            )}
+            <Icon name="chevron-forward" color="textMuted" size={20} />
+          </View>
         </View>
       </View>
     </Pressable>
@@ -528,5 +580,14 @@ function makeStyles(theme: Theme) {
       borderTopWidth: 1,
       borderTopColor: theme.colors.border,
     },
+    dishActions: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.xs },
+    removeBtn: {
+      width: 30,
+      height: 30,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 15,
+    },
+    removeBtnPressed: { backgroundColor: theme.colors.surfaceVariant },
   });
 }

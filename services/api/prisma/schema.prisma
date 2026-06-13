@@ -224,12 +224,11 @@ model MealPlanEntry {
   plan        MealPlan  @relation(fields: [planId], references: [id], onDelete: Cascade)
   recipe      Recipe    @relation(fields: [recipeId], references: [id])
 
-  // One dish per (day, meal-type) slot — replacing the dish replaces this row.
-  // Without this constraint the API silently appended duplicates on every
-  // POST /meal-plans/:id/entries from a stale UI state, producing visible
-  // "two breakfasts" on the Today screen. See migration
-  // 20260612190000_unique_meal_plan_slot for the dedup + constraint.
-  @@unique([planId, dayOfWeek, mealType])
+  // Multi-dish slot — a single meal (e.g. lunch) can hold soup + main + side.
+  // The original `@@unique([planId, dayOfWeek, mealType])` was dropped by
+  // migration 20260613140000_drop_meal_plan_slot_unique once meal.tsx grew
+  // a proper list UI with individual delete buttons (replacing the old
+  // "two breakfasts" race condition with explicit user intent).
   @@index([planId])
   @@index([recipeId])
   @@map("meal_plan_entries")

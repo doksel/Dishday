@@ -14,6 +14,7 @@ const DEMO: User[] = [
     plan: 'pro',
     planExpiresAt: '2026-12-31T00:00:00Z',
     onboardingDone: true,
+    locale: null,
     createdAt: '2026-01-15T09:30:00Z',
     updatedAt: '2026-05-01T12:00:00Z',
   },

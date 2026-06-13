@@ -80,30 +80,24 @@ export class PrismaMealPlanRepository implements MealPlanRepository {
   }
 
   /**
-   * Replace whatever dish currently occupies the (planId, dayOfWeek, mealType)
-   * slot with `entry.recipeId`. Idempotent — calling twice with the same args
-   * lands the same final state. Runs inside a transaction so a partial write
-   * can't leave the slot empty.
+   * Append a dish to the (planId, dayOfWeek, mealType) slot. A single slot
+   * can hold multiple dishes (soup + main + side) — the meal detail screen
+   * renders them as a list with individual delete buttons.
    *
-   * The DB-level unique constraint on (plan_id, day_of_week, meal_type) is
-   * the ultimate safety net (see migration 20260612190000_unique_meal_plan_slot);
-   * this method's job is to make the API ergonomic for "set this slot to X".
+   * Note: the unique constraint that used to enforce one-dish-per-slot was
+   * dropped in migration 20260613140000_drop_meal_plan_slot_unique once the
+   * UI grew explicit add/remove affordances.
    */
   async addEntry(planId: string, entry: AddEntryInput): Promise<MealPlanEntry> {
-    const e = await this.prisma.$transaction(async (tx) => {
-      await tx.mealPlanEntry.deleteMany({
-        where: { planId, dayOfWeek: entry.dayOfWeek, mealType: entry.mealType },
-      });
-      return tx.mealPlanEntry.create({
-        data: {
-          planId,
-          recipeId: entry.recipeId,
-          dayOfWeek: entry.dayOfWeek,
-          mealType: entry.mealType,
-          servings: entry.servings ?? 1,
-        },
-        include: { recipe: { include: { ingredients: { orderBy: { orderIndex: 'asc' } } } } },
-      });
+    const e = await this.prisma.mealPlanEntry.create({
+      data: {
+        planId,
+        recipeId: entry.recipeId,
+        dayOfWeek: entry.dayOfWeek,
+        mealType: entry.mealType,
+        servings: entry.servings ?? 1,
+      },
+      include: { recipe: { include: { ingredients: { orderBy: { orderIndex: 'asc' } } } } },
     });
     return mealPlanEntryFromPrisma(e);
   }
